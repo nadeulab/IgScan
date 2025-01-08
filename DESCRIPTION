@@ -1,11 +1,14 @@
 Package: IgScan
 Type: Package
 Title: What the Package Does (Title Case)
-Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
+Version: 1.0.0
+Date: 2025-01-08
+Author: Ian Márquez-López <iamarquez@recerca.clinic.cat>
+Maintainer: Ian Márquez-López <iamarquez@recerca.clinic.cat>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
+URL: https://github.com/IanMarquezIDIBAPS/IgScan
+RoxygenNote: 7.3.2
