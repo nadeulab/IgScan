@@ -6,10 +6,10 @@
 #'
 #' It supports data from multiple sequencing platforms and file types:
 #' \itemize{
-#'   \item 10x BCR =  "filtered_contig_annotations.csv / filtered_contig.fa"
-#'   \item Parse BCR =  "bcr_annotation_airr.tsv"
-#'   \item BD Rhapsody BCR =  "Contigs_AIRR.tsv"
-#'   \item MiXCR =  "clonotypes.IGX.txt"
+#'   \item 10x BCR = "filtered_contig_annotations.csv / filtered_contig.fa"
+#'   \item Parse BCR = "bcr_annotation_airr.tsv"
+#'   \item BD Rhapsody BCR = "Contigs_AIRR.tsv"
+#'   \item MiXCR = "clonotypes.IGX.txt"
 #'   \item TRUST4 = "barcode_report.tsv"
 #'   \item AIRR = "airr_rearrangement.tsv"
 #'   \item IMGT AIRR = "vquest_airr.tsv"
@@ -23,7 +23,7 @@
 #' '10xBCR_fasta', '10xBCR_csv', 'ParseBCR', 'BDRhapsodyBCR', 'MiXCR',
 #' 'TRUST4', 'AIRR', 'IMGT_AIRR' and 'fasta'.
 #'
-#' @return A list of input elementsfor further functions in IgScan.
+#' @return A list of input elements for further functions in IgScan.
 #'   For 10xBCR_fasta and fasta formats, the raw file paths are returned as elements.
 #'   For other sources, data frames containing the loaded and parsed data are returned.
 #'
