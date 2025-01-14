@@ -38,7 +38,7 @@
 load_RawData <- function(sample_paths, input_format){
 
   input_format <- tolower(input_format)
-  if(!input_format %in% c("10xbcr_fasta", "10xbcr_csv", "parsebcr", "BDrhapsodybcr", "mixcr", "trust4", "airr", "imgt_airr", "fasta")){stop("Invalid value for 'input_format'. It should be either '10xbcr_fasta', '10xbcr_csv', 'parsebcr', 'BDrhapsodybcr', 'mixcr', 'trust4', 'airr', 'imgt_airr' or 'fasta'.")}
+  if(!input_format %in% c("10xbcr_fasta", "10xbcr_csv", "parsebcr", "bdrhapsodybcr", "mixcr", "trust4", "airr", "imgt_airr", "fasta")){stop("Invalid value for 'input_format'. It should be either '10xbcr_fasta', '10xbcr_csv', 'parsebcr', 'bdrhapsodybcr', 'mixcr', 'trust4', 'airr', 'imgt_airr' or 'fasta'.")}
 
   info <- file.info(sample_paths)
 
@@ -57,7 +57,7 @@ load_RawData <- function(sample_paths, input_format){
     if(input_format %in% c("10xbcr_fasta", "fasta")){
       tmp <- sample_paths_read[i]
     }
-    else if(input_format %in% c("mixcr", "BDrhapsodybcr", "parsebcr", "trust4", "airr", "imgt_airr")){
+    else if(input_format %in% c("mixcr", "bdrhapsodybcr", "parsebcr", "trust4", "airr", "imgt_airr")){
       tmp <- fread(sample_paths_read[i], header = T, sep = "\t", stringsAsFactors = F, data.table = F)
     }
     else if(input_format == "10x_csv"){

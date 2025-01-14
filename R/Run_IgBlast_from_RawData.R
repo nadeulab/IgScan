@@ -85,7 +85,7 @@ Run_IgBlast_from_RawData <- function(sample_paths, sample_names, input_format, d
 
   ## Put the input_format in lower case and check if it has been correctly set
   input_format <- tolower(input_format)
-  if(!input_format %in% c("10xbcr_fasta", "10xbcr_csv", "parsebcr", "BDrhapsodybcr", "mixcr", "trust4", "airr", "imgt_airr", "fasta")){stop("Invalid value for 'input_format'. It should be either '10xbcr_fasta', '10xbcr_csv', 'parsebcr', 'BDrhapsodybcr', 'mixcr', 'trust4', 'airr', 'imgt_airr' or 'fasta'.")}
+  if(!input_format %in% c("10xbcr_fasta", "10xbcr_csv", "parsebcr", "bdrhapsodybcr", "mixcr", "trust4", "airr", "imgt_airr", "fasta")){stop("Invalid value for 'input_format'. It should be either '10xbcr_fasta', '10xbcr_csv', 'parsebcr', 'bdrhapsodybcr', 'mixcr', 'trust4', 'airr', 'imgt_airr' or 'fasta'.")}
 
   ## Create names for each sample if they have not been indicated by the user
   if(length(sample_names) == 0){sample_names <- paste0("sample", seq_along(sample_paths))}
@@ -148,7 +148,7 @@ Run_IgBlast_from_RawData <- function(sample_paths, sample_names, input_format, d
       for(row in 1:nrow(samples_list[[i]])){write(paste0(">",samples_list[[i]]$SeqID[row],"\n",samples_list[[i]]$VDJseq[row]), file = fasta_file, append = T)}
     }
 
-    else if(input_format %in% c("BDrhapsodybcr", "parsebcr", "trust4", "airr", "imgt_airr")){
+    else if(input_format %in% c("bdrhapsodybcr", "parsebcr", "trust4", "airr", "imgt_airr")){
       samples_list[[i]] <- samples_list[[i]][samples_list[[i]]$locus %in% c("IGH", "IGK", "IGL"),]
       samples_list[[i]]$VDJseq <- samples_list[[i]]$sequence
 
