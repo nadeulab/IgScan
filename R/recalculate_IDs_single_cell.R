@@ -115,7 +115,7 @@ recalculate_IDs_single_cell <- function(single_cell_object){
   data_frame$igSubcloneID_in_ClonotypeVariant_num <- per_cell_sbc_in_cv_dict_all$NewName[match(data_frame$igSubcloneID_in_ClonotypeVariant_num, per_cell_sbc_in_cv_dict_all$Group.1)]
 
   if(class(single_cell_object)[1] == "SingleCellExperiment"){
-    single_cell_object@colData <- data_frame
+    colData(single_cell_object) <- DataFrame(data_frame)
   } else if(class(single_cell_object)[1] == "Seurat"){
     single_cell_object@meta.data <- data_frame
   }
