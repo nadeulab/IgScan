@@ -107,7 +107,7 @@ Run_IgBlast_from_RawData <- function(sample_paths, sample_labels, input_format, 
   system(paste0("mkdir ",outputDir,"igblast_outs/"))
 
   ## Read Input Files
-  samples_list <- load_RawData(sample_paths, input_format)
+  samples_list <- .load_RawData(sample_paths, input_format)
 
   ## Write IgBlast fasta inputs
   write_fasta_from_RawData(samples_list, sample_labels, outputDir, input_format, data_type, threads)
@@ -115,6 +115,39 @@ Run_IgBlast_from_RawData <- function(sample_paths, sample_labels, input_format, 
   ## Run IgBlast in parallel for all samples
   runIgBLAST_Parallel(sample_labels, outputDir, IgBlastDir, IgBlastRef, Evalue_cutoff, annotate_C, threads_IgBlast, run_IgBlast_report, threads)
 
+  return(samples_list)
+}
+
+.load_RawData <- function(sample_paths, input_format){
+
+  input_format <- tolower(input_format)
+  if(!input_format %in% c("10xbcr_fasta", "10xbcr_csv", "parsebcr", "bdrhapsodybcr", "mixcr", "trust4", "airr", "imgt_airr", "fasta")){stop("Invalid value for 'input_format'. It should be either '10xbcr_fasta', '10xbcr_csv', 'parsebcr', 'bdrhapsodybcr', 'mixcr', 'trust4', 'airr', 'imgt_airr' or 'fasta'.")}
+
+  info <- file.info(sample_paths)
+
+  sample_paths_read <- c()
+  for(row in 1:nrow(info)){
+    if(info$isdir[row]){
+      sample_paths_read <- c(sample_paths_read, list.files(rownames(info)[row], full.names = T, recursive = F))
+    } else{
+      if(!file.exists(rownames(info)[row])){stop(paste0("File ", rownames(info)[row], " does not exist!"))}
+      sample_paths_read <- c(sample_paths_read, rownames(info)[row])
+    }
+  }
+
+  samples_list <- list()
+  for(i in 1:length(sample_paths_read)){
+    if(input_format %in% c("10xbcr_fasta", "fasta")){
+      tmp <- sample_paths_read[i]
+    }
+    else if(input_format %in% c("mixcr", "bdrhapsodybcr", "parsebcr", "trust4", "airr", "imgt_airr")){
+      tmp <- fread(sample_paths_read[i], header = T, sep = "\t", stringsAsFactors = F, data.table = F)
+    }
+    else if(input_format == "10x_csv"){
+      tmp <- fread(sample_paths_read[i], header = T, sep = ",", stringsAsFactors = F, data.table = F)
+    }
+    samples_list[[i]] <- tmp
+  }
   return(samples_list)
 }
 
