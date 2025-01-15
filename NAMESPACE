@@ -3,3 +3,5 @@
 export(Run_IgBlast_from_RawData)
 export(Run_IgScan_Annotation)
 export(Run_IgScan_FullWorkflow)
+export(recalculate_IDs_bulk)
+export(recalculate_IDs_single_cell)
