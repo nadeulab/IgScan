@@ -1,6 +1,6 @@
 #' Load IG contigs from NGS data
 #'
-#' This function loads raw data from various common input formats and
+#' @description This function loads raw data from various common input formats and
 #' returns a list of elements that can be used as the 'samples_list'
 #' parameter in other IgScan functions.
 #'

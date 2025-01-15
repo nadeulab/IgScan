@@ -2,17 +2,17 @@
 % Please edit documentation in R/Run_IgBlast_from_RawData.R
 \name{Run_IgBlast_from_RawData}
 \alias{Run_IgBlast_from_RawData}
-\title{Run IgBlast reannotation from raw NGS data}
+\title{Run IgBlast on raw NGS data}
 \usage{
 Run_IgBlast_from_RawData(
   sample_paths,
-  sample_names,
+  sample_labels,
   input_format,
-  data_type,
+  data_type = "single_cell",
   Evalue_cutoff = NULL,
   annotate_C = T,
   threads_IgBlast = 1,
-  tmpDir = NULL,
+  outputDir = NULL,
   run_IgBlast_report = F,
   threads = 1
 )
@@ -22,14 +22,14 @@ Run_IgBlast_from_RawData(
 directories containing the input file. Supported formats depend on the
 `input_format` parameter.}
 
-\item{sample_names}{A vector of sample names corresponding to `sample_paths`.
+\item{sample_labels}{A vector of sample labels corresponding to `sample_paths`.
 Must have the same length as `sample_paths`.}
 
 \item{input_format}{A string specifying the format of the input data, currently supporting:
 '10xBCR_fasta', '10xBCR_csv', 'ParseBCR', 'BDRhapsodyBCR', 'MiXCR',
-'TRUST4', 'AIRR', 'IMGT_AIRR' and 'fasta'}
+'TRUST4', 'AIRR', 'IMGT_AIRR' and 'fasta'.}
 
-\item{data_type}{A string indicating the type of data. Options: 'single_cell' and 'bulk'.}
+\item{data_type}{A string indicating the type of data. Options: 'single_cell' and 'bulk'. Default is 'single_cell'.}
 
 \item{Evalue_cutoff}{A numeric value specifying the E-value cutoff for IgBLAST alignment.
 Default is `NULL` (no cutoff applied).}
@@ -40,7 +40,7 @@ constant regions using the NCBI IG C region database.}
 \item{threads_IgBlast}{An integer specifying the number of threads for running IgBLAST.
 Default is 1.}
 
-\item{tmpDir}{A string specifying the directory to store intermediate and output files.
+\item{outputDir}{The directory to store intermediate and output files.
 Defaults to the working directory if not provided.}
 
 \item{run_IgBlast_report}{Logical. If `TRUE`, generates a PDF report summarizing
@@ -66,7 +66,7 @@ This function performs the following steps:
 
    2. Converts input data to FASTA format if needed.
 
-   3. Runs IgBLAST for V(D)J-(C) annotation and alignment.
+   3. Runs IgBLAST for V(D)J-(C) reannotation and alignment.
 
    4. Generates an IgBlast summary report if specified.
 }
@@ -79,21 +79,19 @@ Ensure that IgBLAST and its required reference databases are installed and
 # Example 1: Running IgBLAST with FASTA inputs
 Run_IgBlast_from_RawData(
   sample_paths = list("path/to/sample1.fasta", "path/to/sample2.fasta"),
-  sample_names = c("Sample1", "Sample2"),
+  sample_labels = c("Sample1", "Sample2"),
   input_format = "fasta",
   data_type = "single_cell",
-  tmpDir = "path/to/output_dir"
-)
+  outputDir = "path/to/outDir")
 
 # Example 2: Running IgBLAST with 10x Genomics CSV inputs and generating a IgBlast report
 Run_IgBlast_from_RawData(
   sample_paths = list("path/to/sample1_filtered_contig_annotations.csv"),
-  sample_names = c("Sample1"),
+  sample_labels = c("Sample1"),
   input_format = "10xbcr_csv",
   data_type = "single_cell",
-  tmpDir = "path/to/output_dir",
-  run_IgBlast_report = TRUE
-)
+  outputDir = "path/to/outDir",
+  run_IgBlast_report = TRUE)
 }
 
 }
