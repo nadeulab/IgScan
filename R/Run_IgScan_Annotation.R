@@ -205,7 +205,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   list_unique_Vs <- unique(unname(sapply(list_unique_Vs, function(x) paste0(sort(unique(strsplit(x, ",")[[1]])), collapse = ","))))
   list_unique_Vs <- list_unique_Vs[order(nchar(list_unique_Vs), decreasing = TRUE)]
 
-  final_IGHV <- sapply(combine_IGHV_genes(strsplit(list_unique_Vs, ",")), function(group) {
+  final_IGHV <- sapply(.combine_IGHV_genes(strsplit(list_unique_Vs, ",")), function(group) {
     paste(sort(group), collapse = ",")
   })
 
