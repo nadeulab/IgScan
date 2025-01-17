@@ -1466,7 +1466,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
 .name_final_list <- function(all_out_list){
   list_names <- c()
   for(i in 1:length(all_out_list)){
-    name <- unique(all_out_list[[i]]$sample)
+    name <- unique(all_out_list[[i]]$SampleID)
     list_names <- c(list_names, paste0(name,"_annot"))
   }
   names(all_out_list) <- list_names
