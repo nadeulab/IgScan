@@ -791,7 +791,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
 
   if(annotate_CLL_immGen){
     ## Assign CLL subsets
-    tidy_dataset$IGHsubset <- apply(tidy_dataset, 1, function(x) assign_CLL_subsets(x[which(colnames(tidy_dataset) == "productive")],
+    tidy_dataset$IGHsubset <- apply(tidy_dataset, 1, function(x) .assign_CLL_subsets(x[which(colnames(tidy_dataset) == "productive")],
                                                                                     x[which(colnames(tidy_dataset) == "VDJ")],
                                                                                     x[which(colnames(tidy_dataset) == "junction_aa")]))
     ## Annotating CLL R110 mutation
