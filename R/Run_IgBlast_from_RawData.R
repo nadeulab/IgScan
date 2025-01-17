@@ -111,10 +111,10 @@ Run_IgBlast_from_RawData <- function(sample_paths, sample_labels, input_format, 
   samples_list <- .load_RawData(sample_paths, input_format)
 
   ## Write IgBlast fasta inputs
-  write_fasta_from_RawData(samples_list, sample_labels, outputDir, input_format, data_type, threads)
+  .write_fasta_from_RawData(samples_list, sample_labels, outputDir, input_format, data_type, threads)
 
   ## Run IgBlast in parallel for all samples
-  runIgBLAST_Parallel(sample_labels, outputDir, IgBlastDir, IgBlastRef, Evalue_cutoff, annotate_C, threads_IgBlast, run_IgBlast_report, threads)
+  .runIgBLAST_Parallel(sample_labels, outputDir, IgBlastDir, IgBlastRef, Evalue_cutoff, annotate_C, threads_IgBlast, run_IgBlast_report, threads)
 
   return(samples_list)
 }
