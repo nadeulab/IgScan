@@ -196,9 +196,9 @@ Run_IgBlast_from_RawData <- function(sample_paths, sample_labels, input_format, 
 }
 
 .runIgBLAST <- function(input, output, IgBlastDir, IgBlastRef, Evalue_cutoff, annotate_C, threads_IgBlast){
-  command <- paste0(IgBlastDir,"bin/igblastn -germline_db_V ",IgBlastRef,"db/IMGT_HomoSapiens_IG_V.fasta.txt -germline_db_J ",
-                    IgBlastRef,"db/IMGT_HomoSapiens_IG_J.fasta.txt -germline_db_D ",IgBlastRef,
-                    "db/IMGT_HomoSapiens_IG_D.fasta.txt -organism human -ig_seqtype Ig -auxiliary_data ",
+  command <- paste0(IgBlastDir,"bin/igblastn -germline_db_V ",IgBlastRef,"db/IMGT_HomoSapiens_IGV.fasta.txt -germline_db_J ",
+                    IgBlastRef,"db/IMGT_HomoSapiens_IGJ.fasta.txt -germline_db_D ",IgBlastRef,
+                    "db/IMGT_HomoSapiens_IGD.fasta.txt -organism human -ig_seqtype Ig -auxiliary_data ",
                     IgBlastRef, "optional_file/human_gl.aux -show_translation -outfmt 19 ",
                     ifelse(annotate_C == T, paste0("-c_region_db ", IgBlastRef, "db/ncbi_human_c_genes "), ""),
                     "-num_alignments_D 1 -num_threads ", threads_IgBlast, " -extend_align5end -extend_align3end",
