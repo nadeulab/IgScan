@@ -407,6 +407,10 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   write_fields <- c(contig_data, contig_ID_data, perCell_data, "sample")
   table_to_write <- tidy_dataset[,write_fields[!is.na(write_fields)]]
 
+  ## Load colnames dictionary from IgScan inst/
+  colnames_dictionary_path <- system.file("colnames_dictionary.RData", package = "IgScan", mustWork = T)
+  load(colnames_dictionary_path)
+
   colnames(table_to_write) <- colnames_dictionary$FinalNames[match(colnames(table_to_write), colnames_dictionary$RawNames)]
   table_to_write[table_to_write == ""] <- NA
 
