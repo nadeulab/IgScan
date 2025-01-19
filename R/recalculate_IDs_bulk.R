@@ -14,6 +14,8 @@
 #'
 #' @export
 #'
+#' @import dplyr
+#'
 #' @examples
 #' \dontrun{
 #' updated_igscan_out <- recalculate_IDs_bulk(igscan_output_df)

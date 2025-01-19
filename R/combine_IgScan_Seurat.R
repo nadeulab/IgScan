@@ -11,6 +11,10 @@
 #'
 #' @export
 #'
+#' @importFrom qs qread qsave
+#' @import Seurat
+#' @import SeuratObject
+#'
 #' @examples
 #' \dontrun{
 #' updated_seurat_object <- combine_IgScan_Seurat(igscan_out, seurat_object)

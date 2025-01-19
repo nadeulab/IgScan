@@ -43,6 +43,12 @@
 #'
 #' @export
 #'
+#' @importFrom data.table fread fwrite
+#' @import ggplot2
+#' @import patchwork
+#' @importFrom parallel mclapply
+#' @import stringr
+#'
 #' @note Ensure that IgBLAST and its required reference databases are installed and
 #'   properly configured before running this function.
 #'

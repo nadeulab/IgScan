@@ -13,6 +13,12 @@
 #'
 #' @export
 #'
+#' @import dplyr
+#' @importFrom qs qread qsave
+#' @import Seurat
+#' @import SeuratObject
+#' @import SingleCellExperiment
+#'
 #' @examples
 #' \dontrun{
 #' recalculated_object <- recalculate_IDs_single_cell(sc_object)

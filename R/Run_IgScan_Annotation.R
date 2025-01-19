@@ -53,6 +53,13 @@
 #'
 #' @export
 #'
+#' @import dplyr
+#' @importFrom Biostrings pairwiseAlignment
+#' @importFrom purrr list_flatten
+#' @importFrom parallel mclapply
+#' @import stringr
+#' @importFrom data.table fread fwrite
+#'
 #' @examples
 #' \dontrun{
 #' # Example 1: XXXXX

@@ -11,6 +11,9 @@
 #'
 #' @export
 #'
+#' @importFrom qs qread qsave
+#' @import SingleCellExperiment
+#'
 #' @examples
 #' \dontrun{
 #' updated_sce_object <- combine_IgScan_Seurat(igscan_out, sce_object)
