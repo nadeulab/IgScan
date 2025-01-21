@@ -32,6 +32,8 @@ recalculate_IDs_single_cell <- function(single_cell_object){
     data_frame <- single_cell_object@meta.data
   }
 
+  data_frame <- .extract_IgScanDf_from_Seurat(data_frame)
+
   ## To correct ClonotypeID
   clt_dict <- aggregate(x = data_frame$ClonotypeID[!is.na(data_frame$ClonotypeID)], by = list(data_frame$ClonotypeID[!is.na(data_frame$ClonotypeID)]), FUN = length)
   clt_dict$chain <- sapply(clt_dict$Group.1, function(x) substr(x, 1, 3))
@@ -121,10 +123,114 @@ recalculate_IDs_single_cell <- function(single_cell_object){
   data_frame$igSubcloneID_in_ClonotypeVariant_num <- per_cell_sbc_in_cv_dict_all$NewName[match(data_frame$igSubcloneID_in_ClonotypeVariant_num, per_cell_sbc_in_cv_dict_all$Group.1)]
 
   if(class(single_cell_object)[1] == "SingleCellExperiment"){
-    colData(single_cell_object) <- DataFrame(data_frame)
+    single_cell_object <- combine_IgScan_SingleCellExperiment(igscan_out = data_frame, sce = single_cell_object)
   } else if(class(single_cell_object)[1] == "Seurat"){
-    single_cell_object@meta.data <- data_frame
+    single_cell_object <- combine_IgScan_Seurat(igscan_out = data_frame, seurat_object = single_cell_object)
   }
 
   return(single_cell_object)
+}
+
+.extract_IgScanDf_from_Seurat <- function(meta_data) {
+
+  chain_dictionary <- c("IGH1", "IGH2", "IGL1", "IGL2")
+
+  igscan_out <- data.frame()
+
+  for(row in 1:nrow(meta_data)){
+
+    cell <- rownames(meta_data)[row]
+    subclone_IDs <- strsplit(meta_data$igSubcloneID_all[row], split = "-")[[1]]
+    writen_contigs <- 1
+
+    for(i in 1:4){
+      sc <- subclone_IDs[i]
+      if(sc == "NA" | is.na(sc)){next}
+
+      chain <- chain_dictionary[i]
+
+      contig_id <- paste0(cell, "_", writen_contigs)
+      barcode <- cell
+      RawData_sequence <- NA
+      VDJ_sequence <- meta_data[row, paste0(chain, "_VDJ_sequence")]
+      IgBlast_Germline_alignment <- meta_data[row, paste0(chain, "_IgBlast_Germline_alignment")]
+      VDJ_sequence_correctedCDR3 <- meta_data[row, paste0(chain, "_VDJ_sequence_correctedCDR3")]
+      VDJ_sequence_correctedCDR3_aa <- meta_data[row, paste0(chain, "_VDJ_sequence_correctedCDR3_aa")]
+      Consensus_Germline <- meta_data[row, paste0(chain, "_Consensus_Germline")]
+      Consensus_Germline_aa <- meta_data[row, paste0(chain, "_Consensus_Germline_aa")]
+      VDJ_genes <- meta_data[row, paste0(chain, "_VDJ_genes")]
+      C_gene <- meta_data[row, paste0(chain, "_C_gene")]
+      Functionality <- meta_data[row, paste0(chain, "_Functionality")]
+      Junction_aa <- meta_data[row, paste0(chain, "_Junction_aa")]
+      Junction_lenght <- meta_data[row, paste0(chain, "_Junction_lenght")]
+      V_identity <- meta_data[row, paste0(chain, "_V_identity")]
+      VDJ_positions <- meta_data[row, paste0(chain, "_VDJ_positions")]
+      V_length <- meta_data[row, paste0(chain, "_V_length")]
+      InDels <- meta_data[row, paste0(chain, "_InDels")]
+      if(paste0(chain, "_CLL_Stereotype_Subsets") %in% colnames(meta_data)){
+        CLL_Stereotype_Subsets <- meta_data[row, paste0(chain, "_CLL_Stereotype_Subsets")]
+      }
+
+      ClonotypeID <- meta_data[row, paste0(chain, "_ClonotypeID")]
+      Clonotype_Consensus_CDR3aa <- meta_data[row, paste0(chain, "_Clonotype_Consensus_CDR3aa")]
+      if(paste0(chain, "_Clonotype_CLL_Stereotype_Subsets") %in% colnames(meta_data)){
+        Clonotype_CLL_Stereotype_Subsets <- meta_data[row, paste0(chain, "_Clonotype_CLL_Stereotype_Subsets")]
+      }
+      ClonotypeVariantID <- meta_data[row, paste0(chain, "_ClonotypeVariantID")]
+      SubcloneID <- meta_data[row, paste0(chain, "_SubcloneID")]
+
+      completeBCR <- meta_data$completeBCR[row]
+      igClonotypeID_num <- meta_data$igClonotypeID_num[row]
+      igClonotypeID <- meta_data$igClonotypeID[row]
+      igClonotypeVariantID_num <- meta_data$igClonotypeVariantID_num[row]
+      igClonotypeVariantID <- meta_data$igClonotypeVariantID[row]
+      igSubcloneID_in_ClonotypeVariant_num <- meta_data$igSubcloneID_in_ClonotypeVariant_num[row]
+      igSubcloneID_in_Clonotype_num <- meta_data$igSubcloneID_in_Clonotype_num[row]
+      igSubcloneID <- meta_data$igSubcloneID[row]
+      igVDJ_sequence <- meta_data$igVDJ_sequence[row]
+      igVDJ_sequence_aa <- meta_data$igVDJ_sequence_aa[row]
+      igClonotype_Consensus_Germline <- meta_data$igClonotype_Consensus_Germline[row]
+      igClonotype_Consensus_Germline_aa <- meta_data$igClonotype_Consensus_Germline_aa[row]
+      igVDJ_positions <- meta_data$igVDJ_positions[row]
+      igInDels <- meta_data$igInDels[row]
+      igClonotype_Consensus_CDR3aa <- meta_data$igClonotype_Consensus_CDR3aa[row]
+      if("ig_CLL_Stereotype_Subsets" %in% colnames(meta_data)){
+        ig_CLL_Stereotype_Subsets <- meta_data$ig_CLL_Stereotype_Subsets[row]
+      }
+      SampleID <- as.character(meta_data$orig.ident[row])
+
+      vector_write <- c(contig_id, barcode,
+                        RawData_sequence, VDJ_sequence, IgBlast_Germline_alignment,
+                        VDJ_sequence_correctedCDR3, VDJ_sequence_correctedCDR3_aa,
+                        Consensus_Germline, Consensus_Germline_aa, VDJ_genes,
+                        C_gene, Functionality, Junction_aa, Junction_lenght,
+                        V_identity, VDJ_positions, V_length, InDels, CLL_Stereotype_Subsets,
+                        ClonotypeID, Clonotype_Consensus_CDR3aa, Clonotype_CLL_Stereotype_Subsets,
+                        ClonotypeVariantID, SubcloneID, completeBCR, igClonotypeID_num,
+                        igClonotypeID, igClonotypeVariantID_num, igClonotypeVariantID,
+                        igSubcloneID_in_ClonotypeVariant_num, igSubcloneID_in_Clonotype_num,
+                        igSubcloneID, igVDJ_sequence, igVDJ_sequence_aa, igClonotype_Consensus_Germline,
+                        igClonotype_Consensus_Germline_aa, igVDJ_positions, igInDels,
+                        igClonotype_Consensus_CDR3aa, ig_CLL_Stereotype_Subsets, SampleID)
+
+      igscan_out <- rbind(igscan_out, vector_write)
+      writen_contigs <- writen_contigs + 1
+    }
+  }
+
+  colnames(igscan_out) <- c("contig_id", "barcode",
+                            "RawData_sequence", "VDJ_sequence", "IgBlast_Germline_alignment",
+                            "VDJ_sequence_correctedCDR3", "VDJ_sequence_correctedCDR3_aa",
+                            "Consensus_Germline", "Consensus_Germline_aa", "VDJ_genes",
+                            "C_gene", "Functionality", "Junction_aa", "Junction_lenght",
+                            "V_identity", "VDJ_positions", "V_length", "InDels", "CLL_Stereotype_Subsets",
+                            "ClonotypeID", "Clonotype_Consensus_CDR3aa", "Clonotype_CLL_Stereotype_Subsets",
+                            "ClonotypeVariantID", "SubcloneID", "completeBCR", "igClonotypeID_num",
+                            "igClonotypeID", "igClonotypeVariantID_num", "igClonotypeVariantID",
+                            "igSubcloneID_in_ClonotypeVariant_num", "igSubcloneID_in_Clonotype_num",
+                            "igSubcloneID", "igVDJ_sequence", "igVDJ_sequence_aa", "igClonotype_Consensus_Germline",
+                            "igClonotype_Consensus_Germline_aa", "igVDJ_positions", "igInDels",
+                            "igClonotype_Consensus_CDR3aa", "ig_CLL_Stereotype_Subsets", "SampleID")
+
+  return(igscan_out)
 }
