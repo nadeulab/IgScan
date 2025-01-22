@@ -391,7 +391,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
     tidy_dataset <- as.data.frame(tidy_dataset[order(tidy_dataset$total_reads_unique_seq, decreasing = T),])
   }
 
-  contig_data <- c("sequence_id", "sequence", "VDJseq", "germline_alignment", "VDJseq_correctedCDR3",
+  contig_data <- c("sequence_id", "sequence", "raw_VDJseq", "VDJseq", "germline_alignment", "VDJseq_correctedCDR3",
                    "VDJseq_correctedCDR3_aa", "CorrectClonotypes_Consensus_Germline",
                    "CorrectClonotypes_Consensus_Germline_aa", "VDJ", "c_call", "productive", "junction_aa",
                    "junction_aa_length", "v_identity", "arch", "len_no_CDR3", "indel",
@@ -408,7 +408,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
                         "clonotypeVariantID_in_Cltp", "Unique_SequenceID")
     perCell_data <- c("completeBCR", "igclonotypeID", "merge_clonotypeID", "igClonotypeVariantID", "merge_clonotypeVariantID",
                       "igsubcloneID_in_clonotypeVariant", "igsubcloneID_in_clonotype", "merge_subcloneID",
-                      "V1", "V3", "V2", "V4", "V5", "V6", "V7", ifelse(annotate_CLL_immGen, "V8", NA))
+                      "V1", "V2", "V3", "V4", "V5", "V6", "V7", "V8", ifelse(annotate_CLL_immGen, "V9", NA))
   }
 
   write_fields <- c(contig_data, contig_ID_data, perCell_data, "sample")
@@ -490,6 +490,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   sub_data$VDJ <- paste(v,"/",d,"/",j, sep = "")
   sub_data$VDJ <- gsub("//", "/", sub_data$VDJ)
 
+  sub_data$raw_VDJseq <- gsub("-", "", sub_data$sequence_alignment)
   sub_data$VDJseq <- sub_data$sequence_alignment
   sub_data$len_no_CDR3 <- nchar(paste0(sub_data$fwr1, sub_data$cdr1, sub_data$fwr2, sub_data$cdr2, sub_data$fwr3))
   sub_data$len_yes_CDR3 <- nchar(paste0(sub_data$fwr1, sub_data$cdr1, sub_data$fwr2, sub_data$cdr2, sub_data$fwr3, sub_data$cdr3))
@@ -497,7 +498,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
                           nchar(sub_data$fwr3),"-", nchar(sub_data$cdr3),"-",
                           nchar(sub_data$VDJseq)-sub_data$len_yes_CDR3)
 
-  tidy_fields <- c("sequence_id", "productive", "VDJ", "c_call", "VDJseq","v_identity", "junction", "junction_aa",
+  tidy_fields <- c("sequence_id", "productive", "VDJ", "c_call", "raw_VDJseq", "VDJseq","v_identity", "junction", "junction_aa",
                    "junction_aa_length","sequence","germline_alignment", "len_no_CDR3","arch","sample")
 
   tidy_dataset <- subset(sub_data, select = tidy_fields)
@@ -649,9 +650,9 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   return(protein_sequence)
 }
 .update_junction <- function(row){
-  start_CDR3 <- sum(as.numeric(strsplit(row[13], split = "-")[[1]][1:5]))+1
-  end_CDR3 <- sum(as.numeric(strsplit(row[13], split = "-")[[1]][1:6]))
-  new_cdr3_nt <- paste0(strsplit(row[5], split = "")[[1]][(start_CDR3-3):(end_CDR3+3)], collapse = "")
+  start_CDR3 <- sum(as.numeric(strsplit(row[14], split = "-")[[1]][1:5]))+1
+  end_CDR3 <- sum(as.numeric(strsplit(row[14], split = "-")[[1]][1:6]))
+  new_cdr3_nt <- paste0(strsplit(row[6], split = "")[[1]][(start_CDR3-3):(end_CDR3+3)], collapse = "")
   return(new_cdr3_nt)
 }
 .assign_Clonotypes <- function(tidy_dataset, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, summary_file, analysis_mode, name, data_type, total_tasks, completed_tasks){
@@ -760,7 +761,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
     tidy_dataset <- .make_sequence_IDs_bulk(tidy_dataset)
   }
 
-  return_fields <- c("sample", "sequence_id", "sequence", "VDJseq", "c_call", "germline_alignment",
+  return_fields <- c("sample", "sequence_id", "sequence", "raw_VDJseq", "VDJseq", "c_call", "germline_alignment",
                      "productive", "VDJ", "len_no_CDR3", "CDR3aa", "CDR3len", "junction_aa",
                      "junction_aa_length", "arch", "indel", "VDJseq_indels", "Unique_SequenceID",
                      "Clonotype", "CorrectClt", "clonotypeID", "clonotypeVariantID_in_Cltp")
@@ -1125,18 +1126,19 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
 ## Function to combine IGH and IGK/IGL IG metadata
 .combine_IG_metadata_by_chain <- function(tidy_dataset, annotate_CLL_immGen){
 
-  n_cols <- ifelse(annotate_CLL_immGen, 8, 7)
+  n_cols <- ifelse(annotate_CLL_immGen, 9, 8)
   tidy_dataset[paste0("V", 1:n_cols)] <- NA
 
   for(subclone in unique(tidy_dataset$merge_subcloneID)){
+    raw_somatic <- paste(unlist(lapply(strsplit(subclone, split = "-")[[1]], function(x){ tidy_dataset$raw_VDJseq[tidy_dataset$Unique_SequenceID == x][1] })), collapse = "_")
     somatic <- paste(unlist(lapply(strsplit(subclone, split = "-")[[1]], function(x){ tidy_dataset$VDJseq_correctedCDR3[tidy_dataset$Unique_SequenceID == x][1] })), collapse = "_")
-    germline <- paste(unlist(lapply(strsplit(subclone, split = "-")[[1]], function(x){ tidy_dataset$CorrectClonotypes_Consensus_Germline[tidy_dataset$Unique_SequenceID == x][1] })), collapse = "_")
     aa_somatic <- paste(unlist(lapply(strsplit(subclone, split = "-")[[1]], function(x){ tidy_dataset$VDJseq_correctedCDR3_aa[tidy_dataset$Unique_SequenceID == x][1] })), collapse = "_")
+    germline <- paste(unlist(lapply(strsplit(subclone, split = "-")[[1]], function(x){ tidy_dataset$CorrectClonotypes_Consensus_Germline[tidy_dataset$Unique_SequenceID == x][1] })), collapse = "_")
     aa_germ <- paste(unlist(lapply(strsplit(subclone, split = "-")[[1]], function(x){ tidy_dataset$CorrectClonotypes_Consensus_Germline_aa[tidy_dataset$Unique_SequenceID == x][1] })), collapse = "_")
     architecture <- paste(unlist(lapply(strsplit(subclone, split = "-")[[1]], function(x){ tidy_dataset$arch[tidy_dataset$Unique_SequenceID == x][1] })), collapse = "_")
     indels <- paste(unlist(lapply(strsplit(subclone, split = "-")[[1]], function(x){ tidy_dataset$indel[tidy_dataset$Unique_SequenceID == x][1] })), collapse = "-")
     Clonotype_ConsensusCDR3 <- paste(unlist(lapply(strsplit(subclone, split = "-")[[1]], function(x){ tidy_dataset$Clonotype_ConsensusCDR3[tidy_dataset$Unique_SequenceID == x][1] })), collapse = "_")
-    return_list <- c(somatic, germline, aa_somatic, aa_germ, architecture, indels, Clonotype_ConsensusCDR3)
+    return_list <- c(raw_somatic, somatic, aa_somatic, germline, aa_germ, architecture, indels, Clonotype_ConsensusCDR3)
 
     if(annotate_CLL_immGen){
       subsets <- paste(unlist(lapply(strsplit(subclone, split = "-")[[1]], function(x){ tidy_dataset$IGHsubset[tidy_dataset$Unique_SequenceID == x][1] })), collapse = "_")
