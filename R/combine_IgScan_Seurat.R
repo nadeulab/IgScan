@@ -23,7 +23,7 @@
 #'
 combine_IgScan_Seurat <- function(igscan_out, seurat_object){
 
-  igscan_out$barcode <- sapply(igscan_out$contig_id, function(x) paste(head(strsplit(x, "_")[[1]], -1), collapse = "_"))
+  igscan_out$barcode <- sapply(igscan_out$contig_id, function(x) strsplit(x, "_")[[1]][1])
 
   seurat_object@meta.data$completeBCR <- igscan_out$completeBCR[match(rownames(seurat_object@meta.data), igscan_out$barcode)]
   seurat_object@meta.data$igClonotypeID <- igscan_out$igClonotypeID[match(rownames(seurat_object@meta.data), igscan_out$barcode)]
@@ -33,6 +33,7 @@ combine_IgScan_Seurat <- function(igscan_out, seurat_object){
   seurat_object@meta.data$igSubcloneID <- igscan_out$igSubcloneID[match(rownames(seurat_object@meta.data), igscan_out$barcode)]
   seurat_object@meta.data$igSubcloneID_in_ClonotypeVariant_num <- igscan_out$igSubcloneID_in_ClonotypeVariant_num[match(rownames(seurat_object@meta.data), igscan_out$barcode)]
   seurat_object@meta.data$igSubcloneID_in_Clonotype_num <- igscan_out$igSubcloneID_in_Clonotype_num[match(rownames(seurat_object@meta.data), igscan_out$barcode)]
+  seurat_object@meta.data$igRaw_VDJ_sequence <- igscan_out$igRaw_VDJ_sequence[match(rownames(seurat_object@meta.data), igscan_out$barcode)]
   seurat_object@meta.data$igVDJ_sequence <- igscan_out$igVDJ_sequence[match(rownames(seurat_object@meta.data), igscan_out$barcode)]
   seurat_object@meta.data$igVDJ_sequence_aa <- igscan_out$igVDJ_sequence_aa[match(rownames(seurat_object@meta.data), igscan_out$barcode)]
   seurat_object@meta.data$igClonotype_Consensus_Germline <- igscan_out$igClonotype_Consensus_Germline[match(rownames(seurat_object@meta.data), igscan_out$barcode)]
@@ -40,7 +41,7 @@ combine_IgScan_Seurat <- function(igscan_out, seurat_object){
   seurat_object@meta.data$igVDJ_positions <- igscan_out$igVDJ_positions[match(rownames(seurat_object@meta.data), igscan_out$barcode)]
   seurat_object@meta.data$igInDels <- igscan_out$igInDels[match(rownames(seurat_object@meta.data), igscan_out$barcode)]
   seurat_object@meta.data$igClonotype_Consensus_CDR3aa <- igscan_out$igClonotype_Consensus_CDR3aa[match(rownames(seurat_object@meta.data), igscan_out$barcode)]
-  if("ig_CLL_Stereotype_Subsets" %in% colnames(igscan_out)){seurat_object@meta.data$ig_CLL_Stereotype_Subsets <- igscan_out$ig_CLL_Stereotype_Subsets[match(rownames(seurat_object@meta.data), igscan_out$barcode)]}
+  if("igCLL_Stereotype_Subsets" %in% colnames(igscan_out)){seurat_object@meta.data$igCLL_Stereotype_Subsets <- igscan_out$igCLL_Stereotype_Subsets[match(rownames(seurat_object@meta.data), igscan_out$barcode)]}
 
   seurat_object@meta.data$igSubcloneID_all <- sapply(seurat_object@meta.data$igSubcloneID, function(x){
     if(is.na(x)){
@@ -79,8 +80,8 @@ combine_IgScan_Seurat <- function(igscan_out, seurat_object){
     seurat_object@meta.data[[paste0(n, "_SubcloneID")]] <- igscan_out$SubcloneID[match(subclone, igscan_out$SubcloneID)]
 
     ## Sequence data
+    seurat_object@meta.data[[paste0(n, "_Raw_VDJ_sequence")]] <- igscan_out$Raw_VDJ_sequence[match(subclone, igscan_out$SubcloneID)]
     seurat_object@meta.data[[paste0(n, "_VDJ_sequence")]] <- igscan_out$VDJ_sequence[match(subclone, igscan_out$SubcloneID)]
-    seurat_object@meta.data[[paste0(n, "_IgBlast_Germline_alignment")]] <- igscan_out$IgBlast_Germline_alignment[match(subclone, igscan_out$SubcloneID)]
     seurat_object@meta.data[[paste0(n, "_VDJ_sequence_correctedCDR3")]] <- igscan_out$VDJ_sequence_correctedCDR3[match(subclone, igscan_out$SubcloneID)]
     seurat_object@meta.data[[paste0(n, "_VDJ_sequence_correctedCDR3_aa")]] <- igscan_out$VDJ_sequence_correctedCDR3_aa[match(subclone, igscan_out$SubcloneID)]
     seurat_object@meta.data[[paste0(n, "_Consensus_Germline")]] <- igscan_out$Consensus_Germline[match(subclone, igscan_out$SubcloneID)]

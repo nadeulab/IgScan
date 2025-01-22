@@ -22,7 +22,7 @@
 #'
 combine_IgScan_SingleCellExperiment <- function(igscan_out, sce){
 
-  igscan_out$barcode <- sapply(igscan_out$contig_id, function(x) paste(head(strsplit(x, "_")[[1]], -1), collapse = "_"))
+  igscan_out$barcode <- sapply(igscan_out$contig_id, function(x) strsplit(x, "_")[[1]][1])
 
   sce@colData$completeBCR <- igscan_out$completeBCR[match(rownames(sce@colData), igscan_out$barcode)]
   sce@colData$igClonotypeID <- igscan_out$igClonotypeID[match(rownames(sce@colData), igscan_out$barcode)]
@@ -32,6 +32,7 @@ combine_IgScan_SingleCellExperiment <- function(igscan_out, sce){
   sce@colData$igSubcloneID <- igscan_out$igSubcloneID[match(rownames(sce@colData), igscan_out$barcode)]
   sce@colData$igSubcloneID_in_ClonotypeVariant_num <- igscan_out$igSubcloneID_in_ClonotypeVariant_num[match(rownames(sce@colData), igscan_out$barcode)]
   sce@colData$igSubcloneID_in_Clonotype_num <- igscan_out$igSubcloneID_in_Clonotype_num[match(rownames(sce@colData), igscan_out$barcode)]
+  sce@colData$igRaw_VDJ_sequence <- igscan_out$igRaw_VDJ_sequence[match(rownames(sce@colData), igscan_out$barcode)]
   sce@colData$igVDJ_sequence <- igscan_out$igVDJ_sequence[match(rownames(sce@colData), igscan_out$barcode)]
   sce@colData$igVDJ_sequence_aa <- igscan_out$igVDJ_sequence_aa[match(rownames(sce@colData), igscan_out$barcode)]
   sce@colData$igClonotype_Consensus_Germline <- igscan_out$igClonotype_Consensus_Germline[match(rownames(sce@colData), igscan_out$barcode)]
@@ -39,7 +40,7 @@ combine_IgScan_SingleCellExperiment <- function(igscan_out, sce){
   sce@colData$igVDJ_positions <- igscan_out$igVDJ_positions[match(rownames(sce@colData), igscan_out$barcode)]
   sce@colData$igInDels <- igscan_out$igInDels[match(rownames(sce@colData), igscan_out$barcode)]
   sce@colData$igClonotype_Consensus_CDR3aa <- igscan_out$igClonotype_Consensus_CDR3aa[match(rownames(sce@colData), igscan_out$barcode)]
-  if("ig_CLL_Stereotype_Subsets" %in% colnames(igscan_out)){sce@colData$ig_CLL_Stereotype_Subsets <- igscan_out$ig_CLL_Stereotype_Subsets[match(rownames(sce@colData), igscan_out$barcode)]}
+  if("igCLL_Stereotype_Subsets" %in% colnames(igscan_out)){sce@colData$igCLL_Stereotype_Subsets <- igscan_out$igCLL_Stereotype_Subsets[match(rownames(sce@colData), igscan_out$barcode)]}
 
   sce@colData$igSubcloneID_all <- sapply(sce@colData$igSubcloneID, function(x){
     if(is.na(x)){
@@ -78,8 +79,8 @@ combine_IgScan_SingleCellExperiment <- function(igscan_out, sce){
     sce@colData[[paste0(n, "_SubcloneID")]] <- igscan_out$SubcloneID[match(subclone, igscan_out$SubcloneID)]
 
     ## Sequence data
+    sce@colData[[paste0(n, "_Raw_VDJ_sequence")]] <- igscan_out$Raw_VDJ_sequence[match(subclone, igscan_out$SubcloneID)]
     sce@colData[[paste0(n, "_VDJ_sequence")]] <- igscan_out$VDJ_sequence[match(subclone, igscan_out$SubcloneID)]
-    sce@colData[[paste0(n, "_IgBlast_Germline_alignment")]] <- igscan_out$IgBlast_Germline_alignment[match(subclone, igscan_out$SubcloneID)]
     sce@colData[[paste0(n, "_VDJ_sequence_correctedCDR3")]] <- igscan_out$VDJ_sequence_correctedCDR3[match(subclone, igscan_out$SubcloneID)]
     sce@colData[[paste0(n, "_VDJ_sequence_correctedCDR3_aa")]] <- igscan_out$VDJ_sequence_correctedCDR3_aa[match(subclone, igscan_out$SubcloneID)]
     sce@colData[[paste0(n, "_Consensus_Germline")]] <- igscan_out$Consensus_Germline[match(subclone, igscan_out$SubcloneID)]
