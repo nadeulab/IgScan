@@ -139,7 +139,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   system(paste0("mkdir ",outputDir,"annotation_results/"))
 
   if(analysis_mode == "single"){
-    if(sample_labels == "all_samples"){
+    if(length(sample_labels) == 1 && sample_labels == "all_samples"){
       files_to_annotate <- list.files(paste0(outputDir,"igblast_outs"), full.names = T, recursive = F, pattern = "_igblast_out\\.tsv$")
     } else{
       files_to_annotate <- list.files(paste0(outputDir,"igblast_outs"), full.names = T, recursive = F, pattern = paste0("^(",paste(sample_labels, collapse = "|"), ")_igblast_out\\.tsv"))
