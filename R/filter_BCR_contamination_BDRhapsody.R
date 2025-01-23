@@ -74,11 +74,6 @@ filter_BCR_contamination_BDRhapsody <- function(single_cell_object, contaminatio
         meta_data$Contamination_FLAG[meta_data$Sample_Tag == other_ST & meta_data$igClonotypeID == clone] <- "OUT"
         meta_data$Contamination_Ratio[meta_data$Sample_Tag == other_ST & meta_data$igClonotypeID == clone] <- paste0(other_Value,":",max_Value)
         meta_data$Contamination_Sample[meta_data$Sample_Tag == other_ST & meta_data$igClonotypeID == clone] <- max_sampleTag
-
-      } else{
-        meta_data$Contamination_FLAG[meta_data$Sample_Tag %in% c(other_ST, max_sampleTag) & meta_data$igClonotypeID == clone] <- "OUT_X"
-        meta_data$Contamination_Ratio[meta_data$Sample_Tag %in% c(other_ST, max_sampleTag) & meta_data$igClonotypeID == clone] <- paste0(other_Value,":",max_Value)
-      }
     }
   }
 
