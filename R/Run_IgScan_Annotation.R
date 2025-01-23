@@ -1175,9 +1175,11 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
         comp_cltp <- strsplit(dict_ct2$Group.1[j], split = "-")[[1]]
         comp_completeBCR <- dict_ct2$completeBCR[j]
         if(!is.na(comp_completeBCR)){ next }
-        if(sum(curr_clpt %in% comp_cltp) >= 2 & flag.clonotype.doublets == T){
+
+        if(flag.clonotype.doublets == T & length(curr_clpt) >= 3 & sum(curr_clpt %in% comp_cltp) >= 1){
           dict_ct2$completeBCR[i] <- "Clonotype_doublet"
         }
+
         if(all(curr_clpt %in% comp_cltp)){
           dict_ct2$New_ClonotypeID[i] <- dict_ct2$New_ClonotypeID[j]
           if(flag.alternative.clonotypes == T){
