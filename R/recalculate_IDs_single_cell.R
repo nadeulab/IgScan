@@ -32,7 +32,7 @@ recalculate_IDs_single_cell <- function(single_cell_object){
     data_frame <- single_cell_object@meta.data
   }
 
-  data_frame <- .extract_IgScanDf_from_Seurat(data_frame)
+  data_frame <- .extract_IgScanDf_from_SingleCell(data_frame)
 
   ## To correct ClonotypeID
   clt_dict <- aggregate(x = data_frame$ClonotypeID[!is.na(data_frame$ClonotypeID)], by = list(data_frame$ClonotypeID[!is.na(data_frame$ClonotypeID)]), FUN = length)
@@ -131,7 +131,7 @@ recalculate_IDs_single_cell <- function(single_cell_object){
   return(single_cell_object)
 }
 
-.extract_IgScanDf_from_Seurat <- function(meta_data) {
+.extract_IgScanDf_from_SingleCell <- function(meta_data) {
 
   chain_dictionary <- c("IGH1", "IGH2", "IGL1", "IGL2")
 
