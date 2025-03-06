@@ -148,7 +148,7 @@ recalculate_IDs_single_cell <- function(single_cell_object){
 
       chain <- chain_dictionary[i]
 
-      barcode = rownames(meta_data[meta_data$igSubcloneID_all == sbc_all,])
+      barcode = rownames( meta_data[meta_data$igSubcloneID_all == sbc_all & !is.na(meta_data$igSubcloneID_all),] )
 
       append_df <- data.frame(contig_id = paste0(barcode, "_", writen_contigs), barcode = barcode)
 
