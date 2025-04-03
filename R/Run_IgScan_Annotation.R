@@ -217,7 +217,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   })
 
   v_gene <- unname(sapply(tidy_dataset$VDJ, function(x) strsplit(x, split = "\\*")[[1]][1]))
-  v_gene <- unname(sapply(v_gene, function(x) final_IGHV[grepl(x, final_IGHV)][[1]]))
+  v_gene <- unname(sapply(v_gene, function(x) final_IGHV[grepl(x, final_IGHV, fixed = T)][[1]]))
   if(cdr3_mode == "aa"){
     tidy_dataset$clonotypeLabel <- paste(v_gene, sapply(tidy_dataset$junction_aa, function(x) paste0(strsplit(x, "")[[1]][2:(nchar(x)-1)], collapse = "")), sep = "_")
   }else if(cdr3_mode == "nt"){
