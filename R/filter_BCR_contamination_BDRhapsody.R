@@ -89,7 +89,17 @@ filter_BCR_contamination_BDRhapsody <- function(single_cell_object, contaminatio
     single_cell_object@meta.data$Contamination_Sample <- meta_data$Contamination_Sample[match(rownames(single_cell_object@meta.data), rownames(meta_data))]
   }
 
-  if(remove_contamination){single_cell_object <- subset(single_cell_object, subset = Contamination_FLAG == "PASS")}
+  if(remove_contamination){
+    if(class(single_cell_object)[1] == "SingleCellExperiment"){
+      single_cell_object@colData$Contamination_FLAG[is.na(single_cell_object@colData$Contamination_FLAG)] <- "."
+      single_cell_object <- subset(single_cell_object, subset = Contamination_FLAG != "OUT")
+      single_cell_object@colData$Contamination_FLAG[single_cell_object@colData$Contamination_FLAG == "."] <- NA
 
+    } else if(class(single_cell_object)[1] == "Seurat"){
+      single_cell_object@meta.data$Contamination_FLAG[is.na(single_cell_object@meta.data$Contamination_FLAG)] <- "."
+      single_cell_object <- subset(single_cell_object, subset = Contamination_FLAG != "OUT")
+      single_cell_object@meta.data$Contamination_FLAG[single_cell_object@meta.data$Contamination_FLAG == "."] <- NA
+    }
+  }
   return(single_cell_object)
 }
