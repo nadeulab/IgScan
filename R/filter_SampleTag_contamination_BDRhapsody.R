@@ -1,4 +1,4 @@
-#' Filter BCR Contamination in BD Rhapsody Data
+#' Filter SampleTag Contamination in BD Rhapsody Data
 #'
 #' This function identifies, flags, and optionally removes cell contamination between sample tags
 #' in an IgScan-annotated single-cell object derived from BD Rhapsody data. Contamination is assessed
@@ -31,10 +31,10 @@
 #' @examples
 #' \dontrun{
 #' # Example with a SingleCellExperiment object:
-#' cont_filtered_sce <- filter_BCR_contamination_BDRhapsody(single_cell_object = sce, contamination_cutoff = 30)
+#' cont_filtered_sce <- filter_SampleTag_contam_Rhapsody(single_cell_object = sce, contamination_cutoff = 30)
 #' }
 #'
-filter_BCR_contamination_BDRhapsody <- function(single_cell_object, contamination_cutoff = 10, remove_contamination = F){
+filter_SampleTag_contam_Rhapsody <- function(single_cell_object, contamination_cutoff = 10, remove_contamination = F){
 
   if(class(single_cell_object)[1] == "SingleCellExperiment"){
     meta_data <- single_cell_object@colData
