@@ -90,16 +90,23 @@ recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.id
     tmp_df$SubcloneID <- sbc_dict_all$NewName[match(tmp_df$SubcloneID, sbc_dict_all$Group.1)]
 
     ## Update merged IDs
+    tmp_df$igClonotypeID_tmp <- NA
+    tmp_df$igClonotypeVariantID_tmp <- NA
+    tmp_df$igSubcloneID_tmp <- NA
     for(cell in unique(tmp_df$igSubcloneID)){
       old_cltID_list <- strsplit(unique(tmp_df$igClonotypeID[tmp_df$igSubcloneID == cell]), "-")[[1]]
-      tmp_df$igClonotypeID[tmp_df$igSubcloneID == cell] <- paste(clt_dict$NewName[match(old_cltID_list, clt_dict$Group.1)], collapse = "-")
+      tmp_df$igClonotypeID_tmp[tmp_df$igSubcloneID == cell] <- paste(clt_dict$NewName[match(old_cltID_list, clt_dict$Group.1)], collapse = "-")
 
       old_cvID_list <- strsplit(unique(tmp_df$igClonotypeVariantID[tmp_df$igSubcloneID == cell]), "-")[[1]]
-      tmp_df$igClonotypeVariantID[tmp_df$igSubcloneID == cell] <- paste(cv_dict_all$NewName[match(old_cvID_list, cv_dict_all$Group.1)], collapse = "-")
+      tmp_df$igClonotypeVariantID_tmp[tmp_df$igSubcloneID == cell] <- paste(cv_dict_all$NewName[match(old_cvID_list, cv_dict_all$Group.1)], collapse = "-")
 
       old_scID_list <- strsplit(cell, "-")[[1]]
-      tmp_df$igSubcloneID[tmp_df$igSubcloneID == cell] <- paste(sbc_dict_all$NewName[match(old_scID_list, sbc_dict_all$Group.1)], collapse = "-")
+      tmp_df$igSubcloneID_tmp[tmp_df$igSubcloneID == cell] <- paste(sbc_dict_all$NewName[match(old_scID_list, sbc_dict_all$Group.1)], collapse = "-")
     }
+    tmp_df$igClonotypeID <- tmp_df$igClonotypeID_tmp
+    tmp_df$igClonotypeVariantID <- tmp_df$igClonotypeVariantID_tmp
+    tmp_df$igSubcloneID <- tmp_df$igSubcloneID_tmp
+    tmp_df <- tmp_df[,-((ncol(tmp_df)-2):ncol(tmp_df))]
 
     ## Correct numeric IDs based on new merged IDs
     per_cell_clt_dict <- aggregate(x = tmp_df$igClonotypeID_num[tmp_df$igClonotypeID_num != ""], by = list(tmp_df$igClonotypeID_num[tmp_df$igClonotypeID_num != ""]), FUN = length)
