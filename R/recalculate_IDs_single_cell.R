@@ -8,8 +8,8 @@
 #'
 #' @param single_cell_object A single-cell object combined with IgScan annotation
 #' in either `SingleCellExperiment` or `Seurat` format.
-#' @param group_col The name of the column containing the grouping variable. Default is
-#' is 'orig.ident', thus recalculating BCR IDs based in each sample independently.
+#' @param group_col A vector with the name of the column or columns containing the grouping variable/s.
+#' Default is 'orig.ident', thus recalculating BCR IDs based in each sample independently.
 #' @param threads The number of threads to perform BCR ID recalculation. Default is 1.
 #'
 #' @return A single cell object with the IgScan clonotype-related IDs updated in the metadata.
@@ -31,16 +31,18 @@
 recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.ident", threads = 1){
 
   if(class(single_cell_object)[1] == "SingleCellExperiment"){
-    data_frame <- single_cell_object@colData
+    data_frame <- as.data.frame(single_cell_object@colData)
   } else if(class(single_cell_object)[1] == "Seurat"){
-    data_frame <- single_cell_object@meta.data
+    data_frame <- as.data.frame(single_cell_object@meta.data)
   }
 
-  if(!group_col %in% colnames(data_frame)){stop(paste0("Unknown column (", group_col, ") selected for BCR ID recalculation! Please, set a valid column name."))}
+  if(!all(group_col %in% colnames(data_frame))){stop(paste0("Unknown column (", group_col, ") selected for BCR ID recalculation! Please, set a valid column name."))}
 
-  recalc_df_list <- mclapply(unique(data_frame[[group_col]]), function(col_v){
-    cat(col_v)
-    tmp_df <- .extract_IgScanDf_from_SingleCell(data_frame[data_frame[[group_col]] == col_v,])
+  data_frame$tmp_col <- apply(data_frame[,group_col, drop = FALSE], 1, function(row) paste(row, collapse = "_"))
+
+  recalc_df_list <- mclapply(unique(data_frame$tmp_col), function(col_v){
+
+    tmp_df <- .extract_IgScanDf_from_SingleCell(data_frame[data_frame$tmp_col == col_v,])
 
     ## To correct ClonotypeID
     clt_dict <- aggregate(x = tmp_df$ClonotypeID[!is.na(tmp_df$ClonotypeID)], by = list(tmp_df$ClonotypeID[!is.na(tmp_df$ClonotypeID)]), FUN = length)
@@ -212,7 +214,6 @@ recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.id
       writen_contigs <- writen_contigs + 1
     }
   }
-
   return(igscan_out)
 }
 
