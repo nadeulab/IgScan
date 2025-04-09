@@ -8,6 +8,9 @@
 #'
 #' @param single_cell_object A single-cell object combined with IgScan annotation
 #' in either `SingleCellExperiment` or `Seurat` format.
+#' @param group_col The name of the column containing the grouping variable. Default is
+#' is 'orig.ident', thus recalculating BCR IDs based in each sample independently.
+#' @param threads The number of threads to perform BCR ID recalculation. Default is 1.
 #'
 #' @return A single cell object with the IgScan clonotype-related IDs updated in the metadata.
 #'
@@ -18,13 +21,14 @@
 #' @import Seurat
 #' @import SeuratObject
 #' @import SingleCellExperiment
+#' @importFrom parallel mclapply
 #'
 #' @examples
 #' \dontrun{
-#' recalculated_object <- recalculate_IDs_single_cell(sc_object)
+#' recalculated_object <- recalculate_IDs_single_cell(sc_object, group_col = "orig.ident", threads = 4)
 #' }
 #'
-recalculate_IDs_single_cell <- function(single_cell_object){
+recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.ident", threads = 1){
 
   if(class(single_cell_object)[1] == "SingleCellExperiment"){
     data_frame <- single_cell_object@colData
@@ -32,102 +36,109 @@ recalculate_IDs_single_cell <- function(single_cell_object){
     data_frame <- single_cell_object@meta.data
   }
 
-  data_frame <- .extract_IgScanDf_from_SingleCell(data_frame)
+  if(!group_col %in% colnames(data_frame)){stop(paste0("Unknown column (", group_col, ") selected for BCR ID recalculation! Please, set a valid column name."))}
 
-  ## To correct ClonotypeID
-  clt_dict <- aggregate(x = data_frame$ClonotypeID[!is.na(data_frame$ClonotypeID)], by = list(data_frame$ClonotypeID[!is.na(data_frame$ClonotypeID)]), FUN = length)
-  clt_dict$chain <- sapply(clt_dict$Group.1, function(x) substr(x, 1, 3))
-  clt_dict$cloneID_no_x <- sapply(clt_dict$Group.1, function(x) strsplit(x, "x")[[1]][1])
-  clt_dict <- clt_dict[order(clt_dict$x, decreasing = T),]
+  recalc_df_list <- mclapply(unique(data_frame[[group_col]]), function(col_v){
+    cat(col_v)
+    tmp_df <- .extract_IgScanDf_from_SingleCell(data_frame[data_frame[[group_col]] == col_v,])
 
-  chain_count <- list(IGH = 1, IGK = 1, IGL = 1)
-  corrected_clones <- c()
-  for(row in 1:nrow(clt_dict)){
-    if(clt_dict$cloneID_no_x[row] %in% corrected_clones){
-      clt_dict$NewName[row] <- clt_dict$NewName[clt_dict$cloneID_no_x == clt_dict$cloneID_no_x[row]][1]
-    } else{
-      clt_dict$NewName[row] <- paste0(clt_dict$chain[row], ".C", chain_count[[clt_dict$chain[row]]])
-      corrected_clones <- c(corrected_clones, clt_dict$cloneID_no_x[row])
-      chain_count[[clt_dict$chain[row]]] <- chain_count[[clt_dict$chain[row]]]+1
+    ## To correct ClonotypeID
+    clt_dict <- aggregate(x = tmp_df$ClonotypeID[!is.na(tmp_df$ClonotypeID)], by = list(tmp_df$ClonotypeID[!is.na(tmp_df$ClonotypeID)]), FUN = length)
+    clt_dict$chain <- sapply(clt_dict$Group.1, function(x) substr(x, 1, 3))
+    clt_dict$cloneID_no_x <- sapply(clt_dict$Group.1, function(x) strsplit(x, "x")[[1]][1])
+    clt_dict <- clt_dict[order(clt_dict$x, decreasing = T),]
+
+    chain_count <- list(IGH = 1, IGK = 1, IGL = 1)
+    corrected_clones <- c()
+    for(row in 1:nrow(clt_dict)){
+      if(clt_dict$cloneID_no_x[row] %in% corrected_clones){
+        clt_dict$NewName[row] <- clt_dict$NewName[clt_dict$cloneID_no_x == clt_dict$cloneID_no_x[row]][1]
+      } else{
+        clt_dict$NewName[row] <- paste0(clt_dict$chain[row], ".C", chain_count[[clt_dict$chain[row]]])
+        corrected_clones <- c(corrected_clones, clt_dict$cloneID_no_x[row])
+        chain_count[[clt_dict$chain[row]]] <- chain_count[[clt_dict$chain[row]]]+1
+      }
     }
-  }
 
-  if(any(duplicated(clt_dict$NewName))){
-    for(sim_c in clt_dict$NewName[duplicated(clt_dict$NewName)]){
-      clt_dict$NewName[clt_dict$NewName == sim_c] <- paste0(sim_c, "x", 1:length(clt_dict$NewName[clt_dict$NewName == sim_c]))
+    if(any(duplicated(clt_dict$NewName))){
+      for(sim_c in clt_dict$NewName[duplicated(clt_dict$NewName)]){
+        clt_dict$NewName[clt_dict$NewName == sim_c] <- paste0(sim_c, "x", 1:length(clt_dict$NewName[clt_dict$NewName == sim_c]))
+      }
     }
-  }
-  data_frame$ClonotypeID <- clt_dict$NewName[match(data_frame$ClonotypeID, clt_dict$Group.1)]
+    tmp_df$ClonotypeID <- clt_dict$NewName[match(tmp_df$ClonotypeID, clt_dict$Group.1)]
 
-  ## To correct ClonotypeVariantID
-  cv_dict_all <- data.frame()
-  for(c in unique(data_frame$ClonotypeID)){
-    cv_dict <- aggregate(x = data_frame$ClonotypeVariantID[data_frame$ClonotypeID == c], by = list(data_frame$ClonotypeVariantID[data_frame$ClonotypeID == c]), FUN = length)
-    cv_dict <- cv_dict[order(cv_dict$x, decreasing = T),]
-    cv_dict$NewName <- paste0(c, ".CV", 1:nrow(cv_dict))
-    cv_dict_all <- rbind(cv_dict_all, cv_dict)
-  }
-  data_frame$ClonotypeVariantID <- cv_dict_all$NewName[match(data_frame$ClonotypeVariantID, cv_dict_all$Group.1)]
+    ## To correct ClonotypeVariantID
+    cv_dict_all <- data.frame()
+    for(c in unique(tmp_df$ClonotypeID)){
+      cv_dict <- aggregate(x = tmp_df$ClonotypeVariantID[tmp_df$ClonotypeID == c], by = list(tmp_df$ClonotypeVariantID[tmp_df$ClonotypeID == c]), FUN = length)
+      cv_dict <- cv_dict[order(cv_dict$x, decreasing = T),]
+      cv_dict$NewName <- paste0(c, ".CV", 1:nrow(cv_dict))
+      cv_dict_all <- rbind(cv_dict_all, cv_dict)
+    }
+    tmp_df$ClonotypeVariantID <- cv_dict_all$NewName[match(tmp_df$ClonotypeVariantID, cv_dict_all$Group.1)]
 
-  ## To correct SubcloneID
-  sbc_dict_all <- data.frame()
-  for(cv in unique(data_frame$ClonotypeVariantID)){
-    sbc_dict <- aggregate(x = data_frame$SubcloneID[data_frame$ClonotypeVariantID == cv], by = list(data_frame$SubcloneID[data_frame$ClonotypeVariantID == cv]), FUN = length)
-    sbc_dict <- sbc_dict[order(sbc_dict$x, decreasing = T),]
-    sbc_dict$NewName <- paste0(cv, ".S", 1:nrow(sbc_dict))
-    sbc_dict_all <- rbind(sbc_dict_all, sbc_dict)
-  }
-  data_frame$SubcloneID <- sbc_dict_all$NewName[match(data_frame$SubcloneID, sbc_dict_all$Group.1)]
+    ## To correct SubcloneID
+    sbc_dict_all <- data.frame()
+    for(cv in unique(tmp_df$ClonotypeVariantID)){
+      sbc_dict <- aggregate(x = tmp_df$SubcloneID[tmp_df$ClonotypeVariantID == cv], by = list(tmp_df$SubcloneID[tmp_df$ClonotypeVariantID == cv]), FUN = length)
+      sbc_dict <- sbc_dict[order(sbc_dict$x, decreasing = T),]
+      sbc_dict$NewName <- paste0(cv, ".S", 1:nrow(sbc_dict))
+      sbc_dict_all <- rbind(sbc_dict_all, sbc_dict)
+    }
+    tmp_df$SubcloneID <- sbc_dict_all$NewName[match(tmp_df$SubcloneID, sbc_dict_all$Group.1)]
 
-  ## Update merged IDs
-  for(cell in unique(data_frame$igSubcloneID)){
-    old_cltID_list <- strsplit(unique(data_frame$igClonotypeID[data_frame$igSubcloneID == cell]), "-")[[1]]
-    data_frame$igClonotypeID[data_frame$igSubcloneID == cell] <- paste(clt_dict$NewName[match(old_cltID_list, clt_dict$Group.1)], collapse = "-")
+    ## Update merged IDs
+    for(cell in unique(tmp_df$igSubcloneID)){
+      old_cltID_list <- strsplit(unique(tmp_df$igClonotypeID[tmp_df$igSubcloneID == cell]), "-")[[1]]
+      tmp_df$igClonotypeID[tmp_df$igSubcloneID == cell] <- paste(clt_dict$NewName[match(old_cltID_list, clt_dict$Group.1)], collapse = "-")
 
-    old_cvID_list <- strsplit(unique(data_frame$igClonotypeVariantID[data_frame$igSubcloneID == cell]), "-")[[1]]
-    data_frame$igClonotypeVariantID[data_frame$igSubcloneID == cell] <- paste(cv_dict_all$NewName[match(old_cvID_list, cv_dict_all$Group.1)], collapse = "-")
+      old_cvID_list <- strsplit(unique(tmp_df$igClonotypeVariantID[tmp_df$igSubcloneID == cell]), "-")[[1]]
+      tmp_df$igClonotypeVariantID[tmp_df$igSubcloneID == cell] <- paste(cv_dict_all$NewName[match(old_cvID_list, cv_dict_all$Group.1)], collapse = "-")
 
-    old_scID_list <- strsplit(cell, "-")[[1]]
-    data_frame$igSubcloneID[data_frame$igSubcloneID == cell] <- paste(sbc_dict_all$NewName[match(old_scID_list, sbc_dict_all$Group.1)], collapse = "-")
-  }
+      old_scID_list <- strsplit(cell, "-")[[1]]
+      tmp_df$igSubcloneID[tmp_df$igSubcloneID == cell] <- paste(sbc_dict_all$NewName[match(old_scID_list, sbc_dict_all$Group.1)], collapse = "-")
+    }
 
-  ## Correct numeric IDs based on new merged IDs
-  per_cell_clt_dict <- aggregate(x = data_frame$igClonotypeID_num[data_frame$igClonotypeID_num != ""], by = list(data_frame$igClonotypeID_num[data_frame$igClonotypeID_num != ""]), FUN = length)
-  per_cell_clt_dict <- per_cell_clt_dict[order(per_cell_clt_dict$x, decreasing = T),]
-  per_cell_clt_dict$NewName <- paste0("C", 1:nrow(per_cell_clt_dict))
-  data_frame$igClonotypeID_num <- per_cell_clt_dict$NewName[match(data_frame$igClonotypeID_num, per_cell_clt_dict$Group.1)]
+    ## Correct numeric IDs based on new merged IDs
+    per_cell_clt_dict <- aggregate(x = tmp_df$igClonotypeID_num[tmp_df$igClonotypeID_num != ""], by = list(tmp_df$igClonotypeID_num[tmp_df$igClonotypeID_num != ""]), FUN = length)
+    per_cell_clt_dict <- per_cell_clt_dict[order(per_cell_clt_dict$x, decreasing = T),]
+    per_cell_clt_dict$NewName <- paste0("C", 1:nrow(per_cell_clt_dict))
+    tmp_df$igClonotypeID_num <- per_cell_clt_dict$NewName[match(tmp_df$igClonotypeID_num, per_cell_clt_dict$Group.1)]
 
-  per_cell_cv_dict_all <- data.frame()
-  per_cell_sbc_in_clt_dict_all <- data.frame()
-  for(c in unique(data_frame$igClonotypeID_num[!is.na(data_frame$igClonotypeID_num)])){
-    cv_dict <- aggregate(x = data_frame$igClonotypeVariantID_num[data_frame$igClonotypeID_num == c], by = list(data_frame$igClonotypeVariantID_num[data_frame$igClonotypeID_num == c]), FUN = length)
-    cv_dict <- cv_dict[order(cv_dict$x, decreasing = T),]
-    cv_dict$NewName <- paste0(c, ".CV", 1:nrow(cv_dict))
-    per_cell_cv_dict_all <- rbind(per_cell_cv_dict_all, cv_dict)
+    per_cell_cv_dict_all <- data.frame()
+    per_cell_sbc_in_clt_dict_all <- data.frame()
+    for(c in unique(tmp_df$igClonotypeID_num[!is.na(tmp_df$igClonotypeID_num)])){
+      cv_dict <- aggregate(x = tmp_df$igClonotypeVariantID_num[tmp_df$igClonotypeID_num == c], by = list(tmp_df$igClonotypeVariantID_num[tmp_df$igClonotypeID_num == c]), FUN = length)
+      cv_dict <- cv_dict[order(cv_dict$x, decreasing = T),]
+      cv_dict$NewName <- paste0(c, ".CV", 1:nrow(cv_dict))
+      per_cell_cv_dict_all <- rbind(per_cell_cv_dict_all, cv_dict)
 
-    sbc_in_clt_dict <- aggregate(x = data_frame$igSubcloneID_in_Clonotype_num[data_frame$igClonotypeID_num == c], by = list(data_frame$igSubcloneID_in_Clonotype_num[data_frame$igClonotypeID_num == c]), FUN = length)
-    sbc_in_clt_dict <- sbc_in_clt_dict[order(sbc_in_clt_dict$x, decreasing = T),]
-    sbc_in_clt_dict$NewName <- paste0(c, ".", 1:nrow(sbc_in_clt_dict))
-    per_cell_sbc_in_clt_dict_all <- rbind(per_cell_sbc_in_clt_dict_all, sbc_in_clt_dict)
-  }
-  data_frame$igClonotypeVariantID_num <- per_cell_cv_dict_all$NewName[match(data_frame$igClonotypeVariantID_num, per_cell_cv_dict_all$Group.1)]
-  data_frame$igSubcloneID_in_Clonotype_num <- per_cell_sbc_in_clt_dict_all$NewName[match(data_frame$igSubcloneID_in_Clonotype_num, per_cell_sbc_in_clt_dict_all$Group.1)]
+      sbc_in_clt_dict <- aggregate(x = tmp_df$igSubcloneID_in_Clonotype_num[tmp_df$igClonotypeID_num == c], by = list(tmp_df$igSubcloneID_in_Clonotype_num[tmp_df$igClonotypeID_num == c]), FUN = length)
+      sbc_in_clt_dict <- sbc_in_clt_dict[order(sbc_in_clt_dict$x, decreasing = T),]
+      sbc_in_clt_dict$NewName <- paste0(c, ".", 1:nrow(sbc_in_clt_dict))
+      per_cell_sbc_in_clt_dict_all <- rbind(per_cell_sbc_in_clt_dict_all, sbc_in_clt_dict)
+    }
+    tmp_df$igClonotypeVariantID_num <- per_cell_cv_dict_all$NewName[match(tmp_df$igClonotypeVariantID_num, per_cell_cv_dict_all$Group.1)]
+    tmp_df$igSubcloneID_in_Clonotype_num <- per_cell_sbc_in_clt_dict_all$NewName[match(tmp_df$igSubcloneID_in_Clonotype_num, per_cell_sbc_in_clt_dict_all$Group.1)]
 
-  per_cell_sbc_in_cv_dict_all <- data.frame()
-  for(cv in unique(data_frame$igClonotypeVariantID_num[!is.na(data_frame$igClonotypeVariantID_num)])){
-    sbc_in_cv_dict <- aggregate(x = data_frame$igSubcloneID_in_ClonotypeVariant_num[data_frame$igClonotypeVariantID_num == cv], by = list(data_frame$igSubcloneID_in_ClonotypeVariant_num[data_frame$igClonotypeVariantID_num == cv]), FUN = length)
-    sbc_in_cv_dict <- sbc_in_cv_dict[order(sbc_in_cv_dict$x, decreasing = T),]
-    sbc_in_cv_dict$NewName <- paste0(cv, ".S", 1:nrow(sbc_in_cv_dict))
-    per_cell_sbc_in_cv_dict_all <- rbind(per_cell_sbc_in_cv_dict_all, sbc_in_cv_dict)
-  }
-  data_frame$igSubcloneID_in_ClonotypeVariant_num <- per_cell_sbc_in_cv_dict_all$NewName[match(data_frame$igSubcloneID_in_ClonotypeVariant_num, per_cell_sbc_in_cv_dict_all$Group.1)]
+    per_cell_sbc_in_cv_dict_all <- data.frame()
+    for(cv in unique(tmp_df$igClonotypeVariantID_num[!is.na(tmp_df$igClonotypeVariantID_num)])){
+      sbc_in_cv_dict <- aggregate(x = tmp_df$igSubcloneID_in_ClonotypeVariant_num[tmp_df$igClonotypeVariantID_num == cv], by = list(tmp_df$igSubcloneID_in_ClonotypeVariant_num[tmp_df$igClonotypeVariantID_num == cv]), FUN = length)
+      sbc_in_cv_dict <- sbc_in_cv_dict[order(sbc_in_cv_dict$x, decreasing = T),]
+      sbc_in_cv_dict$NewName <- paste0(cv, ".S", 1:nrow(sbc_in_cv_dict))
+      per_cell_sbc_in_cv_dict_all <- rbind(per_cell_sbc_in_cv_dict_all, sbc_in_cv_dict)
+    }
+    tmp_df$igSubcloneID_in_ClonotypeVariant_num <- per_cell_sbc_in_cv_dict_all$NewName[match(tmp_df$igSubcloneID_in_ClonotypeVariant_num, per_cell_sbc_in_cv_dict_all$Group.1)]
+    return(tmp_df)
+  }, mc.cores = threads)
+
+  recalc_df <- do.call(rbind, recalc_df_list)
 
   if(class(single_cell_object)[1] == "SingleCellExperiment"){
-    single_cell_object <- combine_IgScan_SingleCellExperiment(igscan_out = data_frame, sce = single_cell_object)
+    single_cell_object <- combine_IgScan_SingleCellExperiment(igscan_out = recalc_df, sce = single_cell_object)
   } else if(class(single_cell_object)[1] == "Seurat"){
-    single_cell_object <- combine_IgScan_Seurat(igscan_out = data_frame, seurat_object = single_cell_object)
+    single_cell_object <- combine_IgScan_Seurat(igscan_out = recalc_df, seurat_object = single_cell_object)
   }
-
   return(single_cell_object)
 }
 
