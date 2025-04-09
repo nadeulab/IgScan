@@ -4,11 +4,20 @@
 \alias{recalculate_IDs_single_cell}
 \title{Recalculate IgScan IDs for Single Cell Data}
 \usage{
-recalculate_IDs_single_cell(single_cell_object)
+recalculate_IDs_single_cell(
+  single_cell_object,
+  group_col = "orig.ident",
+  threads = 1
+)
 }
 \arguments{
 \item{single_cell_object}{A single-cell object combined with IgScan annotation
 in either `SingleCellExperiment` or `Seurat` format.}
+
+\item{group_col}{A vector with the name of the column or columns containing the grouping variable/s.
+Default is 'orig.ident', thus recalculating BCR IDs based in each sample independently.}
+
+\item{threads}{The number of threads to perform BCR ID recalculation. Default is 1.}
 }
 \value{
 A single cell object with the IgScan clonotype-related IDs updated in the metadata.
@@ -22,7 +31,7 @@ and `Seurat` classes.
 }
 \examples{
 \dontrun{
-recalculated_object <- recalculate_IDs_single_cell(sc_object)
+recalculated_object <- recalculate_IDs_single_cell(sc_object, group_col = "orig.ident", threads = 4)
 }
 
 }

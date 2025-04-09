@@ -4,11 +4,16 @@
 \alias{recalculate_IDs_bulk}
 \title{Recalculate IgScan IDs for Bulk NGS Data}
 \usage{
-recalculate_IDs_bulk(igscan_data_frame)
+recalculate_IDs_bulk(igscan_data_frame, group_col = "SampleID", threads = 1)
 }
 \arguments{
 \item{igscan_data_frame}{An IgScan output dataframe coming from the annotation
 of bulk NGS data.}
+
+\item{group_col}{A vector with the name of the column or columns containing the grouping variable/s.
+Default is 'SampleID', thus recalculating BCR IDs based in each sample independently.}
+
+\item{threads}{The number of threads to perform BCR ID recalculation. Default is 1.}
 }
 \value{
 An IgScan output data frame with updated clonotype-related IDs and
@@ -23,6 +28,6 @@ of the different IDs.
 }
 \examples{
 \dontrun{
-updated_igscan_out <- recalculate_IDs_bulk(igscan_output_df)
+updated_igscan_out <- recalculate_IDs_bulk(igscan_output_df group_col = "SampleID", threads = 4)
 }
 }
