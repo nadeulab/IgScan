@@ -22,7 +22,7 @@
 #'
 combine_IgScan_SingleCellExperiment <- function(igscan_out, sce){
 
-  igscan_out$barcode <- sapply(igscan_out$contig_id, function(x) paste(strsplit(x, "_")[[1]][-length(strsplit(x, "_")[[1]])], collapse =  "_"))
+  if(!"barcode" %in% colnames(igscan_out)){igscan_out$barcode <- sapply(igscan_out$contig_id, function(x) strsplit(x, "_")[[1]][1]}
 
   sce@colData$completeBCR <- igscan_out$completeBCR[match(rownames(sce@colData), igscan_out$barcode)]
   sce@colData$igClonotypeID <- igscan_out$igClonotypeID[match(rownames(sce@colData), igscan_out$barcode)]
