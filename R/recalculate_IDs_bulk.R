@@ -29,7 +29,7 @@ recalculate_IDs_bulk <- function(igscan_data_frame, group_col = "SampleID", thre
 
   igscan_data_frame <- as.data.frame(igscan_data_frame)
 
-  if(!all(group_col %in% colnames(igscan_data_frame))){stop(paste0("Unknown column (", group_col, ") selected for BCR ID recalculation! Please, set a valid column name."))}
+  if(!all(group_col %in% colnames(igscan_data_frame))){stop(paste0("\nUnknown column (", group_col[!group_col %in% colnames(igscan_data_frame)], ") selected for BCR ID recalculation! Please, set a valid column name."))}
 
   igscan_data_frame$tmp_col <- apply(igscan_data_frame[,group_col, drop = FALSE], 1, function(row) paste(row, collapse = "_"))
 

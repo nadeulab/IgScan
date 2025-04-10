@@ -31,17 +31,17 @@
 recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.ident", threads = 1){
 
   if(class(single_cell_object)[1] == "SingleCellExperiment"){
-    data_frame <- as.data.frame(single_cell_object@colData)
+    meta_data <- as.data.frame(single_cell_object@colData)
   } else if(class(single_cell_object)[1] == "Seurat"){
-    data_frame <- as.data.frame(single_cell_object@meta.data)
+    meta_data <- as.data.frame(single_cell_object@meta.data)
   }
 
-  if(!all(group_col %in% colnames(data_frame))){stop(paste0("Unknown column (", group_col, ") selected for BCR ID recalculation! Please, set a valid column name."))}
+  if(!all(group_col %in% colnames(meta_data))){stop(paste0("\nUnknown column (", group_col[!group_col %in% colnames(meta_data)], ") selected for BCR ID recalculation! Please, set a valid column name."))}
 
-  data_frame$tmp_col <- apply(data_frame[,group_col, drop = FALSE], 1, function(row) paste(row, collapse = "_"))
+  meta_data$tmp_col <- apply(meta_data[,group_col, drop = FALSE], 1, function(row) paste(row, collapse = "_"))
 
-  recalc_df_list <- mclapply(unique(data_frame$tmp_col), function(col_v){
-    tmp_df <- .extract_IgScanDf_from_SingleCell(data_frame[data_frame$tmp_col == col_v,])
+  recalc_df_list <- mclapply(unique(meta_data$tmp_col), function(col_v){
+    tmp_df <- .extract_IgScanDf_from_SingleCell(meta_data[meta_data$tmp_col == col_v,])
 
     if(nrow(tmp_df) == 0){return(NULL)}
 
