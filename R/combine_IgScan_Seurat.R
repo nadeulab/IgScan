@@ -23,7 +23,7 @@
 #'
 combine_IgScan_Seurat <- function(igscan_out, seurat_object){
 
-  if(!"barcode" %in% colnames(igscan_out)){igscan_out$barcode <- sapply(igscan_out$contig_id, function(x) strsplit(x, "_")[[1]][1]}
+  if(!"barcode" %in% colnames(igscan_out)){igscan_out$barcode <- sapply(igscan_out$contig_id, function(x) strsplit(x, "_")[[1]][1])}
 
   seurat_object@meta.data$completeBCR <- igscan_out$completeBCR[match(rownames(seurat_object@meta.data), igscan_out$barcode)]
   seurat_object@meta.data$igClonotypeID <- igscan_out$igClonotypeID[match(rownames(seurat_object@meta.data), igscan_out$barcode)]
