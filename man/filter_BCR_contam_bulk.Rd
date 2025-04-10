@@ -6,9 +6,13 @@
 \usage{
 filter_BCR_contam_bulk(
   igscan_data_frame,
-  batch_col,
+  batch_col = NULL,
+  case_col = NULL,
   contamination_cutoff = 10,
-  remove_contamination = F
+  contamination_clone_cutoff = 80,
+  remove_contamination = F,
+  recalc_column = "SampleID",
+  threads = 1
 )
 }
 \arguments{
@@ -16,20 +20,33 @@ filter_BCR_contam_bulk(
 of bulk NGS data.}
 
 \item{batch_col}{A string with the name of the column identifying the `batch` of processing
-and/or sequencing for each sample. Each `batch` will be evaluated independently.}
+and/or sequencing for each sample. Each `batch` will be evaluated independently. Default is NULL,
+meaning that all sequences in the data frame will be considered from the same batch.}
+
+\item{case_col}{A string with the name of the column identifying the `case` or `individual` for
+each sample. Default is NULL, meaning that each sample will be considered from different individuals.}
 
 \item{contamination_cutoff}{A numeric value specifying the contamination ratio threshold.
 Default is 10, higher values result in stricter contamination detection.}
 
+\item{contamination_clone_cutoff}{A numeric value specifying which percentage of contamination
+is allowed within a clonotype to ........ .
+Default is 10, higher values result in stricter contamination detection.}
+
 \item{remove_contamination}{Logical. If `TRUE`, cells flagged as contaminated are
 removed from the returned object (default is `FALSE`).}
+
+\item{recalc_column}{A string/vector of strings with the name of the column/s to use for ID
+recalculation. Needed when remove_contamination=TRUE. Default is `SampleID`.}
+
+\item{threads}{The number of threads to perform BCR ID recalculation. Default is 1.}
 }
 \value{
 The input `igscan_data_frame` including three new columns:
 \itemize{
   \item Contamination_FLAG: Indicates whether a cell passed contamination checks (`PASS`), was flagged as contaminated (`OUT`),
   or was involved in crossed contamination (`OUT_X`)
-  \item Contamination_Ratio: The ratio of clonal overlap between the contaminated and dominant samples.
+  \item Contamination_Freq: The frequency of the contaminated sequence in the original sample (dominant).
   \item Contamination_Sample: The dominant sample responsible for contamination.
 }
 
@@ -47,7 +64,7 @@ it will be flagged as contamination in the latter sample.
 \examples{
 \dontrun{
 # Example with a SingleCellExperiment object:
-cont_filtered_igscan <- filter_BCR_contam_bulk(igscan_data_frame = igscan_df,, bath_col = "batchID",contamination_cutoff = 30)
+cont_filtered_igscan <- filter_BCR_contam_bulk(igscan_data_frame = igscan_df, bath_col = "batchID", case_col = "case", contamination_cutoff = 30, threads = 4)
 }
 
 }
