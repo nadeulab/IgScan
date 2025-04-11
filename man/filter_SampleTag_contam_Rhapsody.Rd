@@ -19,6 +19,9 @@ Default is 10, higher values result in stricter contamination detection.}
 
 \item{remove_contamination}{Logical. If `TRUE`, cells flagged as contaminated are
 removed from the returned object (default is `FALSE`).}
+
+\item{recalc_column}{A string/vector of strings with the name of the column/s to use for ID
+recalculation. Needed when remove_contamination=TRUE. Default is `orig.ident`.}
 }
 \value{
 The input `single_cell_object` with updated metadata, which includes three new columns:
@@ -29,7 +32,8 @@ The input `single_cell_object` with updated metadata, which includes three new c
   \item Contamination_Sample: The dominant sample responsible for contamination.
 }
 
-  If `remove_contamination = TRUE`, cells flagged as `OUT` or `OUT_X` are removed from the object.
+  If `remove_contamination = TRUE`, cells flagged as `OUT` or `OUT_X` are removed from
+  the data frame and immunogenetic IDs are recalculated with `recalculate_IDs_single_cell()`.
 }
 \description{
 This function identifies, flags, and optionally removes cell contamination between sample tags

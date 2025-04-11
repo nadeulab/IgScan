@@ -10,9 +10,11 @@
 #' @param single_cell_object A `SingleCellExperiment` or `Seurat` object containing IgScan
 #' annotation for single cell data. The object must also include the `Sample_Tag` identifier.
 #' @param contamination_cutoff A numeric value specifying the contamination ratio threshold.
-#'   Default is 10, higher values result in stricter contamination detection.
+#' Default is 10, higher values result in stricter contamination detection.
 #' @param remove_contamination Logical. If `TRUE`, cells flagged as contaminated are
-#'   removed from the returned object (default is `FALSE`).
+#' removed from the returned object (default is `FALSE`).
+#' @param recalc_column A string/vector of strings with the name of the column/s to use for ID
+#' recalculation. Needed when remove_contamination=TRUE. Default is `orig.ident`.
 #'
 #' @return The input `single_cell_object` with updated metadata, which includes three new columns:
 #' \itemize{
@@ -22,7 +24,8 @@
 #'   \item Contamination_Sample: The dominant sample responsible for contamination.
 #' }
 #'
-#'   If `remove_contamination = TRUE`, cells flagged as `OUT` or `OUT_X` are removed from the object.
+#'   If `remove_contamination = TRUE`, cells flagged as `OUT` or `OUT_X` are removed from
+#'   the data frame and immunogenetic IDs are recalculated with `recalculate_IDs_single_cell()`.
 #'
 #' @export
 #'
@@ -41,6 +44,9 @@ filter_SampleTag_contam_Rhapsody <- function(single_cell_object, contamination_c
   } else if(class(single_cell_object)[1] == "Seurat"){
     meta_data <- single_cell_object@meta.data
   }
+
+  if(!"Sample_Tag" %in% colnames(meta_data)){stop(paste0("\n`Sample_Tag` column not found in the meta_data! Please, ensure to include the Sample_Tag column before executing this function."))}
+  if(!all(recalc_column %in% colnames(meta_data)) & remove_contamination){stop(paste0("\nUnknown recalc_column column (", recalc_column[!recalc_column %in% colnames(meta_data)], ") selected for flagging SampleTag contamination! Please, set a valid column name."))}
 
   meta_data <- single_cell_object@meta.data[!single_cell_object@meta.data$Sample_Tag %in% c("Multiplet", "Undetermined"),]
   meta_data$Sample_Tag <- as.character(meta_data$Sample_Tag)
@@ -100,6 +106,7 @@ filter_SampleTag_contam_Rhapsody <- function(single_cell_object, contamination_c
       single_cell_object <- subset(single_cell_object, subset = Contamination_FLAG != "OUT")
       single_cell_object@meta.data$Contamination_FLAG[single_cell_object@meta.data$Contamination_FLAG == "."] <- NA
     }
+    single_cell_object <- recalculate_IDs_single_cell(single_cell_object, group_col = recalc_column)
   }
   return(single_cell_object)
 }
