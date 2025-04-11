@@ -40,7 +40,7 @@ recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.id
 
   meta_data$tmp_col <- apply(meta_data[,group_col, drop = FALSE], 1, function(row) paste(row, collapse = "_"))
 
-  recalc_df_list <- mclapply(unique(meta_data$tmp_col), function(col_v){
+  recalc_obj_list <- mclapply(unique(meta_data$tmp_col), function(col_v){
     tmp_df <- .extract_IgScanDf_from_SingleCell(meta_data[meta_data$tmp_col == col_v,])
 
     if(nrow(tmp_df) == 0){return(NULL)}
@@ -141,17 +141,21 @@ recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.id
       }
       tmp_df$igSubcloneID_in_ClonotypeVariant_num <- per_cell_sbc_in_cv_dict_all$NewName[match(tmp_df$igSubcloneID_in_ClonotypeVariant_num, per_cell_sbc_in_cv_dict_all$Group.1)]
     }
-    return(tmp_df)
+
+    if(class(single_cell_object)[1] == "SingleCellExperiment"){
+      tmp_object <- single_cell_object[, colnames(single_cell_object) %in% tmp_df$barcode]
+      tmp_object <- combine_IgScan_SingleCellExperiment(igscan_out = tmp_df, sce = tmp_object)
+    } else if(class(single_cell_object)[1] == "Seurat"){
+      tmp_object <- subset(single_cell_object, cells = tmp_df$barcode)
+      tmp_object <- combine_IgScan_Seurat(igscan_out = tmp_df, seurat_object = tmp_object)
+    }
+
+    return(tmp_object)
   }, mc.cores = threads)
 
-  recalc_df_list <- Filter(Negate(is.null), recalc_df_list)
-  recalc_df <- do.call(rbind, recalc_df_list)
+  recalc_obj_list <- Filter(Negate(is.null), recalc_obj_list)
+  single_cell_object <- Reduce(function(x, y) merge(x, y), recalc_obj_list)
 
-  if(class(single_cell_object)[1] == "SingleCellExperiment"){
-    single_cell_object <- combine_IgScan_SingleCellExperiment(igscan_out = recalc_df, sce = single_cell_object)
-  } else if(class(single_cell_object)[1] == "Seurat"){
-    single_cell_object <- combine_IgScan_Seurat(igscan_out = recalc_df, seurat_object = single_cell_object)
-  }
   return(single_cell_object)
 }
 
@@ -172,9 +176,7 @@ recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.id
       if(is.na(sc) || sc == "NA"){next}
 
       chain <- chain_dictionary[i]
-
       barcode <- rownames(subset_df)
-
       append_df <- data.frame(contig_id = paste0(barcode, "_", writen_contigs), barcode = barcode)
 
       append_df$Raw_sequence <- NA
