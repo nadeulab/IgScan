@@ -108,7 +108,7 @@
 #'   threads = 4)
 #' }
 #'
-Run_IgScan_FullWorkflow <- function(sample_paths, sample_labels, Evalue_cutoff = NULL, annotate_C = T, threads = 1, threads_IgBlast = 1, case_labels = NULL, input_format, analysis_mode, material_type, v_primer, data_type, min_reads, remove_tmp, outputDir = NULL, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen){
+Run_IgScan_FullWorkflow <- function(sample_paths, sample_labels, Evalue_cutoff = NULL, annotate_C = TRUE, threads = 1, threads_IgBlast = 1, case_labels = NULL, input_format, analysis_mode = "single", material_type = "rna", v_primer = "full_length", data_type = "single_cell", min_reads = 2, remove_tmp = TRUE, outputDir = NULL, hc_similarity_cutoff = 0.2, hc_mode = "average", cdr3_mode = "nt", cdr3_InDel_correction_mode = "soft_filter", annotate_CLL_immGen = FALSE){
 
   if(is.null(outputDir)){
     outputDir <- paste0("./", format(Sys.time(), "%d-%m-%Y_%H%M%S-IgScanResults/"))
