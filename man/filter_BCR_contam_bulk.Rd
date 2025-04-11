@@ -2,7 +2,7 @@
 % Please edit documentation in R/filter_BCR_contam_bulk.R
 \name{filter_BCR_contam_bulk}
 \alias{filter_BCR_contam_bulk}
-\title{Filter BCR contamination in bulk NGS data}
+\title{Filter BCR contamination in bulk IG-NGS data}
 \usage{
 filter_BCR_contam_bulk(
   igscan_data_frame,
@@ -33,8 +33,8 @@ Default is 10, higher values result in stricter contamination detection.}
 is allowed within a clonotype to ........ .
 Default is 10, higher values result in stricter contamination detection.}
 
-\item{remove_contamination}{Logical. If `TRUE`, cells flagged as contaminated are
-removed from the returned object (default is `FALSE`).}
+\item{remove_contamination}{Logical. If `TRUE`, sequences flagged as contaminated are
+removed from the returned data frame (default is `FALSE`).}
 
 \item{recalc_column}{A string/vector of strings with the name of the column/s to use for ID
 recalculation. Needed when remove_contamination=TRUE. Default is `SampleID`.}
@@ -50,7 +50,7 @@ The input `igscan_data_frame` including three new columns:
   \item Contamination_Sample: The dominant sample responsible for contamination.
 }
 
-  If `remove_contamination = TRUE`, cells flagged as `OUT` or `OUT_X` are removed from
+  If `remove_contamination = TRUE`, sequences flagged as `OUT` or `OUT_X` are removed from
   the data frame and immunogenetic IDs are recalculated with `recalculate_IDs_bulk()`.
 }
 \description{
@@ -63,7 +63,6 @@ it will be flagged as contamination in the latter sample.
 }
 \examples{
 \dontrun{
-# Example with a SingleCellExperiment object:
 cont_filtered_igscan <- filter_BCR_contam_bulk(igscan_data_frame = igscan_df, bath_col = "batchID", case_col = "case", contamination_cutoff = 30, threads = 4)
 }
 

@@ -1,4 +1,4 @@
-#' Filter BCR contamination in bulk NGS data
+#' Filter BCR contamination in bulk IG-NGS data
 #'
 #' This function identifies, flags, and optionally removes potential contamination
 #' between samples processed and/or sequenced together in a IgScan-annotated bulk
@@ -19,8 +19,8 @@
 #' @param contamination_clone_cutoff A numeric value specifying which percentage of contamination
 #' is allowed within a clonotype to ........ .
 #' Default is 10, higher values result in stricter contamination detection.
-#' @param remove_contamination Logical. If `TRUE`, cells flagged as contaminated are
-#' removed from the returned object (default is `FALSE`).
+#' @param remove_contamination Logical. If `TRUE`, sequences flagged as contaminated are
+#' removed from the returned data frame (default is `FALSE`).
 #' @param recalc_column A string/vector of strings with the name of the column/s to use for ID
 #' recalculation. Needed when remove_contamination=TRUE. Default is `SampleID`.
 #' @param threads The number of threads to perform BCR ID recalculation. Default is 1.
@@ -33,7 +33,7 @@
 #'   \item Contamination_Sample: The dominant sample responsible for contamination.
 #' }
 #'
-#'   If `remove_contamination = TRUE`, cells flagged as `OUT` or `OUT_X` are removed from
+#'   If `remove_contamination = TRUE`, sequences flagged as `OUT` or `OUT_X` are removed from
 #'   the data frame and immunogenetic IDs are recalculated with `recalculate_IDs_bulk()`.
 #'
 #' @export
@@ -43,7 +43,6 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Example with a SingleCellExperiment object:
 #' cont_filtered_igscan <- filter_BCR_contam_bulk(igscan_data_frame = igscan_df, bath_col = "batchID", case_col = "case", contamination_cutoff = 30, threads = 4)
 #' }
 #'
@@ -146,7 +145,6 @@ filter_BCR_contam_bulk <- function(igscan_data_frame, batch_col = NULL, case_col
     contam_df <- contam_df[contam_df$Contamination_FLAG == "PASS",]
     contam_df <- recalculate_IDs_bulk(contam_df, group_col = recalc_column)
   }
-
   return(contam_df)
 }
 
