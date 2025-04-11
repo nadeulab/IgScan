@@ -41,6 +41,7 @@ recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.id
   meta_data$tmp_col <- apply(meta_data[,group_col, drop = FALSE], 1, function(row) paste(row, collapse = "_"))
 
   recalc_obj_list <- mclapply(unique(meta_data$tmp_col), function(col_v){
+
     tmp_df <- .extract_IgScanDf_from_SingleCell(meta_data[meta_data$tmp_col == col_v,])
 
     if(nrow(tmp_df) == 0){return(NULL)}
