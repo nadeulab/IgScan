@@ -60,7 +60,7 @@ combine_IgScan_Seurat <- function(igscan_out, seurat_object){
   split_pos <- 1
   for(n in c("IGH1", "IGH2", "IGL1", "IGL2")){
 
-    subclone <- sapply(seurat_object@meta.data$igSubcloneID_all, function(x) strsplit(x, split = "-")[[1]][split_pos] )
+    subclone <- sapply(seurat_object@meta.data$igSubcloneID_all, function(x) strsplit(x, split = "-")[[1]][split_pos])
 
     ## Immunogenetic data
     seurat_object@meta.data[[paste0(n, "_VDJ_genes")]] <- igscan_out$VDJ_genes[match(subclone, igscan_out$SubcloneID)]
