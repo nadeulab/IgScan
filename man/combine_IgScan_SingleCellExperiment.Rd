@@ -2,14 +2,28 @@
 % Please edit documentation in R/combine_IgScan_SingleCellExperiment.R
 \name{combine_IgScan_SingleCellExperiment}
 \alias{combine_IgScan_SingleCellExperiment}
-\title{Combine IgScan Output with Single Cell Experiment}
+\title{Combine IgScan Output with a Single Cell Experiment Object}
 \usage{
-combine_IgScan_SingleCellExperiment(igscan_out, sce)
+combine_IgScan_SingleCellExperiment(
+  igscan_out,
+  sce,
+  sce_sample_col,
+  igscan_sample_col = "SampleID",
+  threads = 1
+)
 }
 \arguments{
 \item{igscan_out}{A data frame containing the output from IgScan for a single cell dataset.}
 
-\item{seurat_object}{A SCE object where colData will be updated with the corresponding immunogenetic information from `igscan_out`.}
+\item{sce}{A SCE object where colData will be updated with the corresponding immunogenetic information from `igscan_out`.}
+
+\item{sce_sample_col}{A vector with the name of the column or columns containing the sample identifiers
+in the metadata of the SCE object. There is no default value for this parameter.}
+
+\item{igscan_sample_col}{A vector with the name of the column or columns containing the sample identifiers
+in the IgScan annotation data frame. Default is 'SampleID'.}
+
+\item{threads}{The number of threads to be used. Default is 1.}
 }
 \value{
 A SCE object with updated colData, including the IgScan annotation organized by cell barcode.
@@ -21,7 +35,7 @@ the colData of the SCE object based on matching barcodes.
 }
 \examples{
 \dontrun{
-updated_sce_object <- combine_IgScan_Seurat(igscan_out, sce_object)
+updated_sce_object <- combine_IgScan_Seurat(igscan_out, sce_object, sce_sample_col = "Sample", igscan_sample_col = "SampleID", threads = 4)
 }
 
 }

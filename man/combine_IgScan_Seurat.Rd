@@ -2,14 +2,28 @@
 % Please edit documentation in R/combine_IgScan_Seurat.R
 \name{combine_IgScan_Seurat}
 \alias{combine_IgScan_Seurat}
-\title{Combine IgScan Output with Seurat Object}
+\title{Combine IgScan Output with a Seurat Object}
 \usage{
-combine_IgScan_Seurat(igscan_out, seurat_object)
+combine_IgScan_Seurat(
+  igscan_out,
+  seurat_object,
+  seurat_sample_col = "orig.ident",
+  igscan_sample_col = "SampleID",
+  threads = 1
+)
 }
 \arguments{
 \item{igscan_out}{A data frame containing the output from IgScan for a single cell dataset.}
 
 \item{seurat_object}{A Seurat object where metadata will be updated with the corresponding immunogenetic information from `igscan_out`.}
+
+\item{seurat_sample_col}{A vector with the name of the column or columns containing the sample identifiers
+in the metadata of the Seurat object. Default is 'orig.ident'.}
+
+\item{igscan_sample_col}{A vector with the name of the column or columns containing the sample identifiers
+in the IgScan annotation data frame. Default is 'SampleID'.}
+
+\item{threads}{The number of threads to be used. Default is 1.}
 }
 \value{
 A Seurat object with updated metadata, including the IgScan annotation organized by cell barcode.
@@ -18,6 +32,10 @@ A Seurat object with updated metadata, including the IgScan annotation organized
 This function integrates immunogenetic data from IgScan with a Seurat
 object. It maps clonotype-related information and sequence data to the metadata of
 the Seurat object based on matching barcodes.
+}
+\note{
+When several sample columns are passed to the function, a temporary ID is generated (e.g. Variable1_Variable2).
+Importantly, sample identifiers must be identical and coincide between the Seurat object and IgScan annotation file.
 }
 \examples{
 \dontrun{
