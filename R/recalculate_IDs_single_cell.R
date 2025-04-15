@@ -21,6 +21,7 @@
 #' @import Seurat
 #' @import SeuratObject
 #' @import SingleCellExperiment
+#' @import SummarizedExperiment
 #' @importFrom parallel mclapply
 #'
 #' @examples
@@ -148,9 +149,9 @@ recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.id
   recalc_df <- do.call(rbind, recalc_df_list)
 
   if(class(single_cell_object)[1] == "SingleCellExperiment"){
-    single_cell_object <- combine_IgScan_SingleCellExperiment(igscan_out = recalc_df, sce = single_cell_object)
+    single_cell_object <- combine_IgScan_SingleCellExperiment(igscan_out = recalc_df, sce = single_cell_object, sce_sample_col = group_col, igscan_sample_col = "SampleID", threads = threads)
   } else if(class(single_cell_object)[1] == "Seurat"){
-    single_cell_object <- combine_IgScan_Seurat(igscan_out = recalc_df, seurat_object = single_cell_object)
+    single_cell_object <- combine_IgScan_Seurat(igscan_out = recalc_df, seurat_object = single_cell_object, seurat_sample_col = group_col, igscan_sample_col = "SampleID", threads = threads)
   }
   return(single_cell_object)
 }
@@ -224,7 +225,7 @@ recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.id
       if("igCLL_Stereotype_Subsets" %in% colnames(subset_df)) {
         append_df$igCLL_Stereotype_Subsets <- unique(subset_df$igCLL_Stereotype_Subsets)
       }
-      append_df$SampleID <- as.character(unique(subset_df$orig.ident))
+      append_df$SampleID <- as.character(unique(subset_df$tmp_col))
 
       igscan_out <- rbind(igscan_out, append_df)
       writen_contigs <- writen_contigs + 1
