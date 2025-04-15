@@ -30,6 +30,10 @@
 #' @export
 #'
 #' @importFrom tidyr pivot_wider
+#' @import Seurat
+#' @import SeuratObject
+#' @import SingleCellExperiment
+#' @import SummarizedExperiment
 #'
 #' @examples
 #' \dontrun{
@@ -40,7 +44,7 @@
 filter_SampleTag_contam_Rhapsody <- function(single_cell_object, contamination_cutoff = 10, remove_contamination = F){
 
   if(class(single_cell_object)[1] == "SingleCellExperiment"){
-    meta_data <- single_cell_object@colData
+    meta_data <- colData(single_cell_object)
   } else if(class(single_cell_object)[1] == "Seurat"){
     meta_data <- single_cell_object@meta.data
   }
@@ -85,9 +89,9 @@ filter_SampleTag_contam_Rhapsody <- function(single_cell_object, contamination_c
   }
 
   if(class(single_cell_object)[1] == "SingleCellExperiment"){
-    single_cell_object@colData$Contamination_FLAG <- meta_data$Contamination_FLAG[match(rownames(single_cell_object@colData), rownames(meta_data))]
-    single_cell_object@colData$Contamination_Ratio <- meta_data$Contamination_Ratio[match(rownames(single_cell_object@colData), rownames(meta_data))]
-    single_cell_object@colData$Contamination_Sample <- meta_data$Contamination_Sample[match(rownames(single_cell_object@colData), rownames(meta_data))]
+    colData(single_cell_object)$Contamination_FLAG <- meta_data$Contamination_FLAG[match(rownames(colData(single_cell_object)), rownames(meta_data))]
+    colData(single_cell_object)$Contamination_Ratio <- meta_data$Contamination_Ratio[match(rownames(colData(single_cell_object)), rownames(meta_data))]
+    colData(single_cell_object)$Contamination_Sample <- meta_data$Contamination_Sample[match(rownames(colData(single_cell_object)), rownames(meta_data))]
 
   } else if(class(single_cell_object)[1] == "Seurat"){
     single_cell_object@meta.data$Contamination_FLAG <- meta_data$Contamination_FLAG[match(rownames(single_cell_object@meta.data), rownames(meta_data))]
@@ -97,9 +101,9 @@ filter_SampleTag_contam_Rhapsody <- function(single_cell_object, contamination_c
 
   if(remove_contamination){
     if(class(single_cell_object)[1] == "SingleCellExperiment"){
-      single_cell_object@colData$Contamination_FLAG[is.na(single_cell_object@colData$Contamination_FLAG)] <- "."
+      colData(single_cell_object)$Contamination_FLAG[is.na(colData(single_cell_object)$Contamination_FLAG)] <- "."
       single_cell_object <- subset(single_cell_object, subset = Contamination_FLAG != "OUT")
-      single_cell_object@colData$Contamination_FLAG[single_cell_object@colData$Contamination_FLAG == "."] <- NA
+      colData(single_cell_object)$Contamination_FLAG[colData(single_cell_object)$Contamination_FLAG == "."] <- NA
 
     } else if(class(single_cell_object)[1] == "Seurat"){
       single_cell_object@meta.data$Contamination_FLAG[is.na(single_cell_object@meta.data$Contamination_FLAG)] <- "."
