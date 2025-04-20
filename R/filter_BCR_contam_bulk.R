@@ -18,7 +18,6 @@
 #' Default is 10, higher values result in stricter contamination detection.
 #' @param contamination_clone_cutoff A numeric value specifying which percentage of contamination
 #' is allowed within a clonotype to ........ .
-#' Default is 10, higher values result in stricter contamination detection.
 #' @param remove_contamination Logical. If `TRUE`, sequences flagged as contaminated are
 #' removed from the returned data frame (default is `FALSE`).
 #' @param recalc_column A string/vector of strings with the name of the column/s to use for ID

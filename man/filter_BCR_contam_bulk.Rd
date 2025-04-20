@@ -30,8 +30,7 @@ each sample. Default is NULL, meaning that each sample will be considered from d
 Default is 10, higher values result in stricter contamination detection.}
 
 \item{contamination_clone_cutoff}{A numeric value specifying which percentage of contamination
-is allowed within a clonotype to ........ .
-Default is 10, higher values result in stricter contamination detection.}
+is allowed within a clonotype to ........ .}
 
 \item{remove_contamination}{Logical. If `TRUE`, sequences flagged as contaminated are
 removed from the returned data frame (default is `FALSE`).}
