@@ -16,8 +16,10 @@
 #' each sample. Default is NULL, meaning that each sample will be considered from different individuals.
 #' @param contamination_cutoff A numeric value specifying the contamination ratio threshold.
 #' Default is 10, higher values result in stricter contamination detection.
-#' @param contamination_clone_cutoff A numeric value specifying which percentage of contamination
-#' is allowed within a clonotype to ........ .
+#' @param contamination_clone_cutoff A numeric value defining what percentage of contaminated sequences within
+#' a clonotype is allowed (i.e., sequences sharing the same clonotype ID). If the proportion of contaminated
+#' sequences exceeds this threshold, all sequences beloning to the clonptype will be flagged as `OUT_CLONOTYPE`.
+#' Default is 80 percent.
 #' @param remove_contamination Logical. If `TRUE`, sequences flagged as contaminated are
 #' removed from the returned data frame (default is `FALSE`).
 #' @param recalc_column A string/vector of strings with the name of the column/s to use for ID

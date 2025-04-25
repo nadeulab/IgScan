@@ -33,8 +33,10 @@ each sample. Default is NULL, meaning that each sample will be considered from d
 \item{contamination_cutoff}{A numeric value specifying the contamination ratio threshold.
 Default is 10, higher values result in stricter contamination detection.}
 
-\item{contamination_clone_cutoff}{A numeric value specifying which percentage of contamination
-is allowed within a clonotype to ........ .}
+\item{contamination_clone_cutoff}{A numeric value defining what percentage of contaminated cells within
+a clonotype is allowed (i.e., cells sharing the same clonotype ID). If the proportion of contaminated
+cells exceeds this threshold, all cells beloning to the clonptype will be flagged as `OUT_CLONOTYPE`.
+Default is 80 percent.}
 
 \item{remove_contamination}{Logical. If `TRUE`, cells flagged as contaminated are
 removed from the returned object (default is `FALSE`).}
