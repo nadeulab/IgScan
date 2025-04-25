@@ -160,7 +160,7 @@ filter_BCR_contam_single_cell <- function(single_cell_list, sample_col = "orig.i
 
     } else if(class(single_cell_list[[i]])[1] == "Seurat"){
       tmp_meta_data <- single_cell_list[[i]]@meta.data
-      tmp_meta_data <- .flagCont_singlecell(tmp_meta_data, contam_df, sample_col, contamination_clone_cutoff, remove_contamination, recalc_column)
+      tmp_meta_data <- .flagCont_singlecell(tmp_meta_data, contam_df, sample_col, contamination_clone_cutoff)
       single_cell_list[[i]]@meta.data <- tmp_meta_data
       if(remove_contamination){
         single_cell_list[[i]] <- subset(single_cell_list[[i]], subset = Contamination_FLAG == "PASS")
