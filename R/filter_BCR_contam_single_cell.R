@@ -14,7 +14,7 @@
 #' Default is 'orig.ident'.
 #' @param batch_col A string with the name of the column identifying the `batch` of processing
 #' and/or sequencing for each sample. Each `batch` will be evaluated independently. Default is NULL,
-#' meaning that all samples in the single_cell_object list will be considered from the same batch.
+#' meaning that all samples in the single_cell_list list will be considered from the same batch.
 #' @param case_col A string with the name of the column identifying the `case` or `individual` for
 #' each sample. Default is NULL, meaning that each sample will be considered from different individuals.
 #' @param contamination_cutoff A numeric value specifying the contamination ratio threshold.
@@ -59,10 +59,10 @@ filter_BCR_contam_single_cell <- function(single_cell_list, sample_col = "orig.i
 
   meta_data <- data.frame()
   for(i in 1:length(single_cell_list)){
-    if(class(single_cell_object)[1] == "SingleCellExperiment"){
-      tmp <- colData(single_cell_object)
-    } else if(class(single_cell_object)[1] == "Seurat"){
-      tmp <- single_cell_object@meta.data
+    if(class(single_cell_list[[i]])[1] == "SingleCellExperiment"){
+      tmp <- colData(single_cell_list[[i]])
+    } else if(class(single_cell_list[[i]])[1] == "Seurat"){
+      tmp <- single_cell_list[[i]]@meta.data
     }
     meta_data <- rbind(meta_data, tmp)
   }
