@@ -25,7 +25,7 @@ Default is 'orig.ident'.}
 
 \item{batch_col}{A string with the name of the column identifying the `batch` of processing
 and/or sequencing for each sample. Each `batch` will be evaluated independently. Default is NULL,
-meaning that all samples in the single_cell_object list will be considered from the same batch.}
+meaning that all samples in the single_cell_list list will be considered from the same batch.}
 
 \item{case_col}{A string with the name of the column identifying the `case` or `individual` for
 each sample. Default is NULL, meaning that each sample will be considered from different individuals.}
