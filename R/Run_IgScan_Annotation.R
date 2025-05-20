@@ -206,29 +206,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   }
   tidy_dataset$junction_aa_length <- nchar(tidy_dataset$junction_aa)
 
-  ## Label clonotype labels (V gene + CDR3 amino acid sequence)
-  list_unique_Vs <- unique(sapply(tidy_dataset$VDJ, function(x) strsplit(x, split = "/")[[1]][1]))
-  list_unique_Vs <- unname(sapply(list_unique_Vs, function(x) str_replace_all(x, "\\*\\d+", "")))
-  list_unique_Vs <- unique(unname(sapply(list_unique_Vs, function(x) paste0(sort(unique(strsplit(x, ",")[[1]])), collapse = ","))))
-  list_unique_Vs <- list_unique_Vs[order(nchar(list_unique_Vs), decreasing = TRUE)]
-
-  final_IGHV <- sapply(.combine_IGHV_genes(strsplit(list_unique_Vs, ",")), function(group) {
-    paste(sort(group), collapse = ",")
-  })
-
-  v_gene <- unname(sapply(tidy_dataset$VDJ, function(x) strsplit(x, split = "\\*")[[1]][1]))
-  u_v_gene <- unique(v_gene)
-  u_v_gene_match <- unname(sapply(u_v_gene, function(v) {   final_IGHV[sapply(final_IGHV, function(x) v %in% strsplit(x, ",")[[1]])] }))
-  v_gene <- u_v_gene_match[match(v_gene, u_v_gene)]
-
-  if(cdr3_mode == "aa"){
-    tidy_dataset$clonotypeLabel <- paste(v_gene, sapply(tidy_dataset$junction_aa, function(x) paste0(strsplit(x, "")[[1]][2:(nchar(x)-1)], collapse = "")), sep = "_")
-  }else if(cdr3_mode == "nt"){
-    tidy_dataset$clonotypeLabel <- paste(v_gene, sapply(tidy_dataset$junction, function(x) paste0(strsplit(x, "")[[1]][4:(nchar(x)-3)], collapse = "")), sep = "_")
-  }
-
   if(data_type == "bulk"){
-
     read_names <- tidy_dataset$sequence_id
     if(all(grepl("=", read_names)) & all(grepl("^[0-9]+$", sapply(read_names, function(x) strsplit(x, split = "=")[[1]][2])))){
       tidy_dataset$n_reads <- as.numeric(strsplit(x[1], split = "=")[[1]][2])
@@ -253,6 +231,27 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
       tidy_dataset <- tidy_dataset[-rows_to_remove,]
     }
     tidy_dataset <- tidy_dataset[!duplicated(tidy_dataset$Unique_SequenceID),]
+  }
+
+  ## Label clonotype labels (V gene + CDR3 amino acid sequence)
+  list_unique_Vs <- unique(sapply(tidy_dataset$VDJ, function(x) strsplit(x, split = "/")[[1]][1]))
+  list_unique_Vs <- unname(sapply(list_unique_Vs, function(x) str_replace_all(x, "\\*\\d+", "")))
+  list_unique_Vs <- unique(unname(sapply(list_unique_Vs, function(x) paste0(sort(unique(strsplit(x, ",")[[1]])), collapse = ","))))
+  list_unique_Vs <- list_unique_Vs[order(nchar(list_unique_Vs), decreasing = TRUE)]
+
+  final_IGHV <- sapply(.combine_IGHV_genes(strsplit(list_unique_Vs, ",")), function(group) {
+    paste(sort(group), collapse = ",")
+  })
+
+  v_gene <- unname(sapply(tidy_dataset$VDJ, function(x) strsplit(x, split = "\\*")[[1]][1]))
+  u_v_gene <- unique(v_gene)
+  u_v_gene_match <- unname(unlist(sapply(u_v_gene, function(v) { final_IGHV[sapply(final_IGHV, function(x) v %in% strsplit(x, ",")[[1]])] })))
+  v_gene <- u_v_gene_match[match(v_gene, u_v_gene)]
+
+  if(cdr3_mode == "aa"){
+    tidy_dataset$clonotypeLabel <- paste(v_gene, sapply(tidy_dataset$junction_aa, function(x) paste0(strsplit(x, "")[[1]][2:(nchar(x)-1)], collapse = "")), sep = "_")
+  }else if(cdr3_mode == "nt"){
+    tidy_dataset$clonotypeLabel <- paste(v_gene, sapply(tidy_dataset$junction, function(x) paste0(strsplit(x, "")[[1]][4:(nchar(x)-3)], collapse = "")), sep = "_")
   }
 
   ## Removing incomplete sequences
