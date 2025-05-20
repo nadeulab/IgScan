@@ -19,7 +19,6 @@
 #' @importFrom qs qread qsave
 #' @importFrom stringr str_count
 #' @import SingleCellExperiment
-#' @import SummarizedExperiment
 #' @importFrom singleCellTK combineSCE
 #'
 #' @examples

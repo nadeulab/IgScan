@@ -33,7 +33,6 @@
 #' @import Seurat
 #' @import SeuratObject
 #' @import SingleCellExperiment
-#' @import SummarizedExperiment
 #'
 #' @examples
 #' \dontrun{
