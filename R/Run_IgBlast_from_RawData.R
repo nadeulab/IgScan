@@ -150,7 +150,7 @@ Run_IgBlast_from_RawData <- function(sample_paths, sample_labels, input_format, 
     else if(input_format %in% c("mixcr", "bdrhapsodybcr", "parsebcr", "trust4", "airr", "imgt_airr")){
       tmp <- fread(sample_paths_read[i], header = T, sep = "\t", stringsAsFactors = F, data.table = F)
     }
-    else if(input_format == "10x_csv"){
+    else if(input_format == "10xbcr_csv"){
       tmp <- fread(sample_paths_read[i], header = T, sep = ",", stringsAsFactors = F, data.table = F)
     }
     samples_list[[i]] <- tmp
