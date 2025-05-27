@@ -19,7 +19,6 @@
 #' @importFrom qs qread qsave
 #' @importFrom stringr str_count
 #' @import SingleCellExperiment
-#' @importFrom singleCellTK combineSCE
 #'
 #' @examples
 #' \dontrun{
@@ -114,7 +113,7 @@ combine_IgScan_SingleCellExperiment <- function(igscan_out, sce, sce_sample_col,
     tmp_col_data[tmp_col_data == ""] <- NA
     colData(tmp_sce) <- DataFrame(tmp_col_data)
 
-    return(tmp_sce)
+    return(colData(tmp_sce))
 
   }, mc.cores = threads)
 
@@ -122,11 +121,10 @@ combine_IgScan_SingleCellExperiment <- function(igscan_out, sce, sce_sample_col,
 
   if(length(tmp_object_list) == 0){stop("No cells found in none of the sample identifiers specified. Please, ensure that sample identifiers are valid.\n")}
 
-  combined_sce_object <- combineSCE(tmp_object_list, combined = TRUE)
+  combined_sce_object_metadata <- do.call(rbind, tmp_object_list)
+  combined_sce_object_metadata <- as.data.frame(combined_sce_object_metadata)
+  combined_sce_object_metadata <- combined_sce_object_metadata[,colnames(combined_sce_object_metadata) != "tmp_col"]
+  colData(sce) <- DataFrame(combined_sce_object_metadata)
 
-  combined_col_data <- as.data.frame(colData(combined_sce_object))
-  combined_col_data <- combined_col_data[, colnames(combined_col_data) != "tmp_col"]
-  colData(combined_sce_object) <- DataFrame(combined_col_data)
-
-  return(combined_sce_object)
+  return(sce)
 }

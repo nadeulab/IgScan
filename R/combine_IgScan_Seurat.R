@@ -117,7 +117,7 @@ combine_IgScan_Seurat <- function(igscan_out, seurat_object, seurat_sample_col =
 
     tmp_seurat@meta.data[tmp_seurat@meta.data == ""] <- NA
 
-    return(tmp_seurat)
+    return(tmp_seurat@meta.data)
 
   }, mc.cores = threads)
 
@@ -125,8 +125,9 @@ combine_IgScan_Seurat <- function(igscan_out, seurat_object, seurat_sample_col =
 
   if(length(tmp_object_list) == 0){stop("No cells found in none of the sample identifiers specified. Please, ensure that sample identifiers are valid.\n")}
 
-  combined_seurat_object <- Reduce(function(x, y) merge(x, y), tmp_object_list)
-  combined_seurat_object@meta.data <- combined_seurat_object@meta.data[, colnames(combined_seurat_object@meta.data) != "tmp_col"]
+  combined_seurat_object_metadata <- do.call(rbind, tmp_object_list)
+  seurat_object@meta.data <- combined_seurat_object_metadata[Cells(seurat_object),]
+  seurat_object@meta.data <- seurat_object@meta.data[, colnames(seurat_object@meta.data) != "tmp_col"]
 
-  return(combined_seurat_object)
+  return(seurat_object)
 }
