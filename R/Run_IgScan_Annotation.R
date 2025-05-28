@@ -1199,22 +1199,26 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   }
 
   if(flag.clonotype.doublets == T){
-    for(i in 2:nrow(dict_ct2)){
-      if(!is.na(dict_ct2$completeBCR[i])){ next }
-      cltps <- dict_ct2$Group.1[i]
-      v <- lapply(dict_ct2$Group.1[1:(i-1)][is.na(dict_ct2$completeBCR[1:(i-1)])], function(x) strsplit(x, split = "-")[[1]])
-      pos <- c()
-      ch <- c()
-      for(cltp in strsplit(cltps, "-")[[1]]){
-        for(j in 1:length(v)){
-          if(cltp %in% v[[j]]){
-            pos <- c(pos, j)
-            ch <- c(ch, cltp)
+    if(nrow(dict_ct2) == 1){
+      dict_ct2$completeBCR <- dict_ct2$original_completeBCR
+    } else{
+      for(i in 2:nrow(dict_ct2)){
+        if(!is.na(dict_ct2$completeBCR[i])){ next }
+        cltps <- dict_ct2$Group.1[i]
+        v <- lapply(dict_ct2$Group.1[1:(i-1)][is.na(dict_ct2$completeBCR[1:(i-1)])], function(x) strsplit(x, split = "-")[[1]])
+        pos <- c()
+        ch <- c()
+        for(cltp in strsplit(cltps, "-")[[1]]){
+          for(j in 1:length(v)){
+            if(cltp %in% v[[j]]){
+              pos <- c(pos, j)
+              ch <- c(ch, cltp)
+            }
           }
         }
-      }
-      if(length(unique(ch)) > 1 & length(unique(pos)) >= 1){
-        dict_ct2$completeBCR[i] <- "Clonotype_doublet"
+        if(length(unique(ch)) > 1 & length(unique(pos)) >= 1){
+          dict_ct2$completeBCR[i] <- "Clonotype_doublet"
+        }
       }
     }
   }
