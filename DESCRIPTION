@@ -3,8 +3,15 @@ Type: Package
 Title: What the Package Does (Title Case)
 Version: 1.0.0
 Date: 2025-01-08
-Author: Ian Márquez-López <iamarquez@recerca.clinic.cat>
-Maintainer: Ian Márquez-López <iamarquez@recerca.clinic.cat>
+Authors@R: 
+    c(person(given = "Ian",
+             family = "Márquez-López",
+             role = c("aut", "cre"),
+             email = "iamarquez@recerca.clinic.cat"),
+      person(given = "Ferran",
+             family = "Nadeu",
+             role = "aut",
+             email = "nadeu@recerca.clinic.cat"))
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
 License: What license is it under?
