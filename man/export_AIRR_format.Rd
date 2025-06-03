@@ -4,11 +4,38 @@
 \alias{export_AIRR_format}
 \title{Export IgScan outputs in AIRR format}
 \usage{
-export_AIRR_format(object, dir, fileName = NULL)
+export_AIRR_format(object, dir, fileName = NULL, germline_aln = "masked")
 }
 \arguments{
-\item{fileName}{}
+\item{object}{A data frame, \code{Seurat} object, or \code{SingleCellExperiment} object
+containing IgScan annotation fields. For data frames, it is expected to match
+the IgScan format (specific column names will be validated).}
+
+\item{dir}{A character string specifying the output directory. If it does not exist, it will be created.}
+
+\item{fileName}{A character string for the output file name. Defaults to \code{"IgScan_AIRR_formatted.tsv"} if not provided.}
+
+\item{germline_aln}{Type of germline alignment to be included in the AIRR file.
+Options are \code{masked}(uses IgBlast masked germline alignment) and \code{consensus}(uses the IgScan custom-built
+consensus germline sequence).}
+}
+\value{
+A \code{.tsv} file written to the specified directory in AIRR format as well
+as the AIRR dataframe as an R object.
 }
 \description{
-Export IgScan outputs in AIRR format
+This function converts the output from IgScan (or compatible objects single cell
+objects with IgScan annotation) into the standardized AIRR format and writes it to
+a \code{.tsv} file. It supports input objects from \verb{IgScan output data.frame}, \code{Seurat},
+or \code{SingleCellExperiment} classes.
+}
+\examples{
+\dontrun{
+# Export from a data.frame
+export_AIRR_format(igscan_df, dir = "results/")
+
+# Export from Seurat object
+export_AIRR_format(seurat_obj, dir = "results/", germline_aln = "consensus")
+}
+
 }
