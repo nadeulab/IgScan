@@ -15,7 +15,7 @@ combine_IgScan_Seurat(
 \arguments{
 \item{igscan_out}{A data frame containing the output from IgScan for a single cell dataset.}
 
-\item{seurat_object}{A Seurat object where metadata will be updated with the corresponding immunogenetic information from `igscan_out`.}
+\item{seurat_object}{A Seurat object where metadata will be updated with the corresponding immunogenetic information from \code{igscan_out}.}
 
 \item{seurat_sample_col}{A vector with the name of the column or columns containing the sample identifiers
 in the metadata of the Seurat object. Default is 'orig.ident'.}

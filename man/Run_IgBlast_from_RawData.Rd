@@ -20,10 +20,10 @@ Run_IgBlast_from_RawData(
 \arguments{
 \item{sample_paths}{A vector of paths to input files or a vector of
 directories containing the input file. Supported formats depend on the
-`input_format` parameter.}
+\code{input_format} parameter.}
 
-\item{sample_labels}{A vector of sample labels corresponding to `sample_paths`.
-Must have the same length as `sample_paths`.}
+\item{sample_labels}{A vector of sample labels corresponding to \code{sample_paths}.
+Must have the same length as \code{sample_paths}.}
 
 \item{input_format}{A string specifying the format of the input data, currently supporting:
 '10xBCR_fasta', '10xBCR_csv', 'ParseBCR', 'BDRhapsodyBCR', 'MiXCR',
@@ -32,9 +32,9 @@ Must have the same length as `sample_paths`.}
 \item{data_type}{A string indicating the type of data. Options: 'single_cell' and 'bulk'. Default is 'single_cell'.}
 
 \item{Evalue_cutoff}{A numeric value specifying the E-value cutoff for IgBLAST alignment.
-Default is `NULL` (no cutoff applied).}
+Default is \code{NULL} (no cutoff applied).}
 
-\item{annotate_C}{Logical. If `TRUE`, the function includes the annotation of
+\item{annotate_C}{Logical. If \code{TRUE}, the function includes the annotation of
 constant regions using the NCBI IG C region database.}
 
 \item{threads_IgBlast}{An integer specifying the number of threads for running IgBLAST.
@@ -43,7 +43,7 @@ Default is 1.}
 \item{outputDir}{The directory to store intermediate and output files.
 Defaults to the working directory if not provided.}
 
-\item{run_IgBlast_report}{Logical. If `TRUE`, generates a PDF report summarizing
+\item{run_IgBlast_report}{Logical. If \code{TRUE}, generates a PDF report summarizing
 IgBLAST results.}
 
 \item{threads}{An integer specifying the number of threads for processing samples.
@@ -51,7 +51,7 @@ Default is 1.}
 }
 \value{
 A list containing the paths of all generated IgBLAST output files. If
-  `run_IgBlast_report = TRUE`, also includes the path to the PDF report.
+\code{run_IgBlast_report = TRUE}, also includes the path to the PDF report.
 }
 \description{
 This function processes raw sequencing data and runs IgBLAST to perform
@@ -61,18 +61,16 @@ if wanted by the user.
 }
 \details{
 This function performs the following steps:
-
-   1. Validates the input data and format.
-
-   2. Converts input data to FASTA format if needed.
-
-   3. Runs IgBLAST for V(D)J-(C) reannotation and alignment.
-
-   4. Generates an IgBlast summary report if specified.
+\enumerate{
+\item Validates the input data and format.
+\item Converts input data to FASTA format if needed.
+\item Runs IgBLAST for V(D)J-(C) reannotation and alignment.
+\item Generates an IgBlast summary report if specified.
+}
 }
 \note{
 Ensure that IgBLAST and its required reference databases are installed and
-  properly configured before running this function.
+properly configured before running this function.
 }
 \examples{
 \dontrun{

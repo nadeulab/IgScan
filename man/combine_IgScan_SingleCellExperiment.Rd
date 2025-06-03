@@ -15,7 +15,7 @@ combine_IgScan_SingleCellExperiment(
 \arguments{
 \item{igscan_out}{A data frame containing the output from IgScan for a single cell dataset.}
 
-\item{sce}{A SCE object where colData will be updated with the corresponding immunogenetic information from `igscan_out`.}
+\item{sce}{A SCE object where colData will be updated with the corresponding immunogenetic information from \code{igscan_out}.}
 
 \item{sce_sample_col}{A vector with the name of the column or columns containing the sample identifiers
 in the metadata of the SCE object. There is no default value for this parameter.}

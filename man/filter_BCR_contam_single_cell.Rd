@@ -17,17 +17,17 @@ filter_BCR_contam_single_cell(
 )
 }
 \arguments{
-\item{single_cell_list}{A list of `SingleCellExperiment` or `Seurat` objects containing IgScan
+\item{single_cell_list}{A list of \code{SingleCellExperiment} or \code{Seurat} objects containing IgScan
 annotation for single cell data.}
 
-\item{sample_col}{A string with the name of the column identifying `sample`.
+\item{sample_col}{A string with the name of the column identifying \code{sample}.
 Default is 'orig.ident'.}
 
-\item{batch_col}{A string with the name of the column identifying the `batch` of processing
-and/or sequencing for each sample. Each `batch` will be evaluated independently. Default is NULL,
+\item{batch_col}{A string with the name of the column identifying the \code{batch} of processing
+and/or sequencing for each sample. Each \code{batch} will be evaluated independently. Default is NULL,
 meaning that all samples in the single_cell_list list will be considered from the same batch.}
 
-\item{case_col}{A string with the name of the column identifying the `case` or `individual` for
+\item{case_col}{A string with the name of the column identifying the \code{case} or \code{individual} for
 each sample. Default is NULL, meaning that each sample will be considered from different individuals.}
 
 \item{contamination_cutoff}{A numeric value specifying the contamination ratio threshold.
@@ -35,28 +35,28 @@ Default is 10, higher values result in stricter contamination detection.}
 
 \item{contamination_clone_cutoff}{A numeric value defining what percentage of contaminated cells within
 a clonotype is allowed (i.e., cells sharing the same clonotype ID). If the proportion of contaminated
-cells exceeds this threshold, all cells beloning to the clonptype will be flagged as `OUT_CLONOTYPE`.
+cells exceeds this threshold, all cells beloning to the clonptype will be flagged as \code{OUT_CLONOTYPE}.
 Default is 80 percent.}
 
-\item{remove_contamination}{Logical. If `TRUE`, cells flagged as contaminated are
-removed from the returned object (default is `FALSE`).}
+\item{remove_contamination}{Logical. If \code{TRUE}, cells flagged as contaminated are
+removed from the returned object (default is \code{FALSE}).}
 
 \item{recalc_column}{A string/vector of strings with the name of the column/s to use for ID
-recalculation. Needed when remove_contamination=TRUE. Default is `orig.ident`.}
+recalculation. Needed when remove_contamination=TRUE. Default is \code{orig.ident}.}
 
 \item{threads}{The number of threads to perform BCR ID recalculation. Default is 1.}
 }
 \value{
-The input `single_cell_list` with each object including three new columns:
+The input \code{single_cell_list} with each object including three new columns:
 \itemize{
-  \item Contamination_FLAG: Indicates whether a cell passed contamination checks (`PASS`), was flagged as contaminated (`OUT`),
-  or was involved in crossed contamination (`OUT_X`)
-  \item Contamination_Ratio: The ratio of clonal overlap between the contaminated and dominant samples.
-  \item Contamination_Sample: The dominant sample responsible for contamination.
+\item Contamination_FLAG: Indicates whether a cell passed contamination checks (\code{PASS}), was flagged as contaminated (\code{OUT}),
+or was involved in crossed contamination (\code{OUT_X})
+\item Contamination_Ratio: The ratio of clonal overlap between the contaminated and dominant samples.
+\item Contamination_Sample: The dominant sample responsible for contamination.
 }
 
-  If `remove_contamination = TRUE`, cells flagged as `OUT` or `OUT_X` are removed from
-  the objects and immunogenetic IDs are recalculated with `recalculate_IDs_single_cell()`.
+If \code{remove_contamination = TRUE}, cells flagged as \code{OUT} or \code{OUT_X} are removed from
+the objects and immunogenetic IDs are recalculated with \code{recalculate_IDs_single_cell()}.
 }
 \description{
 This function identifies, flags, and optionally removes potential contamination
@@ -65,7 +65,7 @@ Contamination is assessed by analyzing the distribution of identicalBCR clonotyp
 between samples. A contamination cutoff can be specified, indicating that if a
 clonotype is observed X times more in one sample tag than another, it will be
 flagged as contamination in the latter sample. The function works with both
-`SingleCellExperiment` and `Seurat` objects.
+\code{SingleCellExperiment} and \code{Seurat} objects.
 }
 \examples{
 \dontrun{

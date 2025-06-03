@@ -11,29 +11,29 @@ filter_SampleTag_contam_Rhapsody(
 )
 }
 \arguments{
-\item{single_cell_object}{A `SingleCellExperiment` or `Seurat` object containing IgScan
-annotation for single cell data. The object must also include the `Sample_Tag` identifier.}
+\item{single_cell_object}{A \code{SingleCellExperiment} or \code{Seurat} object containing IgScan
+annotation for single cell data. The object must also include the \code{Sample_Tag} identifier.}
 
 \item{contamination_cutoff}{A numeric value specifying the contamination ratio threshold.
 Default is 10, higher values result in stricter contamination detection.}
 
-\item{remove_contamination}{Logical. If `TRUE`, cells flagged as contaminated are
-removed from the returned object (default is `FALSE`).}
+\item{remove_contamination}{Logical. If \code{TRUE}, cells flagged as contaminated are
+removed from the returned object (default is \code{FALSE}).}
 
 \item{recalc_column}{A string/vector of strings with the name of the column/s to use for ID
-recalculation. Needed when remove_contamination=TRUE. Default is `orig.ident`.}
+recalculation. Needed when remove_contamination=TRUE. Default is \code{orig.ident}.}
 }
 \value{
-The input `single_cell_object` with updated metadata, which includes three new columns:
+The input \code{single_cell_object} with updated metadata, which includes three new columns:
 \itemize{
-  \item Contamination_FLAG: Indicates whether a cell passed contamination checks (`PASS`), was flagged as contaminated (`OUT`),
-  or was involved in crossed contamination (`OUT_X`)
-  \item Contamination_Ratio: The ratio of clonal overlap between the contaminated and dominant samples.
-  \item Contamination_Sample: The dominant sample responsible for contamination.
+\item Contamination_FLAG: Indicates whether a cell passed contamination checks (\code{PASS}), was flagged as contaminated (\code{OUT}),
+or was involved in crossed contamination (\code{OUT_X})
+\item Contamination_Ratio: The ratio of clonal overlap between the contaminated and dominant samples.
+\item Contamination_Sample: The dominant sample responsible for contamination.
 }
 
-  If `remove_contamination = TRUE`, cells flagged as `OUT` or `OUT_X` are removed from
-  the data frame and immunogenetic IDs are recalculated with `recalculate_IDs_single_cell()`.
+If \code{remove_contamination = TRUE}, cells flagged as \code{OUT} or \code{OUT_X} are removed from
+the data frame and immunogenetic IDs are recalculated with \code{recalculate_IDs_single_cell()}.
 }
 \description{
 This function identifies, flags, and optionally removes cell contamination between sample tags
@@ -41,7 +41,7 @@ in an IgScan-annotated single-cell object derived from BD Rhapsody data. Contami
 by analyzing the distribution of BCR clonotypes between sample tags. A contamination cutoff can be
 specified, indicating that if a clonotype is observed X times more in one sample tag than another,
 it will be flagged as contamination in the latter sample tag. The function works with both
-`SingleCellExperiment` and `Seurat` objects.
+\code{SingleCellExperiment} and \code{Seurat} objects.
 }
 \examples{
 \dontrun{

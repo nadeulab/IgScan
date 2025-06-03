@@ -12,7 +12,7 @@ recalculate_IDs_single_cell(
 }
 \arguments{
 \item{single_cell_object}{A single-cell object combined with IgScan annotation
-in either `SingleCellExperiment` or `Seurat` format.}
+in either \code{SingleCellExperiment} or \code{Seurat} format.}
 
 \item{group_col}{A vector with the name of the column or columns containing the grouping variable/s.
 Default is 'orig.ident', thus recalculating BCR IDs based in each sample independently.}
@@ -26,8 +26,8 @@ A single cell object with the IgScan clonotype-related IDs updated in the metada
 This function recalculates and standardizes IgScan clonotype-related IDs
 in single-cell sequencing datasets. Using this function may be of interest
 when a IgScan-annotated single cell object has been filtered and some cells
-have been removed. It supports input objects from both the `SingleCellExperiment`
-and `Seurat` classes.
+have been removed. It supports input objects from both the \code{SingleCellExperiment}
+and \code{Seurat} classes.
 }
 \examples{
 \dontrun{

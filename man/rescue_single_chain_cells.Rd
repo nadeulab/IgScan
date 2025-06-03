@@ -12,7 +12,7 @@ rescue_single_chain_cells(
 }
 \arguments{
 \item{single_cell_object}{A single-cell object combined with IgScan annotation
-in either `SingleCellExperiment` or `Seurat` format.}
+in either \code{SingleCellExperiment} or \code{Seurat} format.}
 
 \item{group_col}{A vector with the name of the column or columns containing the grouping variable/s.
 Default is 'orig.ident', thus rescuing and recalculating BCR IDs based in each sample independently.}
@@ -20,14 +20,14 @@ Default is 'orig.ident', thus rescuing and recalculating BCR IDs based in each s
 \item{threads}{The number of threads to perform single_chain cells rescuing. Default is 1.}
 }
 \value{
-A single cell object with updated metadata, where the `completeBCR`field in
+A single cell object with updated metadata, where the \code{completeBCR}field in
 some "single chain" cells may now be marked as "Yes_rescue".
 }
 \description{
 This function identifies and rescues cells with incomplete BCR information (labeled
 as "Single_chain_1" or "Single_chain_2") by attempting to infer and assign clonotype
 and subclonotype IDs based on related cells that have complete BCR information. It
-supports both `SingleCellExperiment` and `Seurat` objects. After rescuing single-chain
+supports both \code{SingleCellExperiment} and \code{Seurat} objects. After rescuing single-chain
 entries, the function also recalculates clonotype-related identifiers.
 }
 \examples{

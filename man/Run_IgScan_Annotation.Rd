@@ -30,7 +30,7 @@ sample labels of the Run_IgBlast_from_RawData output files. This parameter can b
 set to 'all_samples', which will analyze all the samples in the igblast_out directory
 in 'single' analysis_mode. Default is 'all_samples'.}
 
-\item{case_labels}{A vector of case labels matching the indexes of `sample_labels`.
+\item{case_labels}{A vector of case labels matching the indexes of \code{sample_labels}.
 Required when analysis mode is set to 'joint'. Default is NULL.}
 
 \item{input_format}{A string specifying the format of the input data, currently supporting:

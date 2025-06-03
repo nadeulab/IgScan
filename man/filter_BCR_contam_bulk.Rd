@@ -19,11 +19,11 @@ filter_BCR_contam_bulk(
 \item{igscan_data_frame}{An IgScan output dataframe coming from the annotation
 of bulk NGS data.}
 
-\item{batch_col}{A string with the name of the column identifying the `batch` of processing
-and/or sequencing for each sample. Each `batch` will be evaluated independently. Default is NULL,
+\item{batch_col}{A string with the name of the column identifying the \code{batch} of processing
+and/or sequencing for each sample. Each \code{batch} will be evaluated independently. Default is NULL,
 meaning that all sequences in the data frame will be considered from the same batch.}
 
-\item{case_col}{A string with the name of the column identifying the `case` or `individual` for
+\item{case_col}{A string with the name of the column identifying the \code{case} or \code{individual} for
 each sample. Default is NULL, meaning that each sample will be considered from different individuals.}
 
 \item{contamination_cutoff}{A numeric value specifying the contamination ratio threshold.
@@ -31,28 +31,28 @@ Default is 10, higher values result in stricter contamination detection.}
 
 \item{contamination_clone_cutoff}{A numeric value defining what percentage of contaminated sequences within
 a clonotype is allowed (i.e., sequences sharing the same clonotype ID). If the proportion of contaminated
-sequences exceeds this threshold, all sequences beloning to the clonptype will be flagged as `OUT_CLONOTYPE`.
+sequences exceeds this threshold, all sequences beloning to the clonptype will be flagged as \code{OUT_CLONOTYPE}.
 Default is 80 percent.}
 
-\item{remove_contamination}{Logical. If `TRUE`, sequences flagged as contaminated are
-removed from the returned data frame (default is `FALSE`).}
+\item{remove_contamination}{Logical. If \code{TRUE}, sequences flagged as contaminated are
+removed from the returned data frame (default is \code{FALSE}).}
 
 \item{recalc_column}{A string/vector of strings with the name of the column/s to use for ID
-recalculation. Needed when remove_contamination=TRUE. Default is `SampleID`.}
+recalculation. Needed when remove_contamination=TRUE. Default is \code{SampleID}.}
 
 \item{threads}{The number of threads to perform BCR ID recalculation. Default is 1.}
 }
 \value{
-The input `igscan_data_frame` including three new columns:
+The input \code{igscan_data_frame} including three new columns:
 \itemize{
-  \item Contamination_FLAG: Indicates whether a cell passed contamination checks (`PASS`), was flagged as contaminated (`OUT`),
-  or was involved in crossed contamination (`OUT_X`)
-  \item Contamination_Freq: The frequency of the contaminated sequence in the original sample (dominant).
-  \item Contamination_Sample: The dominant sample responsible for contamination.
+\item Contamination_FLAG: Indicates whether a cell passed contamination checks (\code{PASS}), was flagged as contaminated (\code{OUT}),
+or was involved in crossed contamination (\code{OUT_X})
+\item Contamination_Freq: The frequency of the contaminated sequence in the original sample (dominant).
+\item Contamination_Sample: The dominant sample responsible for contamination.
 }
 
-  If `remove_contamination = TRUE`, sequences flagged as `OUT` or `OUT_X` are removed from
-  the data frame and immunogenetic IDs are recalculated with `recalculate_IDs_bulk()`.
+If \code{remove_contamination = TRUE}, sequences flagged as \code{OUT} or \code{OUT_X} are removed from
+the data frame and immunogenetic IDs are recalculated with \code{recalculate_IDs_bulk()}.
 }
 \description{
 This function identifies, flags, and optionally removes potential contamination

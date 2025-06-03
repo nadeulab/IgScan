@@ -30,15 +30,15 @@ Run_IgScan_FullWorkflow(
 \arguments{
 \item{sample_paths}{A vector of paths to input files or a vector of
 directories containing the input file. Supported formats depend on the
-`input_format` parameter.}
+\code{input_format} parameter.}
 
-\item{sample_labels}{A vector of sample labels corresponding to `sample_paths`.
-Must have the same length as `sample_paths`.}
+\item{sample_labels}{A vector of sample labels corresponding to \code{sample_paths}.
+Must have the same length as \code{sample_paths}.}
 
 \item{Evalue_cutoff}{A numeric value specifying the E-value cutoff for IgBLAST alignment.
-Default is `NULL` (no cutoff applied).}
+Default is \code{NULL} (no cutoff applied).}
 
-\item{annotate_C}{Logical. If `TRUE`, the function performs an IgBlast annotation of
+\item{annotate_C}{Logical. If \code{TRUE}, the function performs an IgBlast annotation of
 constant regions using the NCBI IG C region database.}
 
 \item{threads}{An integer specifying the number of threads for processing samples.
@@ -47,7 +47,7 @@ Default is 1.}
 \item{threads_IgBlast}{An integer specifying the number of threads for running IgBLAST.
 Default is 1.}
 
-\item{case_labels}{A vector of case labels matching the indexes of `sample_labels`.
+\item{case_labels}{A vector of case labels matching the indexes of \code{sample_labels}.
 Required when analysis mode is set to 'joint'. Default is NULL.}
 
 \item{input_format}{A string specifying the format of the input data, currently supporting:
@@ -101,34 +101,32 @@ saved in the output directory. These dataframes can be directly passed to furthe
 This function provides a streamlined pipeline to process raw
 sequencing data, perform IgBLAST reannotation, and run IgScan to generate
 advanced immunogenetic analyses. It combines the functionalities of
-`Run_IgBlast_from_RawData` and `Run_IgScan_Annotation` into a single step,
+\code{Run_IgBlast_from_RawData} and \code{Run_IgScan_Annotation} into a single step,
 allowing users to process raw single_cell/bulk NGS data, annotate immunoglobulin
 sequences, and analyze clonotypes in a unified workflow.
 
 It supports data from multiple sequencing platforms and file types:
 \itemize{
-  \item 10x BCR = "filtered_contig_annotations.csv / filtered_contig.fa"
-  \item Parse BCR = "bcr_annotation_airr.tsv"
-  \item BD Rhapsody BCR = "Contigs_AIRR.tsv"
-  \item MiXCR = "clonotypes.IGX.txt"
-  \item TRUST4 = "barcode_report.tsv"
-  \item AIRR = "airr_rearrangement.tsv"
-  \item IMGT AIRR = "vquest_airr.tsv"
-  \item fasta
+\item 10x BCR = "filtered_contig_annotations.csv / filtered_contig.fa"
+\item Parse BCR = "bcr_annotation_airr.tsv"
+\item BD Rhapsody BCR = "Contigs_AIRR.tsv"
+\item MiXCR = "clonotypes.IGX.txt"
+\item TRUST4 = "barcode_report.tsv"
+\item AIRR = "airr_rearrangement.tsv"
+\item IMGT AIRR = "vquest_airr.tsv"
+\item fasta
 }
 }
 \details{
 This function performs the following steps:
-
-   1. Validates the input data and format.
-
-   2. Converts input data to FASTA format if needed.
-
-   3. Runs IgBLAST for V(D)J-(C) reannotation and alignment.
-
-   4. Processes IgBLAST output with the IgScan workflow to perform an advanced
-   immunogenetic annotation of the data, cluster sequences into clonotypes and
-   formats the output based on the type of experiment (bulk or single cell).
+\enumerate{
+\item Validates the input data and format.
+\item Converts input data to FASTA format if needed.
+\item Runs IgBLAST for V(D)J-(C) reannotation and alignment.
+\item Processes IgBLAST output with the IgScan workflow to perform an advanced
+immunogenetic annotation of the data, cluster sequences into clonotypes and
+formats the output based on the type of experiment (bulk or single cell).
+}
 }
 \examples{
 \dontrun{
