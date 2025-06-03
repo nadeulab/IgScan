@@ -103,8 +103,10 @@ combine_IgScan_Seurat <- function(igscan_out, seurat_object, seurat_sample_col =
       tmp_seurat@meta.data[[paste0(n, "_SubcloneID")]] <- tmp_igscan$SubcloneID[match(subclone, tmp_igscan$SubcloneID)]
 
       ## Sequence data
+      tmp_seurat@meta.data[[paste0(n, "_Raw_sequence")]] <- tmp_igscan$Raw_sequence[match(subclone, tmp_igscan$SubcloneID)]
       tmp_seurat@meta.data[[paste0(n, "_Raw_VDJ_sequence")]] <- tmp_igscan$Raw_VDJ_sequence[match(subclone, tmp_igscan$SubcloneID)]
       tmp_seurat@meta.data[[paste0(n, "_VDJ_sequence")]] <- tmp_igscan$VDJ_sequence[match(subclone, tmp_igscan$SubcloneID)]
+      tmp_seurat@meta.data[[paste0(n, "_IgBlast_Germline_alignment")]] <- tmp_igscan$IgBlast_Germline_alignment[match(subclone, tmp_igscan$SubcloneID)]
       tmp_seurat@meta.data[[paste0(n, "_VDJ_sequence_correctedCDR3")]] <- tmp_igscan$VDJ_sequence_correctedCDR3[match(subclone, tmp_igscan$SubcloneID)]
       tmp_seurat@meta.data[[paste0(n, "_VDJ_sequence_correctedCDR3_aa")]] <- tmp_igscan$VDJ_sequence_correctedCDR3_aa[match(subclone, tmp_igscan$SubcloneID)]
       tmp_seurat@meta.data[[paste0(n, "_Consensus_Germline")]] <- tmp_igscan$Consensus_Germline[match(subclone, tmp_igscan$SubcloneID)]
