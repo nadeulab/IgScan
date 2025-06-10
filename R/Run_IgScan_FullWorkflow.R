@@ -123,7 +123,7 @@ Run_IgScan_FullWorkflow <- function(sample_paths, sample_labels, Evalue_cutoff =
     warning(paste0("Output directory has been set to ", outputDir), call. = FALSE)
 
   } else{
-    system(paste0("mkdir ",outputDir))
+    if(!dir.exists(outputDir)){system(paste0("mkdir ",outputDir))}
   }
 
   summary_file <- paste0(outputDir, format(Sys.time(), "%d-%m-%Y_%H-%M-%S_IgScan_reporting_summary.log"))

@@ -107,6 +107,9 @@ Run_IgBlast_from_RawData <- function(sample_paths, sample_labels, input_format, 
     }
     system(paste0("mkdir ",outputDir))
     warning(paste0("Output directory has been set to ", outputDir), call. = FALSE)
+
+  } else{
+    if(!dir.exists(outputDir)){system(paste0("mkdir ",outputDir))}
   }
 
   ## Creating the different directories within the tmp Dir
