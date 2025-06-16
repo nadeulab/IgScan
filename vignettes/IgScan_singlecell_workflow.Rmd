@@ -1,0 +1,146 @@
+---
+title: "IgScan workflow for single cell data."
+author: 
+  name: Ian Márquez-López
+  email: iamarquez@recerca.clinic.cat
+  affiliation: Fundació de Recerca Clínic Barcelona-Institut d’Investigacions Biomèdiques August Pi i Sunyer (FRCB-IDIBAPS)
+date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
+output:
+  rmarkdown::html_vignette:
+    toc_float: true
+package: IgScan
+vignette: >
+  %\VignetteIndexEntry{IgScan SingleCell}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, echo=FALSE, results="hide", message=FALSE}
+library(IgScan)
+library(Seurat)
+library(ggplot2)
+```
+
+# Introduction
+
+The IgScan single-cell workflow processes B cell receptor (BCR) contigs from a variety of single-cell technologies (see Section 1.1 for details).
+
+In this workflow, IG contigs are re-annotated with the **IgBlast tool** [Ye et al., *Nucleic Acids Res*, 2013] using the **IMGT database**, and are immunogenetically characterized both at the contig level (individual chains) and the cell level (paired heavy and light chains).
+
+The annotations produced by IgScan can be integrated with mRNA expression data stored in **Seurat** or **SingleCellExperiment** formats, enabling multimodal analysis.
+
+Finally, IgScan provides a set of functions to help users fully leverage their single-cell BCR-seq data.
+
+## Supported input data formats
+
+IgScan supports several input data formats from different single-cell technologies. Currently, the following formats are supported:
+
+-   [10X Genomics CellRanger](https://www.10xgenomics.com/software): filtered contig outputs (both *.fasta* and *.csv* formats)
+
+-   [BD Rhapsody](https://www.bd-rhapsody.com/) Multiomic Immune Profiling
+
+-   [Parse](https://www.parsebiosciences.com/) Evercode BCR
+
+-   [MiXCR](https://mixcr.com/)
+
+-   AIRR / IMGT AIRR
+
+-   Raw fasta file
+
+# Running IgScan single cell workflow
+
+The IgScan annotation workflow is divided in three different steps:
+
+1.  **IgBlast re-annotation**
+2.  **IgScan immunogenetic characterization**
+3.  **Combination of IgScan outputs with single-cell objects**
+
+In order to show the different functionalities of IgScan, here we will run these two steps in a step-wise manner, although the complete workflow is wrapped in the `IgScan::Run_IgScan_FullWorkflow()` function, which takes the same arguments.
+
+Here we show an example of how IgScan works in a 10x Genomics demo dataset:
+
+## Step 1. IgBlast contig re-annotation
+
+This first part of the workflow can be executed by the `IgScan::Run_IgBlast_from_RawData()` function. This function checks and loads the input contigs and writes a fasta file that will be passed as input to the IgBlast tool.
+
+After that, if `run_IgBlast_report = TRUE`, an exploratory data analysis of IgBlast outputs is performed and a report in PDF format is generated in the `outputDir`, which can be of interest when the level of clonality of the samples is unknown. The information obtained from the report can be used by the user to adjust some parameters in the following step (i.e. `hc_similarity_cutoff` based on the distribution of CDR3 length or `cdr3_InDel_correction_mode` if the samples are highly polyclonal).
+
+```{r igblast_reannot, tidy = FALSE, message=FALSE}
+sample_list <- IgScan::Run_IgBlast_from_RawData(
+  sample_paths = c("~/Desktop/IgScan_TestDataset/igscan_test_10xBCR_sample1.fasta",
+                   "~/Desktop/IgScan_TestDataset/igscan_test_10xBCR_sample2.fasta"), 
+  sample_labels = c("Sample1", "Sample2"), 
+  input_format = "10xbcr_fasta", 
+  data_type = "single_cell", 
+  annotate_C = TRUE, 
+  outputDir = "~/Desktop/TEST_IGSCAN_VINGETTE/", 
+  run_IgBlast_report = TRUE)
+```
+
+Once this step is completed, the `outputDir` is created (if it did not exist before running the command) and contains the subdirectories `fasta_inputs` and `igblast_outs`. If the function has run correctly, the `igblast_outs` directory should contain three different files per sample:
+
+-   **\*igblast_out.tsv file**: containing the re-annotation for each contig in the `fasta_inputs`.
+
+-   **\*IgBlast_report.txt** / **\*IgBlast_report.pdf**: containing the summary report of the IgBlast outputs.
+
+The IgBlast report file can give the user important information about the quality of the data (by looking at the IgBlast alignment scores) and the level of BCR clonality. To learn how to interpret the IgBlast report file see the vingette XXXX.
+
+## Step 2. IgScan immunogenetic characterization
+
+Now that IgBlast outputs have been generated, they will be used as input for the next step of the IgScan workflow, which can be executed by the `IgScan::Run_IgScan_Annotation()` function. This function will take the contig re-annotation and return a list of IgScan dataframes with the immunogenetic characterization of each sample.
+
+For this part of the workflow, it is important to choose if the analysis is performed in 'single' or 'joint' `analysis_mode`. When analyzing related samples, such samples from the same individual, in which it is plausible that the same clonotype is identified in both samples, the 'joint' mode performs a consensus annotation across samples in order to longitudinally track clonotypes.
+
+```{r igscan_workflow, tidy = FALSE, message=FALSE}
+igscan_out <- IgScan::Run_IgScan_Annotation(
+  sample_labels = c("Sample1", "Sample2"),
+  case_labels = c("CaseA", "CaseA"),
+  outputDir = "~/Desktop/TEST_IGSCAN_VINGETTE/", 
+  input_format = "10xbcr_fasta", 
+  analysis_mode = "joint",
+  data_type = "single_cell",
+  material_type = "rna",
+  v_primer = "full_length", 
+  remove_tmp = FALSE, 
+  hc_similarity_cutoff = 0.2, 
+  hc_mode = "average", 
+  cdr3_mode = "nt", 
+  cdr3_InDel_correction_mode = "soft_filter")
+```
+
+## Step 3. Combining the IgScan output with a single cell object
+
+When the IgScan annotation workflow has been completed, it is typical to combine the immunogenetic annotation of each cell barcode with the single cell object containing the gene expression data. To that aim, the IgScan package supports the merge of both Seurat (`IgScan::combine_IgScan_Seurat`) and SingleCellExperiment (`IgScan::combine_IgScan_SingleCellExperiment`) objects with the IgScan outputs.
+
+**IMPORTANT:** these functions rely on the exact match of the barcodes between the IgScan outputs and the single cell objects. Please, ensure that there have not been modifications in the barcode IDs during data processing both in the IgScan outputs and the single cell objects.
+
+The IgScan annotation data is appended to the meta.data/colData of the single cell object, and the match is performed by sample. This means that if the single cell object contains several samples (and thus, possible repeated barcodes), the IgScan output will be evaluated per barcode within each sample identifier. If this is the case, it is important that the sample ID also match between IgScan outputs and single cell objects.
+
+In this vingette, we will load two Seurat objects belonging to samples `Sample1` and `Sample2` and we will combine them with their corresponding IgScan output.
+
+```{r igscan_combine_sc, tidy = FALSE, message=FALSE}
+seurat_1 <- readRDS("~/Desktop/IgScan_TestDataset/igscan_test_10xSeurat_sample1.rds")
+seurat_2 <- readRDS("~/Desktop/IgScan_TestDataset/igscan_test_10xSeurat_sample2.rds")
+
+seurat_1 <- IgScan::combine_IgScan_Seurat(igscan_out = igscan_out$Sample1_annot, 
+                                          seurat_object = seurat_1)
+
+seurat_2 <- IgScan::combine_IgScan_Seurat(igscan_out = igscan_out$Sample2_annot, 
+                                          seurat_object = seurat_2)
+```
+
+You can now visualize the meta.data of the two Seurat objects and see how the IgScan annotation of each cell has been appended. To learn how to interpret the different fields in the IgScan metadata see the vingette XXXX.
+
+**Note:** this step could have been performed in a different way if the Seurat objects had been merged together. If this is the case, the IgScan outputs should be concatenated, for instace by `do.call(rbind, igscan_out)`, and then the user should run:
+
+``` IgScan::combine_IgScan_Seurat``(igscan_out =``do.call(rbind, igscan_out)``, seurat_object = seurat_merged, seurat_sample_col = "orig.ident", igscan_sample_col = "SampleID") ```.
+
+## Example analyses of IgScan annotation
+
+Now that we have the Seurat objects with IgScan annotation, we can now evaluate the BCR repertoire in the samples analyzed. First of all, we can rapidly visualize the distribution of clonotypes in a barplot.
+
+```{r igscan_anal_1, tidy = FALSE, message=FALSE}
+seurat_merge <- merge(seurat_1, seurat_2)
+
+
+```

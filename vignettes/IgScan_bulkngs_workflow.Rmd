@@ -1,0 +1,21 @@
+---
+title: "IgScan workflow for bulk NGS data."
+author: 
+  name: Ian Márquez-López
+  email: iamarquez@recerca.clinic.cat
+  affiliation: Fundació de Recerca Clínic Barcelona-Institut d’Investigacions Biomèdiques August Pi i Sunyer (FRCB-IDIBAPS)
+date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
+output:
+  rmarkdown::html_vignette:
+    toc_float: true
+package: IgScan
+vignette: >
+  %\VignetteIndexEntry{IgScan BulkNGS}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, echo=FALSE, results="hide", message=FALSE}
+knitr::opts_chunk$set(error=FALSE, message=FALSE, warning=FALSE)
+library(IgScan)
+```
