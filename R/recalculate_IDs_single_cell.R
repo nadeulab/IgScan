@@ -175,7 +175,7 @@ recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.id
       barcode <- rownames(subset_df)
       append_df <- data.frame(contig_id = paste0(barcode, "_", writen_contigs), barcode = barcode)
 
-      append_df$Raw_sequence <- unique(subset_df[, paste0(chain, "_Raw_sequence")])
+      append_df$Raw_sequence <- unique(subset_df[, paste0(chain, "_Raw_sequence")])[1]
       append_df$Raw_VDJ_sequence <- unique(subset_df[, paste0(chain, "_Raw_VDJ_sequence")])
       append_df$VDJ_sequence <- unique(subset_df[, paste0(chain, "_VDJ_sequence")])
       append_df$IgBlast_Germline_alignment <- unique(subset_df[, paste0(chain, "_IgBlast_Germline_alignment")])
