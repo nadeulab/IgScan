@@ -7,6 +7,7 @@
 filter_BCR_contam_bulk(
   igscan_data_frame,
   batch_col = NULL,
+  sample_col = "SampleID",
   case_col = NULL,
   contamination_cutoff = 10,
   contamination_clone_cutoff = 80,
@@ -23,6 +24,9 @@ of bulk NGS data.}
 and/or sequencing for each sample. Each \code{batch} will be evaluated independently. Default is NULL,
 meaning that all sequences in the data frame will be considered from the same batch.}
 
+\item{sample_col}{A string with the name of the column identifying each \code{sample} or \code{individual}.
+Default is \code{SampleID}.}
+
 \item{case_col}{A string with the name of the column identifying the \code{case} or \code{individual} for
 each sample. Default is NULL, meaning that each sample will be considered from different individuals.}
 
@@ -31,7 +35,7 @@ Default is 10, higher values result in stricter contamination detection.}
 
 \item{contamination_clone_cutoff}{A numeric value defining what percentage of contaminated sequences within
 a clonotype is allowed (i.e., sequences sharing the same clonotype ID). If the proportion of contaminated
-sequences exceeds this threshold, all sequences beloning to the clonptype will be flagged as \code{OUT_CLONOTYPE}.
+sequences exceeds this threshold, all sequences belonging to the clonotype will be flagged as \code{OUT_CLONOTYPE}.
 Default is 80 percent.}
 
 \item{remove_contamination}{Logical. If \code{TRUE}, sequences flagged as contaminated are
@@ -58,13 +62,13 @@ the data frame and immunogenetic IDs are recalculated with \code{recalculate_IDs
 This function identifies, flags, and optionally removes potential contamination
 between samples processed and/or sequenced together in a IgScan-annotated bulk
 NGS dataset. Contamination is assessed by analyzing the frequency of identical
-IG sequences identified in different samples A contamination cutoff can be specified,
+IG sequences identified in different samples. A contamination cutoff can be specified,
 indicating that if a clonotype is observed X times more in one sample than another,
 it will be flagged as contamination in the latter sample.
 }
 \examples{
 \dontrun{
-cont_filtered_igscan <- filter_BCR_contam_bulk(igscan_data_frame = igscan_df, bath_col = "batchID", case_col = "case", contamination_cutoff = 30, threads = 4)
+cont_filtered_igscan <- filter_BCR_contam_bulk(igscan_data_frame = igscan_df, batch_col = "batchID", case_col = "case", contamination_cutoff = 30, threads = 4)
 }
 
 }
