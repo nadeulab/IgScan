@@ -208,8 +208,8 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
 
   if(data_type == "bulk"){
     read_names <- tidy_dataset$sequence_id
-    if(all(grepl("=", read_names)) & all(grepl("^[0-9]+$", sapply(read_names, function(x) strsplit(x, split = "=")[[1]][2])))){
-      tidy_dataset$n_reads <- as.numeric(strsplit(x[1], split = "=")[[1]][2])
+    if(all(grepl("=", read_names)) && all(grepl("^[0-9]+$", sapply(read_names, function(x) strsplit(x, split = "=")[[1]][2])))){
+      tidy_dataset$n_reads <- sapply(read_names, function(x) as.numeric(strsplit(x[1], split = "=")[[1]][2]))
     } else{
       warning("Read counts were not found in fasta read tags (expected tag format ==> readName=reacCount).\nAssuming that each sequence has 1 read count.")
       tidy_dataset$n_reads <- 1
