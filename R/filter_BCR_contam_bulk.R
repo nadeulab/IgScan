@@ -3,7 +3,7 @@
 #' This function identifies, flags, and optionally removes potential contamination
 #' between samples processed and/or sequenced together in a IgScan-annotated bulk
 #' NGS dataset. Contamination is assessed by analyzing the frequency of identical
-#' IG sequences identified in different samples A contamination cutoff can be specified,
+#' IG sequences identified in different samples. A contamination cutoff can be specified,
 #' indicating that if a clonotype is observed X times more in one sample than another,
 #' it will be flagged as contamination in the latter sample.
 #'
@@ -12,13 +12,15 @@
 #' @param batch_col A string with the name of the column identifying the `batch` of processing
 #' and/or sequencing for each sample. Each `batch` will be evaluated independently. Default is NULL,
 #' meaning that all sequences in the data frame will be considered from the same batch.
+#' @param sample_col A string with the name of the column identifying each `sample` or `individual`.
+#' Default is `SampleID`.
 #' @param case_col A string with the name of the column identifying the `case` or `individual` for
 #' each sample. Default is NULL, meaning that each sample will be considered from different individuals.
 #' @param contamination_cutoff A numeric value specifying the contamination ratio threshold.
 #' Default is 10, higher values result in stricter contamination detection.
 #' @param contamination_clone_cutoff A numeric value defining what percentage of contaminated sequences within
 #' a clonotype is allowed (i.e., sequences sharing the same clonotype ID). If the proportion of contaminated
-#' sequences exceeds this threshold, all sequences beloning to the clonptype will be flagged as `OUT_CLONOTYPE`.
+#' sequences exceeds this threshold, all sequences belonging to the clonotype will be flagged as `OUT_CLONOTYPE`.
 #' Default is 80 percent.
 #' @param remove_contamination Logical. If `TRUE`, sequences flagged as contaminated are
 #' removed from the returned data frame (default is `FALSE`).
@@ -44,7 +46,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' cont_filtered_igscan <- filter_BCR_contam_bulk(igscan_data_frame = igscan_df, bath_col = "batchID", case_col = "case", contamination_cutoff = 30, threads = 4)
+#' cont_filtered_igscan <- filter_BCR_contam_bulk(igscan_data_frame = igscan_df, batch_col = "batchID", case_col = "case", contamination_cutoff = 30, threads = 4)
 #' }
 #'
 filter_BCR_contam_bulk <- function(igscan_data_frame, batch_col = NULL, sample_col = "SampleID", case_col = NULL, contamination_cutoff = 10, contamination_clone_cutoff = 80, remove_contamination = F, recalc_column = "SampleID", threads = 1){
@@ -52,6 +54,7 @@ filter_BCR_contam_bulk <- function(igscan_data_frame, batch_col = NULL, sample_c
   igscan_data_frame <- as.data.frame(igscan_data_frame)
 
   if(!is.null(batch_col) && !batch_col %in% colnames(igscan_data_frame)){stop(paste0("\nUnknown batch column (", batch_col, ") selected for flagging BCR contamination! Please, set a valid column name."))}
+  if(!sample_col %in% colnames(igscan_data_frame)){stop(paste0("\nUnknown sample column (", sample_col, ") selected for flagging BCR contamination! Please, set a valid column name."))}
   if(!is.null(case_col) && !case_col %in% colnames(igscan_data_frame)){stop(paste0("\nUnknown case column (", case_col, ") selected for flagging BCR contamination! Please, set a valid column name."))}
   if(!all(recalc_column %in% colnames(igscan_data_frame)) & remove_contamination){stop(paste0("\nUnknown recalc_column column (", recalc_column[!recalc_column %in% colnames(igscan_data_frame)], ") selected for flagging BCR contamination! Please, set a valid column name."))}
 
@@ -62,19 +65,19 @@ filter_BCR_contam_bulk <- function(igscan_data_frame, batch_col = NULL, sample_c
   }
 
   if(is.null(case_col)){
-    igscan_data_frame$CaseID <- paste0("Case_", igscan_data_frame$SampleID)
+    igscan_data_frame$CaseID <- paste0("Case_", igscan_data_frame[[sample_col]])
   } else{
     colnames(igscan_data_frame)[colnames(igscan_data_frame) == case_col] <- "CaseID"
   }
 
   contam_df_list <- mclapply(unique(igscan_data_frame$BatchID), function(col_v){
 
-    samples_in_batch <- unique(igscan_data_frame$SampleID[igscan_data_frame$BatchID == col_v])
-    all_subclones_in_batch <- igscan_data_frame[igscan_data_frame$SampleID %in% samples_in_batch,]
+    samples_in_batch <- unique(igscan_data_frame[[sample_col]][igscan_data_frame$BatchID == col_v])
+    all_subclones_in_batch <- igscan_data_frame[igscan_data_frame[[sample_col]] %in% samples_in_batch,]
 
     ## Calculate total ClonotypeVariant frequency
     all_subclones_in_batch <- all_subclones_in_batch %>%
-      group_by(SampleID) %>%
+      group_by(.data[[sample_col]]) %>%
       mutate(ClonotypeVariant_freqTotal = ClonotypeVariant_nReads/sum(ClonotypeVariant_nReads[!duplicated(ClonotypeVariantID)])*100)
 
     all_subclones_in_batch$SubcloneBarcode <- paste0(all_subclones_in_batch$VDJ_sequence, "-", all_subclones_in_batch$InDels)
@@ -94,35 +97,35 @@ filter_BCR_contam_bulk <- function(igscan_data_frame, batch_col = NULL, sample_c
       cont_seq_df <- all_subclones_in_batch[all_subclones_in_batch$SubcloneBarcode == cont_seq,]
 
       maxFreq <- max(cont_seq_df$ClonotypeVariant_freqTotal)
-      maxSample <- cont_seq_df$SampleID[cont_seq_df$ClonotypeVariant_freqTotal == maxFreq]
+      maxSample <- cont_seq_df[[sample_col]][cont_seq_df$ClonotypeVariant_freqTotal == maxFreq]
       maxCase <- cont_seq_df$CaseID[cont_seq_df$ClonotypeVariant_freqTotal == maxFreq]
 
       cont_seq_df <- cont_seq_df[cont_seq_df$CaseID != maxCase,]
 
       v <- maxFreq/cont_seq_df$ClonotypeVariant_freqTotal >= contamination_cutoff
       if(any(v)){
-        all_subclones_in_batch$Contamination_FLAG[all_subclones_in_batch$SampleID %in% cont_seq_df$SampleID[v] & all_subclones_in_batch$SubcloneBarcode == cont_seq] <- "OUT"
-        all_subclones_in_batch$Contamination_Freq[all_subclones_in_batch$SampleID %in% cont_seq_df$SampleID[v] & all_subclones_in_batch$SubcloneBarcode == cont_seq] <- maxFreq
-        all_subclones_in_batch$Contamination_Sample[all_subclones_in_batch$SampleID %in% cont_seq_df$SampleID[v] & all_subclones_in_batch$SubcloneBarcode == cont_seq] <- maxSample
+        all_subclones_in_batch$Contamination_FLAG[all_subclones_in_batch[[sample_col]] %in% cont_seq_df[[sample_col]][v] & all_subclones_in_batch$SubcloneBarcode == cont_seq] <- "OUT"
+        all_subclones_in_batch$Contamination_Freq[all_subclones_in_batch[[sample_col]] %in% cont_seq_df[[sample_col]][v] & all_subclones_in_batch$SubcloneBarcode == cont_seq] <- maxFreq
+        all_subclones_in_batch$Contamination_Sample[all_subclones_in_batch[[sample_col]] %in% cont_seq_df[[sample_col]][v] & all_subclones_in_batch$SubcloneBarcode == cont_seq] <- maxSample
       }
 
       v <- maxFreq/cont_seq_df$ClonotypeVariant_freqTotal < contamination_cutoff
       if(any(v)){
-        all_subclones_in_batch$Contamination_FLAG[all_subclones_in_batch$SampleID %in% cont_seq_df$SampleID[v] & all_subclones_in_batch$SubcloneBarcode == cont_seq] <- "OUT_X"
-        all_subclones_in_batch$Contamination_Freq[all_subclones_in_batch$SampleID %in% cont_seq_df$SampleID[v] & all_subclones_in_batch$SubcloneBarcode == cont_seq] <- maxFreq
-        all_subclones_in_batch$Contamination_Sample[all_subclones_in_batch$SampleID %in% cont_seq_df$SampleID[v] & all_subclones_in_batch$SubcloneBarcode == cont_seq] <- maxSample
+        all_subclones_in_batch$Contamination_FLAG[all_subclones_in_batch[[sample_col]] %in% cont_seq_df[[sample_col]][v] & all_subclones_in_batch$SubcloneBarcode == cont_seq] <- "OUT_X"
+        all_subclones_in_batch$Contamination_Freq[all_subclones_in_batch[[sample_col]] %in% cont_seq_df[[sample_col]][v] & all_subclones_in_batch$SubcloneBarcode == cont_seq] <- maxFreq
+        all_subclones_in_batch$Contamination_Sample[all_subclones_in_batch[[sample_col]] %in% cont_seq_df[[sample_col]][v] & all_subclones_in_batch$SubcloneBarcode == cont_seq] <- maxSample
 
-        all_subclones_in_batch$Contamination_FLAG[all_subclones_in_batch$SampleID == maxSample & all_subclones_in_batch$SubcloneBarcode == cont_seq] <- "OUT_X"
-        all_subclones_in_batch$Contamination_Freq[all_subclones_in_batch$SampleID == maxSample & all_subclones_in_batch$SubcloneBarcode == cont_seq] <- max(cont_seq_df$ClonotypeVariant_freqTotal[v])
-        all_subclones_in_batch$Contamination_Sample[all_subclones_in_batch$SampleID == maxSample & all_subclones_in_batch$SubcloneBarcode == cont_seq] <- cont_seq_df$SampleID[cont_seq_df$ClonotypeVariant_freqTotal == max(cont_seq_df$ClonotypeVariant_freqTotal[v])]
+        all_subclones_in_batch$Contamination_FLAG[all_subclones_in_batch[[sample_col]] == maxSample & all_subclones_in_batch$SubcloneBarcode == cont_seq] <- "OUT_X"
+        all_subclones_in_batch$Contamination_Freq[all_subclones_in_batch[[sample_col]] == maxSample & all_subclones_in_batch$SubcloneBarcode == cont_seq] <- max(cont_seq_df$ClonotypeVariant_freqTotal[v])
+        all_subclones_in_batch$Contamination_Sample[all_subclones_in_batch[[sample_col]] == maxSample & all_subclones_in_batch$SubcloneBarcode == cont_seq] <- cont_seq_df[[sample_col]][cont_seq_df$ClonotypeVariant_freqTotal == max(cont_seq_df$ClonotypeVariant_freqTotal[v])]
       }
     }
 
     batch_annot_cont_df <- data.frame()
     ## Once contamination has been determined, we apply it
-    for(sample in unique(all_subclones_in_batch$SampleID)){
+    for(sample in unique(all_subclones_in_batch[[sample_col]])){
 
-      sample_df <- all_subclones_in_batch[all_subclones_in_batch$SampleID == sample, !colnames(all_subclones_in_batch) %in% c("SubcloneBarcode", "ClonotypeVariant_freqTotal")]
+      sample_df <- all_subclones_in_batch[all_subclones_in_batch[[sample_col]] == sample, !colnames(all_subclones_in_batch) %in% c("SubcloneBarcode", "ClonotypeVariant_freqTotal")]
       cont_clonotypeVariants <- unique(sample_df$ClonotypeVariantID[sample_df$Contamination_FLAG != "PASS"])
       potential_cont_clonotypes <- unique(sapply(cont_clonotypeVariants, function(x) paste(strsplit(x, "\\.")[[1]][1:2], collapse = ".")))
 
@@ -148,4 +151,3 @@ filter_BCR_contam_bulk <- function(igscan_data_frame, batch_col = NULL, sample_c
   }
   return(contam_df)
 }
-
