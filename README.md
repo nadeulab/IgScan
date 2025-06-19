@@ -5,7 +5,8 @@
 
 ## A toolkit for dissecting immune repertoires in B-cell neoplasms and beyond
 
-<img src="man/figures/README-logo.png" data-align="right" width="263" />
+<!-- <img src="man/figures/README-logo.png" data-align="right" width="263" /> -->
+<img align="right" src="man/figures/README-logo.png" width="263" height="364">
 
 ### Introduction
 
