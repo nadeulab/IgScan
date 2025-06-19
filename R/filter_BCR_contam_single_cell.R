@@ -77,7 +77,7 @@ filter_BCR_contam_single_cell <- function(single_cell_list, sample_col = "orig.i
   }
 
   if(is.null(case_col)){
-    meta_data$CaseID <- "CaseX"
+    meta_data$CaseID <- paste0("Case_", meta_data[[sample_col]])
   } else{
     if(!case_col %in% colnames(meta_data)){stop(paste0("\nUnknown case_col column (", case_col, ") selected for flagging contamination! Please, set a valid column name."))}
     colnames(meta_data)[colnames(meta_data) == case_col] <- "CaseID"
