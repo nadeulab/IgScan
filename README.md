@@ -1,52 +1,71 @@
-
-<!-- README.md is generated from README.Rmd. Please edit that file -->
-
 # IgScan
 
-<!-- badges: start -->
-<!-- badges: end -->
+## A toolkit for dissecting immune repertoires in B-cell neoplasms and beyond
 
-The goal of IgScan is to …
+![](man/figures/README-logo.png){align="right" width="263"}
+
+### Introduction
+
+The analysis of the immune repertoire has become one of the cornerstones in basic and clinical research in B-cell neoplasms over the past few years. Understanding the diversity and clonality of B-cell receptors is critical for unraveling disease mechanisms, tracking minimal residual disease, and guiding therapeutic strategies. In this context, the emergence of next-generation sequencing technologies, both at bulk and single-cell levels, has revolutionized our ability to characterize B-cell receptor repertoires with unprecedented depth and resolution, as well as to integrate BCR profiling with multiple omic layers.
+
+Although several tools have been developed to analyze immune repertoire data, many are either optimized for T-cell receptors, lack flexibility for custom analyses, or are not tailored to the specific features of B-cell neoplasms. This limits their applicability in studies where disease-specific patterns, such as somatic hypermutation or clonal evolution, play a central role.
+
+IgScan is designed to fill this gap by providing a streamlined, customizable, and reproducible framework focused on the immune profiling of B-cell malignancies. It is compatible with both bulk and single-cell sequencing data, and supports a wide range of common input formats, including 10x Genomics, MiXCR, TRUST4, Parse Evercode, BD Rhapsody, and AIRR, among others.
+
+Although originally designed with a focus on B-cell malignancies, IgScan is also well suited for broader BCR repertoire analyses, such as studying BCR diversity in healthy individuals. Additionally, it can be seamlessly integrated with other tools for somatic hypermutation analysis and BCR phylogenetic reconstruction *([Dowser](https://dowser.readthedocs.io/en/latest/))*, enabling comprehensive immune repertoire studies across a wide range of biological contexts.
+
+## Working with IgScan
+
+The IgScan website provides extensive documentation and step-by-step tutorials for all core functions.
 
 ## Installation
 
-You can install the development version of IgScan from
-[GitHub](https://github.com/) with:
+### Installing from GitHub
+
+The current version of IgScan can be downloaded from this GitHub repository by:
 
 ``` r
-# install.packages("pak")
-pak::pak("IanMarquezIDIBAPS/IgScan")
+install.packages("devtools")
+library(devtools)
+
+devtools::install_github("https://github.com/IanMarquezIDIBAPS/IgScan/tree/main",
+                         build_vignettes = T, dependencies = T)
 ```
 
-## Example
+## IgScan example datasets
 
-This is a basic example which shows you how to solve a common problem:
+Example datasets for testing IgScan can be accessed by the users once the package has been built/installed. Our example datasets consists of:
+
+### Preprocessed fasta files for bulk NGS
 
 ``` r
-library(IgScan)
-## basic example code
+fasta_ngs_1 <- system.file("extdata/igscan_test_bulkNGS_sample1.fasta", package = "IgScan", mustWork = T)
+
+fasta_ngs_2 <- system.file("extdata/igscan_test_bulkNGS_sample2.fasta", package = "IgScan", mustWork = T)
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
+### Seurat objects and filtered_contig fasta files for single cell (10x)
 
 ``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
+fasta_sc_1 <- system.file("extdata/igscan_test_10xBCR_sample1.fasta", package = "IgScan", mustWork = T)
+seurat_1 <- system.file("extdata/igscan_test_10xSeurat_sample1.rds", package = "IgScan", mustWork = T)
+
+fasta_sc_2 <- system.file("extdata/igscan_test_10xBCR_sample2.fasta", package = "IgScan", mustWork = T)
+seurat_2 <- system.file("extdata/igscan_test_10xSeurat_sample2.rds", package = "IgScan", mustWork = T)
 ```
 
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this.
+## Suggest updates / Report Bugs
 
-You can also embed plots, for example:
+To suggest improvements, modifications or request additional functionalities for IgScan, please, submit them as [GitHub issues](https://github.com/IanMarquezIDIBAPS/IgScan/issues).
 
-<img src="man/figures/README-pressure-1.png" width="100%" />
+If running into any bugs or issues also submit a [GitHub issue](https://github.com/IanMarquezIDIBAPS/IgScan/issues) with some details of the problem. Submitting a [reproducible example](https://reprex.tidyverse.org/) would be of help.
 
-In that case, don’t forget to commit and push the resulting figure
-files, so they display on GitHub and CRAN.
+We are also open for [pull requests](https://github.com/IanMarquezIDIBAPS/IgScan/pulls) for fixing bugs or add new features.
+
+## Please Cite
+
+scRepertoire 2 preprint is available at: <https://www.biorxiv.org/content/10.1101/2024.12.31.630854v1>
+
+*Yang, Q, Safina, K., Borcherding, N. (2024). scRepertoire 2: Enhanced and Efficient Toolkit for Single-Cell Immune Profiling <https://doi.org/10.1101/2024.12.31.630854>*
+
+If you are building your own tool based on scRepertoire, reach out, we are happy to help and make things compatible.
