@@ -47,12 +47,12 @@
 #' cont_filtered_igscan <- filter_BCR_contam_bulk(igscan_data_frame = igscan_df, bath_col = "batchID", case_col = "case", contamination_cutoff = 30, threads = 4)
 #' }
 #'
-filter_BCR_contam_bulk <- function(igscan_data_frame, batch_col = NULL, case_col = NULL, contamination_cutoff = 10, contamination_clone_cutoff = 80, remove_contamination = F, recalc_column = "SampleID", threads = 1){
+filter_BCR_contam_bulk <- function(igscan_data_frame, batch_col = NULL, sample_col = "SampleID", case_col = NULL, contamination_cutoff = 10, contamination_clone_cutoff = 80, remove_contamination = F, recalc_column = "SampleID", threads = 1){
 
   igscan_data_frame <- as.data.frame(igscan_data_frame)
 
-  if(!batch_col %in% colnames(igscan_data_frame) & !is.null(batch_col)){stop(paste0("\nUnknown batch column (", batch_col, ") selected for flagging BCR contamination! Please, set a valid column name."))}
-  if(!case_col %in% colnames(igscan_data_frame) & !is.null(case_col)){stop(paste0("\nUnknown case column (", case_col, ") selected for flagging BCR contamination! Please, set a valid column name."))}
+  if(!is.null(batch_col) && !batch_col %in% colnames(igscan_data_frame)){stop(paste0("\nUnknown batch column (", batch_col, ") selected for flagging BCR contamination! Please, set a valid column name."))}
+  if(!is.null(case_col) && !case_col %in% colnames(igscan_data_frame)){stop(paste0("\nUnknown case column (", case_col, ") selected for flagging BCR contamination! Please, set a valid column name."))}
   if(!all(recalc_column %in% colnames(igscan_data_frame)) & remove_contamination){stop(paste0("\nUnknown recalc_column column (", recalc_column[!recalc_column %in% colnames(igscan_data_frame)], ") selected for flagging BCR contamination! Please, set a valid column name."))}
 
   if(is.null(batch_col)){
@@ -62,7 +62,7 @@ filter_BCR_contam_bulk <- function(igscan_data_frame, batch_col = NULL, case_col
   }
 
   if(is.null(case_col)){
-    igscan_data_frame$CaseID <- "CaseX"
+    igscan_data_frame$CaseID <- paste0("Case_", igscan_data_frame$SampleID)
   } else{
     colnames(igscan_data_frame)[colnames(igscan_data_frame) == case_col] <- "CaseID"
   }
@@ -122,7 +122,7 @@ filter_BCR_contam_bulk <- function(igscan_data_frame, batch_col = NULL, case_col
     ## Once contamination has been determined, we apply it
     for(sample in unique(all_subclones_in_batch$SampleID)){
 
-      sample_df <- all_subclones_in_batch[all_subclones_in_batch$Sample == sample, !colnames(all_subclones_in_batch) %in% c("SubcloneBarcode", "ClonotypeVariant_freqTotal")]
+      sample_df <- all_subclones_in_batch[all_subclones_in_batch$SampleID == sample, !colnames(all_subclones_in_batch) %in% c("SubcloneBarcode", "ClonotypeVariant_freqTotal")]
       cont_clonotypeVariants <- unique(sample_df$ClonotypeVariantID[sample_df$Contamination_FLAG != "PASS"])
       potential_cont_clonotypes <- unique(sapply(cont_clonotypeVariants, function(x) paste(strsplit(x, "\\.")[[1]][1:2], collapse = ".")))
 
