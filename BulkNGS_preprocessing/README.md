@@ -22,7 +22,7 @@ In this workflow, the following tasks are carried out:
 
 ## Usage
 
-`bash ./BulkNGS_preprocessing/igscan_preprocess_bulkngs.sh <R1.fastq> <R2.fastq> <output.fasta> [min_length]`
+`bash ./BulkNGS_preprocessing/igscan_preprocess_bulkngs.sh <R1.fastq> <R2.fastq> <output.fasta> [min_length] [min_overlap] [max_overlap] [perc_mismatch] [`
 
 `<R1.fastq>`: Forward reads FASTQ file
 
@@ -32,9 +32,17 @@ In this workflow, the following tasks are carried out:
 
 `[min_length]`: (Optional) Minimum sequence length to keep (default: 250)
 
+`[min_overlap]`: (Optional) Minimum number of overlapping base pairs required for joining paired-end reads with FLASH. (default: 10)
+
+`[max_overlap]`: (Optional) Maximum number of overlapping base pairs allowed for merging. Helps avoid incorrect merges in highly repetitive regions. (default: 200)
+
+`[perc_mismatch]`: (Optional) Maximum allowed mismatch ratio in the overlap region during merging. Expressed as a fraction (e.g., 0.1 = 10%). (default: 0.1)
+
+`[concat_unmerged]`: (Optional) Whether to concatenate read pairs that do not overlap (R1+R2) into a single sequence. Accepts "yes" or "no". (default: "no")
+
 ### Example
 
-`bash ./BulkNGS_preprocessing/igscan_preprocess_bulkngs.sh sample_R1.fastq sample_R2.fastq  output.fasta 300`
+`bash ./BulkNGS_preprocessing/igscan_preprocess_bulkngs.sh sample_R1.fastq sample_R2.fastq  output.fasta 300 10 200 0.1 no`
 
 ### Output
 
