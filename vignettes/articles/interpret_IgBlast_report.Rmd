@@ -5,6 +5,11 @@ author:
   email: iamarquez@recerca.clinic.cat
   affiliation: Institut d’Investigacions Biomèdiques August Pi i Sunyer (FRCB-IDIBAPS)
 date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{IgBlast report}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 As mentioned in previous vignettes, IgScan workflows allow the user to generate a detailed **report file** of the sequence re-annotation step using the IgBlast tool. This report can help the user to understand key aspects of the data that are needed to properly adjust the parameters for the following IgScan steps, such as the level of repertoire diversity or the quality of the alignment process.
