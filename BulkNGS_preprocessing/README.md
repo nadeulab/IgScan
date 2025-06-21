@@ -22,7 +22,7 @@ In this workflow, the following tasks are carried out:
 
 ## Usage
 
-`bash ./BulkNGS_preprocessing/igscan_preprocess_bulkngs.sh <R1.fastq> <R2.fastq> <output.fasta> [min_length] [min_overlap] [max_overlap] [perc_mismatch] [`
+`bash ./BulkNGS_preprocessing/igscan_preprocess_bulkngs.sh <R1.fastq> <R2.fastq> <output.fasta> [min_length] [min_overlap] [max_overlap] [perc_mismatch] [concat_unmerged]`
 
 `<R1.fastq>`: Forward reads FASTQ file
 
