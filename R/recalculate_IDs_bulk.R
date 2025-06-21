@@ -24,7 +24,7 @@
 #' \dontrun{
 #' updated_igscan_out <- recalculate_IDs_bulk(igscan_output_df group_col = "SampleID", threads = 4)
 #' }
-
+#'
 recalculate_IDs_bulk <- function(igscan_data_frame, group_col = "SampleID", threads = 1){
 
   igscan_data_frame <- as.data.frame(igscan_data_frame)
