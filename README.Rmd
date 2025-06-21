@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 
 ## A toolkit for dissecting immune repertoires in B-cell neoplasms and beyond
 
-![](man/figures/README-logo.png){align="right" width="263"}
+![](man/figures/README-logo.png){align="right" width="237"}
 
 ### Introduction
 
