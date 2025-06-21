@@ -239,8 +239,12 @@ Run_IgBlast_from_RawData <- function(sample_paths, sample_labels, input_format, 
 
   df <- fread(igblast_out, header = T, sep = "\t", stringsAsFactors = F, data.table = F)
 
-  df <- df[, c("locus", "productive", "stop_codon", "v_frameshift", "complete_vdj",
-               "v_call", "cdr3_aa", "v_score", "d_score", "j_score", "c_score")]
+  cols <- c("locus", "productive", "stop_codon", "v_frameshift", "complete_vdj",
+            "v_call", "cdr3_aa", "v_score", "d_score", "j_score")
+
+  if("c_score" %in% colnames(df)){cols <- c(cols, "c_score")}
+
+  df <- df[, cols]
 
   df$locus <- factor(df$locus, levels = c("IGH", "IGK", "IGL"))
 
@@ -314,12 +318,15 @@ Run_IgBlast_from_RawData <- function(sample_paths, sample_labels, input_format, 
     theme(plot.title = element_text(hjust = 0.5))
 
   ## Plot B:
-  score_df <- df[, c("locus", "v_score", "d_score", "j_score", "c_score")]
+  scores <- c("v_score", "d_score", "j_score")
+  if("c_score" %in% colnames(df)){scores <- c(scores, "c_score")}
+
+  score_df <- df[, c("locus", scores)]
   score_df <- reshape(score_df,
-                      varying = list(c("v_score", "d_score", "j_score", "c_score")),
+                      varying = list(scores),
                       v.names = "Score_Value",
                       timevar = "Score_Type",
-                      times = c("v_score", "d_score", "j_score", "c_score"),
+                      times = scores,
                       direction = "long")
 
   locus_df <- as.data.frame(table(df$locus))
@@ -351,15 +358,20 @@ Run_IgBlast_from_RawData <- function(sample_paths, sample_labels, input_format, 
     ggtitle(label = "J gene Alignment Score") +
     theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
 
-  pB4 <- ggplot(score_df[score_df$Score_Type == "c_score",], aes(x = locus, y = Score_Value, fill = locus)) +
-    geom_violin() + geom_jitter(width = 0.1, height = 0, size = 0.5) +
-    theme_classic() + labs(x = "", y = "IgBLAST alignment score\n", fill = "") +
-    scale_fill_manual(values = color_vector) +
-    ggtitle(label = "C gene Alignment Score") +
-    theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
+  if("c_score" %in% scores){
+    pB4 <- ggplot(score_df[score_df$Score_Type == "c_score",], aes(x = locus, y = Score_Value, fill = locus)) +
+      geom_violin() + geom_jitter(width = 0.1, height = 0, size = 0.5) +
+      theme_classic() + labs(x = "", y = "IgBLAST alignment score\n", fill = "") +
+      scale_fill_manual(values = color_vector) +
+      ggtitle(label = "C gene Alignment Score") +
+      theme(plot.title = element_text(hjust = 0.5), legend.position = "none")
+  } else{
+    pB4 <- NULL
+  }
 
   ## Plot C: Estimation of clonality
-  clonality_df <- aggregate(x = df$clonotypeLabel, by = list(df$clonotypeLabel), FUN = length)
+  clonality_df <- df[df$productive == "Productive" & df$stop_codon == "No" & df$v_frameshift == "No" & df$complete_vdj == "Complete",]
+  clonality_df <- aggregate(x = clonality_df$clonotypeLabel, by = list(clonality_df$clonotypeLabel), FUN = length)
   clonality_df <- clonality_df[order(clonality_df$x, decreasing = T),]
   clonality_df$locus <- df$locus[match(clonality_df$Group.1, df$clonotypeLabel)]
 
@@ -373,17 +385,19 @@ Run_IgBlast_from_RawData <- function(sample_paths, sample_labels, input_format, 
                                   clonality_df$Clonal_group,
                                   paste0(as.character(clonality_df$Locus), ".", ave(as.character(clonality_df$Locus), as.character(clonality_df$Locus), FUN = seq_along)))
   clonality_df <- clonality_df[clonality_df$Count > 0,]
-  clonality_df$ClonalID <- factor(clonality_df$ClonalID, levels = clonality_df$ClonalID)
+  clonality_df$ClonalID <- factor(clonality_df$ClonalID, levels = unique(clonality_df$ClonalID))
   clonality_df$Locus <- factor(clonality_df$Locus, levels = c("IGH", "IGK", "IGL"))
+  clonality_df$Freq <- as.numeric(clonality_df$Count)/sum(as.numeric(clonality_df$Count))*100
 
-  pC <- ggplot(clonality_df, aes(x = ClonalID, y = as.numeric(Count), fill = Locus)) +
+  pC <- ggplot(clonality_df, aes(x = ClonalID, y = as.numeric(Freq), fill = Locus)) +
     geom_bar(stat = "identity", color = "black", linewidth = 0.3) +
-    theme_classic() + labs(x = "Clonal group", y = "Number of contigs\n", fill = "") +
+    theme_classic() + labs(x = "Clonal group", y = "Percentage of contigs (%)\n", fill = "") +
     scale_fill_manual(values = color_vector) +
     ggtitle(label = "Distribution of clonal rearrangements") +
     theme(plot.title = element_text(hjust = 0.5), axis.text.x = element_text(angle = 45, hjust = 1))
 
   layout <- (pA1 | pA2 | pA3 | pA4) / (pB0 | pB1 | pB2 | pB3 | pB4) / pC
+
   ggsave(paste0(igblast_outDir, outID, "_IgBLAST_report.pdf"), plot = layout, width = 14, height = 13, units = "in")
 
   write("Dictionary of the corresponding IGVgene_CDR3aa for each clonal group:", file = paste0(igblast_outDir, outID, "_IgBLAST_report.txt"))
