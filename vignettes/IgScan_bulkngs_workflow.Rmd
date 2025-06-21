@@ -106,7 +106,7 @@ Once this step is completed, the `outputDir` is created (if it did not exist bef
 
 -   **\*IgBlast_report.txt** / **\*IgBlast_report.pdf**: containing the summary report of the IgBlast outputs.
 
-The IgBlast report file can give the user important information about the quality of the data (by looking at the IgBlast alignment scores) and the level of BCR clonality. To learn how to interpret the IgBlast report file see the vingette XXXX.
+The IgBlast report file can give the user important information about the quality of the data (by looking at the IgBlast alignment scores) and the level of BCR clonality. To learn how to interpret the IgBlast report file see the vingette [**Interpret IgBlast report file**](interpret_IgBlast_report.html).
 
 ## Step 2. IgScan immunogenetic characterization
 
