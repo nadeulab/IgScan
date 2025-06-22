@@ -38,7 +38,7 @@ It is notable that the IGH *locus* contains the highest number of contigs. Addit
 
 When running IgScan, it is important to assess the level of BCR clonality of the samples analyzed. This is because certain steps in the IgScan workflow can require significantly longer execution times when using default parameters in highly polyclonal samples. In this context, the IgBlast report file provides valuable information about BCR clonality, which can help anticipate potential computational demands and guide parameter adjustments accordingly.
 
-![](images/IgBlast_report_3-01.png)
+![](images/IgBlast_report_3.png)
 
 In this example, the *Distribution of Clonal Rearrangements* plot is shown for a sample derived from a B-cell neoplasm patient and for a sample from a healthy donor. Remarkably, the tumor sample exhibits a dominant clonal group—defined as a unique combination of V gene and amino acid CDR3 sequence—representing more than 80% of the total sequences. In contrast, the healthy donor sample does not contain any clonal group exceeding 1% frequency, and more than 50% of the sequences are singletons (unique sequences observed only once).
 
