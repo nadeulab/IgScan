@@ -11,7 +11,7 @@
 #' @param dir A character string specifying the output directory. If it does not exist, it will be created.
 #' @param fileName A character string for the output file name. Defaults to `"IgScan_AIRR_formatted.tsv"` if not provided.
 #' @param germline_aln Type of germline alignment to be included in the AIRR file.
-#' Options are `masked`(uses IgBlast masked germline alignment) and `consensus`(uses the IgScan custom-built
+#' Options are `masked` (uses IgBlast masked germline alignment) and `consensus` (uses the IgScan custom-built
 #' consensus germline sequence).
 #'
 #' @return A `.tsv` file written to the specified directory in AIRR format as well
@@ -60,29 +60,19 @@ export_AIRR_format <- function(object, dir, fileName = NULL, germline_aln = "mas
   if(class(object)[1] == "SingleCellExperiment"){
     data_frame <- colData(object)
     data_frame <- .extract_IgScanDf_from_SingleCell(data_frame)
-    id_col <- "contig_id"
 
   } else if(class(object)[1] == "Seurat"){
     data_frame <- object@meta.data
     data_frame <- .extract_IgScanDf_from_SingleCell(data_frame)
-    id_col <- "contig_id"
 
   } else{
     data_frame <- object
     colnames_dictionary_path <- system.file("colnames_dictionary.RData", package = "IgScan", mustWork = T)
     load(colnames_dictionary_path)
     if(!all(colnames_dictionary$FinalNames[c(1:18, 20:21, 25, 28, 51)] %in% colnames(data_frame))){stop("The provided object does not contain the expected IgScan fields. Please provide a valid IgScan output file as input.")}
-
-    if("Clonotype_nReads" %in% colnames(data_frame)){
-      id_col <- "sequence_id"
-    } else if("completeBCR" %in% colnames(data_frame)){
-      id_col <- "contig_id"
-    } else{
-      stop("The provided object does not contain the expected IgScan fields. Please provide a valid IgScan output file as input.")
-    }
   }
 
-  converted_object <- data.frame(sequence_id = data_frame[,id_col])
+  converted_object <- data.frame(sequence_id = data_frame[, "contig_id"])
   converted_object$sequence <- data_frame$Raw_sequence
   converted_object$locus <- substr(data_frame$VDJ_genes, start = 1, stop = 3)
   converted_object$productive <- ifelse(data_frame$Functionality == "productive", "T", "F")

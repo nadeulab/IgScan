@@ -16,7 +16,7 @@ the IgScan format (specific column names will be validated).}
 \item{fileName}{A character string for the output file name. Defaults to \code{"IgScan_AIRR_formatted.tsv"} if not provided.}
 
 \item{germline_aln}{Type of germline alignment to be included in the AIRR file.
-Options are \code{masked}(uses IgBlast masked germline alignment) and \code{consensus}(uses the IgScan custom-built
+Options are \code{masked} (uses IgBlast masked germline alignment) and \code{consensus} (uses the IgScan custom-built
 consensus germline sequence).}
 }
 \value{
