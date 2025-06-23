@@ -3,9 +3,10 @@
 
 # IgScan
 
-## A high-throughput analysis toolkit for dissecting immune repertoires in B-cell neoplasms and beyond
+<img src="man/figures/igscan_logo2.png" align="right"
+width="244" />
 
-<img src="man/figures/README-logo.png" align="right" width="237" />
+## A high-throughput analysis toolkit for dissecting immune repertoires in B-cell neoplasms and beyond
 
 ### Introduction
 
