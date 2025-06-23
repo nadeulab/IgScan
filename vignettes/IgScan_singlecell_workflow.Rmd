@@ -142,7 +142,7 @@ seurat_2 <- IgScan::combine_IgScan_Seurat(igscan_out = igscan_out$Sample2_annot,
                                           seurat_object = seurat_2)
 ```
 
-You can now visualize the meta.data of the two Seurat objects and see how the IgScan annotation of each cell has been appended. To learn how to interpret the IgBlast report file see the vingette [**Interpret IgBlast report file**](interpret_IgBlast_report.html).
+You can now visualize the meta.data of the two Seurat objects and see how the IgScan annotation of each cell has been appended. To learn how to interpret the IgBlast report file see the [Interpret IgBlast report file](interpret_IgBlast_report.html) vingette.
 
 **Note:** this step could have been performed in a different way if the Seurat objects had been merged together. If this is the case, the IgScan outputs should be concatenated, for instace by `do.call(rbind, igscan_out)`, and then the user should run:
 
@@ -206,7 +206,7 @@ print(sam_dim + clone_dim)
 
 ### Identification of BCR-based doublets
 
-As it can be observed in the barplot and the UMAPs, there are some cells in this merged object that lack information in the `igClonotypeID_num` field. The explanation for this is found in the `completeBCR` field (see vingette XXX for more information).
+As it can be observed in the barplot and the UMAPs, there are some cells in this merged object that lack information in the `igClonotypeID_num` field. The explanation for this is found in the `completeBCR` field (see the [Uderstand IgScan output format](understand_IgScan_output.html) vingette for more information).
 
 ```{r igscan_anal_4, message=FALSE, warning=FALSE}
 table(seurat_merge$igClonotypeID_num, seurat_merge$completeBCR, useNA = "ifany")
