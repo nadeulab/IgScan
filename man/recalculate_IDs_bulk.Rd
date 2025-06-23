@@ -30,4 +30,5 @@ of the different IDs.
 \dontrun{
 updated_igscan_out <- recalculate_IDs_bulk(igscan_output_df group_col = "SampleID", threads = 4)
 }
+
 }

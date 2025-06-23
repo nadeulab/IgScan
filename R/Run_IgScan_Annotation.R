@@ -40,7 +40,9 @@
 #'   are 'no' (no CDR3 InDel correction, recommended for highly polyclonal samples), 'hard_filter' (high stringency
 #'   but computationally slower) and 'soft_filter' (less stringent but much faster). Default is 'soft_filter'.
 #' @param annotate_CLL_immGen Logical value indicating whether to annotate CLL-related immunogenetic
-#'   information such as CLL stereotype subsets and the R110 mutation. Default is FALSE.
+#'   information such as CLL stereotyped subsets and the R110 mutation. Default is FALSE.
+#' @param annotate_satellite_subsets Logical value indicating whether to annotate Satellite CLL stereotyped subsets.
+#' Only needed if `annotate_CLL_immGen` is set to TRUE. Default is TRUE.
 #' @param outputDir Path to the directory containing the previous IgScan outputs coming from the
 #'   Run_IgBlast_from_RawData function. There is NO default value for this parameter.
 #' @param remove_tmp Logical value indicating whether to remove the temporary files (all files
@@ -78,6 +80,7 @@
 #'    cdr3_mode = "nt",
 #'    cdr3_InDel_correction_mode = "soft_filter",
 #'    annotate_CLL_immGen = TRUE,
+#'    annotate_satellite_subsets = FALSE,
 #'    threads = 4)
 #'
 #' # Example 2: XXXXX
@@ -97,10 +100,11 @@
 #'    cdr3_mode = "nt",
 #'    cdr3_InDel_correction_mode = "soft_filter",
 #'    annotate_CLL_immGen = TRUE,
+#'    annotate_satellite_subsets = FALSE,
 #'    threads = 4)
 #' }
 #'
-Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = NULL, input_format, outputDir, analysis_mode = "single", material_type = "rna", v_primer = "full_length", data_type = "single_cell", min_reads = 2, remove_tmp = TRUE, hc_similarity_cutoff = 0.2, hc_mode = "average", cdr3_mode = "nt", cdr3_InDel_correction_mode = "soft_filter", annotate_CLL_immGen = FALSE, summary_file = NULL, threads = 1){
+Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = NULL, input_format, outputDir, analysis_mode = "single", material_type = "rna", v_primer = "full_length", data_type = "single_cell", min_reads = 2, remove_tmp = TRUE, hc_similarity_cutoff = 0.2, hc_mode = "average", cdr3_mode = "nt", cdr3_InDel_correction_mode = "soft_filter", annotate_CLL_immGen = FALSE, annotate_satellite_subsets = TRUE, summary_file = NULL, threads = 1){
 
   ## First checks
   if(is.null(sample_labels)){
@@ -134,6 +138,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   data_type <- tolower(data_type)
   if(!data_type %in% c("single_cell","bulk")){stop("Invalid value for 'data_type'. It should be either 'single_cell' or 'bulk'.")}
   if(!is.logical(annotate_CLL_immGen)){stop("Invalid value for 'annotate_CLL_immGen'. It should be either TRUE or FALSE.")}
+  if(!is.logical(annotate_satellite_subsets)){stop("Invalid value for 'annotate_satellite_subsets'. It should be either TRUE or FALSE.")}
 
   ## Create the annotation result directory
   system(paste0("mkdir ",outputDir,"annotation_results/"))
@@ -159,7 +164,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
     files_to_annotate <- list.files(paste0(outputDir,"per_case_merge"), full.names = T)
   }
 
-  all_out_list <- .run_Core_IgScan_annotation(files_to_annotate, outputDir, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, summary_file, threads, input_format)
+  all_out_list <- .run_Core_IgScan_annotation(files_to_annotate, outputDir, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, annotate_satellite_subsets, summary_file, threads, input_format)
   flat_out_list <- list_flatten(all_out_list)
   final_list <- .name_final_list(flat_out_list)
 
@@ -172,18 +177,18 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
 }
 
 ## Function to parallelize the Core_IgScan_annotation function
-.run_Core_IgScan_annotation <- function(files_to_annotate, outputDir, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, summary_file, threads, input_format){
+.run_Core_IgScan_annotation <- function(files_to_annotate, outputDir, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, annotate_satellite_subsets, summary_file, threads, input_format){
   mclapply(files_to_annotate, function(i) {
     name <- gsub("_igblast_out.tsv|_merge_df.tsv", "", basename(i))
     input_df <- fread(i, header = T, sep = "\t", stringsAsFactors = F, data.table = F)
     if(endsWith(i, "_igblast_out.tsv")){input_df$sample <- name}
-    output_df <- .Core_IgScan_annotation(input_df, outputDir, name, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, summary_file, input_format)
+    output_df <- .Core_IgScan_annotation(input_df, outputDir, name, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, annotate_satellite_subsets, summary_file, input_format)
     return(output_df)
   }, mc.cores = threads)
 }
 
 ## General IgScan annotation function
-.Core_IgScan_annotation <- function(input_df, outputDir, name, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, summary_file, input_format){
+.Core_IgScan_annotation <- function(input_df, outputDir, name, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, annotate_satellite_subsets, summary_file, input_format){
 
   total_tasks <- ifelse(data_type == "bulk", 5, 9)
   completed_tasks <- 0
@@ -333,7 +338,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   message(paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": Annotating immunogenetic data... ",completed_tasks,"/",total_tasks," tasks completed."))
   completed_tasks <- completed_tasks + 1
 
-  tidy_dataset <- .annotate_Immunogenetics(tidy_dataset, annotate_CLL_immGen)
+  tidy_dataset <- .annotate_Immunogenetics(tidy_dataset, annotate_CLL_immGen, annotate_satellite_subsets)
 
   if(data_type == "single_cell"){
     tidy_dataset <- .combine_IG_metadata_by_chain(tidy_dataset, annotate_CLL_immGen)
@@ -774,7 +779,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   }
   return(list(as.data.frame(tidy_dataset[,return_fields]), completed_tasks))
 }
-.annotate_Immunogenetics <- function(tidy_dataset, annotate_CLL_immGen){
+.annotate_Immunogenetics <- function(tidy_dataset, annotate_CLL_immGen, annotate_satellite_subsets){
 
   tidy_dataset$CorrectClonotypes_Consensus_Germline <- NA
   correct_germline_subMat <- matrix(-1, nrow = 6, ncol = 6, dimnames = list(c("A", "T", "C", "G", "X", "N"), c("A", "T", "C", "G", "X", "N")))
@@ -808,7 +813,8 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
     ## Assign CLL subsets
     tidy_dataset$IGHsubset <- apply(tidy_dataset, 1, function(x) .assign_CLL_subsets(x[which(colnames(tidy_dataset) == "productive")],
                                                                                     x[which(colnames(tidy_dataset) == "VDJ")],
-                                                                                    x[which(colnames(tidy_dataset) == "junction_aa")]))
+                                                                                    x[which(colnames(tidy_dataset) == "junction_aa")],
+                                                                                    annotate_satellite_subsets))
     ## Annotating CLL R110 mutation
     tidy_dataset$VDJ <- paste0(tidy_dataset$VDJ,apply(tidy_dataset, 1, function(x) .annotateR110mut(x[which(colnames(tidy_dataset) == "VDJ")],
                                                                                                     x[which(colnames(tidy_dataset) == "VDJseq")])))
@@ -837,7 +843,8 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   if(annotate_CLL_immGen){
     tidy_dataset$Clonotype_Subset <- apply(tidy_dataset, MARGIN = 1, function(x) .assign_CLL_subsets_to_Clonotypes(x[which(colnames(tidy_dataset) == "productive")],
                                                                                                                    x[which(colnames(tidy_dataset) == "VDJ")],
-                                                                                                                   x[which(colnames(tidy_dataset) == "Clonotype_ConsensusCDR3")]))
+                                                                                                                   x[which(colnames(tidy_dataset) == "Clonotype_ConsensusCDR3")],
+                                                                                                                   annotate_satellite_subsets))
   }
 
   return(tidy_dataset)
@@ -1296,7 +1303,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
 }
 
 ## Function for annotating immunogenetic data
-.assign_CLL_subsets <- function(functionality, VDJ, cdr3aa, annotate_satellite_subsets = TRUE){
+.assign_CLL_subsets <- function(functionality, VDJ, cdr3aa, annotate_satellite_subsets){
   subset <- "NA"
   vGene <- unname(sapply(strsplit(strsplit(VDJ, split = "/")[[1]][1], ",")[[1]], function(x) strsplit(x, "\\*")[[1]][1]))
 
@@ -1335,7 +1342,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
     } else if("IGHV1-69" %in% vGene & cdr3len == 24 & grepl("^A.....[YGD]DFWSGYYPNYYYY[GY]MDV$", cdr3aa)){ subset <- "CLL#7D3"
     } else if(any(grepl("IGHV3", vGene)) & cdr3len == 14 & grepl("^ARG..GDY...FD[YIV]$", cdr3aa)){ subset <- "CLL#202" }
 
-    if(subset == "Unassigned" & annotate_satellite_subsets == TRUE){
+    if(subset == "Unassigned" & annotate_satellite_subsets){
 
       if(any(grepl("IGHV[157]", vGene)) & cdr3len %in% 11:16 & grepl("QWL", substr(cdr3aa, 2, 8)) ){ subset <- "Satellite#1/99"
       } else if(any(grepl("IGHV3", vGene)) & cdr3len %in% 7:11 & grepl("[DE]", substr(cdr3aa, 1, 5)) ){ subset <- "Satellite#2/169"
@@ -1373,9 +1380,9 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   }
   return(r110)
 }
-.assign_CLL_subsets_to_Clonotypes <- function(functionality, VDJ, CDR3_regexp){
+.assign_CLL_subsets_to_Clonotypes <- function(functionality, VDJ, CDR3_regexp, annotate_satellite_subsets){
   cdr3_list <- .possibleCDR3(CDR3_regexp)
-  Clonotype_subsets <- paste0(unique(sapply(cdr3_list, function(x) .assign_CLL_subsets(functionality, VDJ, paste0("X",x,"X")))), collapse = ",")
+  Clonotype_subsets <- paste0(unique(sapply(cdr3_list, function(x) .assign_CLL_subsets(functionality, VDJ, paste0("X",x,"X"), annotate_satellite_subsets))), collapse = ",")
   return(Clonotype_subsets)
 }
 .calculate_v_ident <- function(seq, germ, len){

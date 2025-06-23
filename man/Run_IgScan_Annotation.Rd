@@ -20,6 +20,7 @@ Run_IgScan_Annotation(
   cdr3_mode = "nt",
   cdr3_InDel_correction_mode = "soft_filter",
   annotate_CLL_immGen = FALSE,
+  annotate_satellite_subsets = TRUE,
   summary_file = NULL,
   threads = 1
 )
@@ -74,7 +75,10 @@ are 'no' (no CDR3 InDel correction, recommended for highly polyclonal samples), 
 but computationally slower) and 'soft_filter' (less stringent but much faster). Default is 'soft_filter'.}
 
 \item{annotate_CLL_immGen}{Logical value indicating whether to annotate CLL-related immunogenetic
-information such as CLL stereotype subsets and the R110 mutation. Default is FALSE.}
+information such as CLL stereotyped subsets and the R110 mutation. Default is FALSE.}
+
+\item{annotate_satellite_subsets}{Logical value indicating whether to annotate Satellite CLL stereotyped subsets.
+Only needed if \code{annotate_CLL_immGen} is set to TRUE. Default is TRUE.}
 
 \item{threads}{An integer specifying the number of threads for processing samples.
 Default is 1.}
@@ -111,6 +115,7 @@ result <- Run_IgScan_Annotation(analysis_mode = "joint",
    cdr3_mode = "nt",
    cdr3_InDel_correction_mode = "soft_filter",
    annotate_CLL_immGen = TRUE,
+   annotate_satellite_subsets = FALSE,
    threads = 4)
 
 # Example 2: XXXXX
@@ -130,6 +135,7 @@ result <- Run_IgScan_Annotation(
    cdr3_mode = "nt",
    cdr3_InDel_correction_mode = "soft_filter",
    annotate_CLL_immGen = TRUE,
+   annotate_satellite_subsets = FALSE,
    threads = 4)
 }
 

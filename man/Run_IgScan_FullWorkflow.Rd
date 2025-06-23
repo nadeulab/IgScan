@@ -24,7 +24,8 @@ Run_IgScan_FullWorkflow(
   hc_mode = "average",
   cdr3_mode = "nt",
   cdr3_InDel_correction_mode = "soft_filter",
-  annotate_CLL_immGen = FALSE
+  annotate_CLL_immGen = FALSE,
+  annotate_satellite_subsets = TRUE
 )
 }
 \arguments{
@@ -91,7 +92,10 @@ are 'no' (no CDR3 InDel correction, recommended for highly polyclonal samples), 
 but computationally slower) and 'soft_filter' (less stringent but much faster). Default is 'soft_filter'.}
 
 \item{annotate_CLL_immGen}{Logical value indicating whether to annotate CLL-related immunogenetic
-information such as CLL stereotype subsets and the R110 mutation. Default is FALSE.}
+information such as CLL stereotyped subsets and the R110 mutation. Default is FALSE.}
+
+\item{annotate_satellite_subsets}{Logical value indicating whether to annotate Satellite CLL stereotyped subsets.
+Only needed if \code{annotate_CLL_immGen} is set to TRUE. Default is TRUE.}
 }
 \value{
 A list containing an IgScan annotation dataframe for every sample analyzed, which are also
@@ -150,6 +154,7 @@ results <- Run_IgScan_FullWorkflow(
   cdr3_mode = "nt",
   cdr3_InDel_correction_mode = "soft_filter",
   annotate_CLL_immGen = TRUE,
+  annotate_satellite_subsets = FALSE,
   threads = 4)
 }
 
