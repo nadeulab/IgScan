@@ -160,12 +160,11 @@ It is important to note that simplified identifiers (i.e., those ending in **\_n
 
 Now that we understand how to interpret the different fields in the IgScan output format, it is important to note how this information is structured when integrated into a single-cell object. When an IgScan output is added to the metadata of a single-cell object, the structure of the dataframe is the following:
 
-+----------------------+-----------------------+-----------------------+-----------------------+-----------------------+-----------------------+
-| Pre-existing metadta | IgScan                | IgScan                | IgScan                | IgScan                | IgScan                |
-|                      |                       |                       |                       |                       |                       |
-|                      | Cell level annotation | IGH1 contig anotation | IGH2 contig anotation | IGL1 contig anotation | IGL2 contig anotation |
-+:====================:+:=====================:+:=====================:+:=====================:+:=====================:+:=====================:+
-+----------------------+-----------------------+-----------------------+-----------------------+-----------------------+-----------------------+
++:-------------------------------:+:-------------------------:+:-------------------------:+:-------------------------:+:-------------------------:+:-------------------------:+
+| **Previously existing metadta** | **IgScan**                | **IgScan**                | **IgScan**                | **IgScan**                | **IgScan**                |
+|                                 |                           |                           |                           |                           |                           |
+|                                 | **Cell level annotation** | **IGH1 contig anotation** | **IGH2 contig anotation** | **IGL1 contig anotation** | **IGL2 contig anotation** |
++---------------------------------+---------------------------+---------------------------+---------------------------+---------------------------+---------------------------+
 
 As can be seen, IgScan annotations are appended to the right side of the single-cell metadata in a structured manner, following this order:
 
