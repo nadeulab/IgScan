@@ -22,7 +22,7 @@ To explain how to interpret this report, we will follow an example of a tumoral 
 
 The first panel in the IgBlast report shows the proportion of Productive/Unproductive sequences, as well as the percentage of sequences with stop codons, frameshift V gene or incomplete VDJ.
 
-```{r, out.width="100%", echo=FALSE, fig.path = "images/"}
+```{r, out.width="100%", echo=FALSE}
 knitr::include_graphics("images/IgBlast_report_1.png")
 ```
 
@@ -32,7 +32,7 @@ In this example, we observe that approximately 35% of the sequences in the IGH *
 
 This section of the report presents the absolute number of contigs mapped to each *locus*, along with the alignment scores for the V, D, J, and C genes (when present in the data) per *locus*.
 
-```{r, out.width="100%", echo=FALSE, fig.path = "images/"}
+```{r, out.width="100%", echo=FALSE}
 knitr::include_graphics("images/IgBlast_report_2.png")
 ```
 
@@ -42,7 +42,7 @@ It is notable that the IGH *locus* contains the highest number of contigs. Addit
 
 When running IgScan, it is important to assess the level of BCR clonality of the samples analyzed. This is because certain steps in the IgScan workflow can require significantly longer execution times when using default parameters in highly polyclonal samples. In this context, the IgBlast report file provides valuable information about BCR clonality, which can help anticipate potential computational demands and guide parameter adjustments accordingly.
 
-```{r, out.width="100%", echo=FALSE, fig.path = "images/"}
+```{r, out.width="100%", echo=FALSE}
 knitr::include_graphics("images/IgBlast_report_3.png")
 ```
 
