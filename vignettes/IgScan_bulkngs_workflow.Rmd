@@ -22,6 +22,7 @@ library(devtools)
 load_all("~/Desktop/IgScan/")
 library(ggplot2)
 library(dplyr)
+library(dowser)
 ```
 
 # Introduction
@@ -157,3 +158,56 @@ merge_igscan_out <- recalculate_IDs_bulk(merge_igscan_out, group_col = "SampleID
 ```
 
 If you open the `merge_igscan_out` data frame, you will see that now the contaminated sequence is not there anymore, and that each sample has only one clonotype that accounts for the 100% of the reads respectively.
+
+## Step 4. Exporting IgScan results in AIRR format
+
+To facilitate interoperability with other immunogenetic tools and databases, IgScan allows users to export results in the standardized AIRR (Adaptive Immune Receptor Repertoire) format. This format ensures consistency, transparency, and compatibility across different analysis pipelines.
+
+To export AIRR files, the user can run the function `IgScan::export_AIRR_format()`, which converts all the sequence annotation into AIRR format and also includes the possibility to add pre-existing metadata by using the `metadata` argument. Importantly, this function also supports single cell objects with IgScan annotation metadata as input.
+
+```{r export_airr, tidy = FALSE, message=FALSE, warning=FALSE}
+airr_object <- export_AIRR_format(object = merge_igscan_out, 
+                                  dir = "~/Desktop/TEST_IGSCAN_VINGETTE_NGS/", 
+                                  fileName = "exportAIRR_testNGS.tsv", 
+                                  germline_aln = "masked")
+```
+
+The only parameter to consider—aside from input and output settings—is the `germline_aln` option. This parameter accepts two possible values:
+
+-   **masked:** Uses the IgBlast germline alignment with masked (N) random nucleotides.
+
+-   **consensus**: Uses the clonotype consensus germline sequence as the germline alignment, which does not include masked nucleotides. **We recommend** **this option for downstream analyses**, as the germline sequence is built considering all somatic sequences within the clonotype, helping to reduce potential alignment errors. However, it is important to note that this sequence is an assumption inferred by IgScan based on the closest-to-germline somatic sequence, and may not always perfectly reflect the true germline configuration of the CDR3 region.
+
+Now, we can use this AIRR file to run other tools, such as the [*Dowser*](https://dowser.readthedocs.io/en/latest/#dowser) package which is part of the Immcantation workflow and is widely use to build BCR phylogenetic trees.
+
+In order to show a more illustrative example, lets load an AIRR file coming from the IgScan annotation of a more complex bulk NGS dataset. The command that the AIRR file was the following:
+
+```{r airr_gen, tidy = FALSE, eval=FALSE}
+airr_object <- export_AIRR_format(object = IgScan_Df, 
+                                  dir = OutputDir, 
+                                  fileName = FileName, 
+                                  germline_aln = "consensus", 
+                                  metadata = "SubcloneID_in_Clonotype") ## Added metadata
+```
+
+First, we need to format the AIRR file following the *Dowser* manual:
+
+```{r dowser_interact, tidy = FALSE, message=FALSE, warning=FALSE}
+## Load example AIRR file
+airr_path <- system.file("extdata/igscan_test_AIRR_file_sample3.rds", package = "IgScan", mustWork = T)
+example_airr <- readRDS(airr_path)
+
+## Format clones for phylogenetic inference
+clones <- formatClones(example_airr, germ = "germline_alignment", 
+                       traits = "SubcloneID_in_Clonotype")
+
+# Build maxmimum parsimony trees
+trees <- getTrees(clones)
+plots <- plotTrees(trees, tipsize=2, tips = "SubcloneID_in_Clonotype")
+```
+
+Now, we can visualize, for instance, the phylogenetic tree of the dominant clonotype in the sample colored by subclone (VDJ nucleotide variants).
+
+```{r plot_tree, tidy = FALSE, message=FALSE, warning=FALSE, fig.height=3, fig.width=7}
+plots[[1]]
+```
