@@ -1,6 +1,6 @@
 Type: Package
 Package: IgScan
-Title: A High-Throughput Analysis Toolkit for Dissecting Immune Repertoires in B-cell Neoplasms and Beyond
+Title: A high-throughput analysis toolkit for dissecting immune repertoires in B-cell neoplasms and beyond
 Version: 1.0.0
 Date: 2025-01-08
 Authors@R: c(
