@@ -62,6 +62,7 @@ export_AIRR_format <- function(object, dir, fileName = NULL, germline_aln = "mas
   if(class(object)[1] == "SingleCellExperiment"){
     data_frame <- colData(object)
     if(!sample_col %in% colnames(data_frame)){stop("Invalid `sample_col` argument. Please set a valid column for sample identifier.")}
+    data_frame$tmp_col <- data_frame[[sample_col]]
     data_frame <- .extract_IgScanDf_from_SingleCell(data_frame)
 
   } else if(class(object)[1] == "Seurat"){
@@ -175,13 +176,14 @@ export_AIRR_format <- function(object, dir, fileName = NULL, germline_aln = "mas
     converted_object$clone_id <- data_frame$ClonotypeID[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3)]
     converted_object$sample_id <- data_frame$SampleID[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3)]
 
-  } else{
+  } else if("completeBCR" %in% colnames(data_frame)){
     converted_object$duplicate_count <- 1
     converted_object$cell_id <- data_frame$barcode[match(converted_object$sequence_id, data_frame$contig_id)]
     colnames_AIRR <- c(colnames_AIRR, "cell_id")
     converted_object$clone_id <- data_frame$igClonotypeID[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3)]
     converted_object$sample_id <- data_frame$SampleID[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3)]
-  }
+
+  } else{ stop("Invalid input file format: missing IgScan-BulkNGS or IgScan-SingleCell fields.") }
 
   if(!is.null(metadata)){
     metadata_cols <- data_frame[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3), metadata, drop=FALSE]
