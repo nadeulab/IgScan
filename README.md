@@ -7,7 +7,7 @@
 
 ### Introduction
 
-<img src="man/figures/IgScan_logo3.png" data-align="right"
+<img src="man/figures/IgScan_logo3.png" align="right"
 width="276" />
 
 The analysis of the immune repertoire has become one of the cornerstones
@@ -43,7 +43,7 @@ analysis and BCR phylogenetic reconstruction
 comprehensive immune repertoire studies across a wide range of
 biological contexts.
 
-![](man/figures/IgScan_scheme.png width="3349")
+<img src="man/figures/IgScan_scheme.png" width="3341" />
 
 ## Working with IgScan
 
