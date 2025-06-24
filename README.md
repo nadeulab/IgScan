@@ -43,7 +43,7 @@ analysis and BCR phylogenetic reconstruction
 comprehensive immune repertoire studies across a wide range of
 biological contexts.
 
-<img src="man/figures/IgScan_scheme.png" width="3341" />
+<img src="man/figures/IgScan_scheme.png" width="3338" />
 
 ## Working with IgScan
 
