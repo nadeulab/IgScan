@@ -13,7 +13,9 @@
 #' @param germline_aln Type of germline alignment to be included in the AIRR file.
 #' Options are `masked` (uses IgBlast masked germline alignment) and `consensus` (uses the IgScan custom-built
 #' consensus germline sequence).
-#'
+#' @param sample_col A vector with the name of the column containing the sample identifier. Default is 'SampleID'.
+#' @param metadata A character vector specifying the columns in the `object` that should also be included
+#' in the AIRR file as metadata. Default is `NULL`.
 #' @return A `.tsv` file written to the specified directory in AIRR format as well
 #' as the AIRR dataframe as an R object.
 #'
@@ -34,7 +36,7 @@
 #' export_AIRR_format(seurat_obj, dir = "results/", germline_aln = "consensus")
 #' }
 #'
-export_AIRR_format <- function(object, dir, fileName = NULL, germline_aln = "masked"){
+export_AIRR_format <- function(object, dir, fileName = NULL, germline_aln = "masked", sample_col = "SampleID", metadata = NULL){
 
   germline_aln <- tolower(germline_aln)
   if(!germline_aln %in% c("masked", "consensus")){stop("Invalid value for `germline_aln`. Please set an option between `masked` or `consensus`.")}
@@ -44,7 +46,7 @@ export_AIRR_format <- function(object, dir, fileName = NULL, germline_aln = "mas
     system(paste0("mkdir ", dir))
   }
 
-  converted_object <- .convert_IgScan_to_AIRR(object, germline_aln)
+  converted_object <- .convert_IgScan_to_AIRR(object, germline_aln, sample_col, metadata)
 
   if(is.null(fileName)){
     message("No fileName specified. Output file will be named as `IgScan_AIRR_formatted.tsv`.")
@@ -55,14 +57,17 @@ export_AIRR_format <- function(object, dir, fileName = NULL, germline_aln = "mas
   return(converted_object)
 }
 
-.convert_IgScan_to_AIRR <- function(object, germline_aln){
+.convert_IgScan_to_AIRR <- function(object, germline_aln, sample_col, metadata){
 
   if(class(object)[1] == "SingleCellExperiment"){
     data_frame <- colData(object)
+    if(!sample_col %in% colnames(data_frame)){stop("Invalid `sample_col` argument. Please set a valid column for sample identifier.")}
     data_frame <- .extract_IgScanDf_from_SingleCell(data_frame)
 
   } else if(class(object)[1] == "Seurat"){
     data_frame <- object@meta.data
+    if(!sample_col %in% colnames(data_frame)){stop("Invalid `sample_col` argument. Please set a valid column for sample identifier.")}
+    data_frame$tmp_col <- data_frame[[sample_col]]
     data_frame <- .extract_IgScanDf_from_SingleCell(data_frame)
 
   } else{
@@ -71,6 +76,8 @@ export_AIRR_format <- function(object, dir, fileName = NULL, germline_aln = "mas
     load(colnames_dictionary_path)
     if(!all(colnames_dictionary$FinalNames[c(1:18, 20:21, 25, 28, 51)] %in% colnames(data_frame))){stop("The provided object does not contain the expected IgScan fields. Please provide a valid IgScan output file as input.")}
   }
+
+  if(!is.null(metadata) && !all(metadata %in% colnames(data_frame))){stop(paste0("\nUnknown metadata column (", metadata[!metadata %in% colnames(data_frame)], ")! Please, set valid column names."))}
 
   converted_object <- data.frame(sequence_id = data_frame[, "contig_id"])
   converted_object$sequence <- data_frame$Raw_sequence
@@ -153,17 +160,6 @@ export_AIRR_format <- function(object, dir, fileName = NULL, germline_aln = "mas
   converted_object <- cbind(converted_object, merge_data)
   converted_object$junction_length <- nchar(converted_object$junction)
 
-  if("Subclone_nReads" %in% colnames(data_frame)){
-    converted_object$duplicate_count <- data_frame$Subclone_nReads[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3)]
-    converted_object$clone_id <- data_frame$ClonotypeID[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3)]
-    converted_object$sample_id <- data_frame$SampleID[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3)]
-
-  } else{ ## WORK ON THIS!!!
-    converted_object$duplicate_count <- 1
-    converted_object$clone_id <- data_frame$ClonotypeID[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3)]
-    converted_object$sample_id <- data_frame$SampleID[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3)]
-  }
-
   colnames_AIRR <- c(
     "sequence_id", "sequence", "locus", "productive", "rev_comp",
     "junction", "junction_aa", "junction_length",
@@ -173,6 +169,25 @@ export_AIRR_format <- function(object, dir, fileName = NULL, germline_aln = "mas
     "fwr1", "fwr1_aa", "cdr1", "cdr1_aa", "fwr2", "fwr2_aa", "cdr2", "cdr2_aa", "fwr3", "fwr3_aa", "cdr3", "cdr3_aa", "fwr4", "fwr4_aa",
     "fwr1_start", "fwr1_end", "cdr1_start", "cdr1_end", "fwr2_start", "fwr2_end", "cdr2_start", "cdr2_end", "fwr3_start", "fwr3_end", "cdr3_start", "cdr3_end", "fwr4_start", "fwr4_end",
     "duplicate_count", "clone_id", "sample_id")
+
+  if("Subclone_nReads" %in% colnames(data_frame)){
+    converted_object$duplicate_count <- data_frame$Subclone_nReads[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3)]
+    converted_object$clone_id <- data_frame$ClonotypeID[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3)]
+    converted_object$sample_id <- data_frame$SampleID[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3)]
+
+  } else{
+    converted_object$duplicate_count <- 1
+    converted_object$cell_id <- data_frame$barcode[match(converted_object$sequence_id, data_frame$contig_id)]
+    colnames_AIRR <- c(colnames_AIRR, "cell_id")
+    converted_object$clone_id <- data_frame$igClonotypeID[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3)]
+    converted_object$sample_id <- data_frame$SampleID[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3)]
+  }
+
+  if(!is.null(metadata)){
+    metadata_cols <- data_frame[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3), metadata, drop=FALSE]
+    converted_object <- cbind(converted_object, metadata_cols)
+    colnames_AIRR <- c(colnames_AIRR, metadata)
+  }
 
   converted_object <- converted_object[, colnames_AIRR]
 

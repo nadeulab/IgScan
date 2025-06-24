@@ -4,7 +4,14 @@
 \alias{export_AIRR_format}
 \title{Export IgScan outputs in AIRR format}
 \usage{
-export_AIRR_format(object, dir, fileName = NULL, germline_aln = "masked")
+export_AIRR_format(
+  object,
+  dir,
+  fileName = NULL,
+  germline_aln = "masked",
+  sample_col = "SampleID",
+  metadata = NULL
+)
 }
 \arguments{
 \item{object}{A data frame, \code{Seurat} object, or \code{SingleCellExperiment} object
@@ -18,6 +25,11 @@ the IgScan format (specific column names will be validated).}
 \item{germline_aln}{Type of germline alignment to be included in the AIRR file.
 Options are \code{masked} (uses IgBlast masked germline alignment) and \code{consensus} (uses the IgScan custom-built
 consensus germline sequence).}
+
+\item{sample_col}{A vector with the name of the column containing the sample identifier. Default is 'SampleID'.}
+
+\item{metadata}{A character vector specifying the columns in the \code{object} that should also be included
+in the AIRR file as metadata. Default is \code{NULL}.}
 }
 \value{
 A \code{.tsv} file written to the specified directory in AIRR format as well
