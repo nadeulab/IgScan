@@ -29,6 +29,8 @@ IgScan is designed to fill this gap by providing a streamlined, customizable, an
 
 Although originally designed with a focus on B-cell malignancies, IgScan is also well suited for broader BCR repertoire analyses, such as studying BCR diversity in healthy individuals. Additionally, it can be seamlessly integrated with other tools for somatic hypermutation analysis and BCR phylogenetic reconstruction *([Dowser](https://dowser.readthedocs.io/en/latest/))*, enabling comprehensive immune repertoire studies across a wide range of biological contexts.
 
+![](man/figures/IgScan_scheme.png)
+
 ## Working with IgScan
 
 The IgScan website provides extensive documentation and step-by-step tutorials for all core functions.
