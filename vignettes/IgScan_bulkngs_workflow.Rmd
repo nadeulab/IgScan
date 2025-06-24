@@ -180,7 +180,7 @@ The only parameter to consider—aside from input and output settings—is the `
 
 Now, we can use this AIRR file to run other tools, such as the [*Dowser*](https://dowser.readthedocs.io/en/latest/#dowser) package which is part of the Immcantation workflow and is widely use to build BCR phylogenetic trees.
 
-In order to show a more illustrative example, lets load an AIRR file coming from the IgScan annotation of a more complex bulk NGS dataset. The command that the AIRR file was the following:
+In order to show a more illustrative example, lets load an AIRR file coming from the IgScan annotation of a more complex bulk NGS dataset. The command used to generate the AIRR file was the following:
 
 ```{r airr_gen, tidy = FALSE, eval=FALSE}
 airr_object <- export_AIRR_format(object = IgScan_Df, 
@@ -208,6 +208,6 @@ plots <- plotTrees(trees, tipsize=2, tips = "SubcloneID_in_Clonotype")
 
 Now, we can visualize, for instance, the phylogenetic tree of the dominant clonotype in the sample colored by subclone (VDJ nucleotide variants).
 
-```{r plot_tree, tidy = FALSE, message=FALSE, warning=FALSE, fig.height=3, fig.width=7}
+```{r plot_tree, tidy = FALSE, message=FALSE, warning=FALSE, fig.height=4, fig.width=7}
 plots[[1]]
 ```
