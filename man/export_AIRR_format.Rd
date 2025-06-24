@@ -38,7 +38,7 @@ as the AIRR dataframe as an R object.
 \description{
 This function converts the output from IgScan (or compatible objects single cell
 objects with IgScan annotation) into the standardized AIRR format and writes it to
-a \code{.tsv} file. It supports input objects from \verb{IgScan output data.frame}, \code{Seurat},
+a \code{.tsv} file. It supports input objects from \verb{IgScan output data frame}, \code{Seurat},
 or \code{SingleCellExperiment} classes.
 }
 \examples{

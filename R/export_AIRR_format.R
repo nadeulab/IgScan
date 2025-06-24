@@ -2,7 +2,7 @@
 #'
 #' This function converts the output from IgScan (or compatible objects single cell
 #' objects with IgScan annotation) into the standardized AIRR format and writes it to
-#' a `.tsv` file. It supports input objects from `IgScan output data.frame`, `Seurat`,
+#' a `.tsv` file. It supports input objects from `IgScan output data frame`, `Seurat`,
 #' or `SingleCellExperiment` classes.
 #'
 #' @param object A data frame, `Seurat` object, or `SingleCellExperiment` object
