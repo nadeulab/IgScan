@@ -78,8 +78,8 @@ export_AIRR_format <- function(object, dir, fileName = NULL, germline_aln = "mas
   converted_object$productive <- ifelse(data_frame$Functionality == "productive", "T", "F")
   converted_object$rev_comp <- "F"
 
-  converted_object$sequence_alignment <- data_frame$VDJ_sequence
-  seq_aa_translate <- sapply(unique(data_frame$VDJ_sequence), .translate_sequence)
+  converted_object$sequence_alignment <- data_frame$VDJ_sequence_correctedCDR3
+  seq_aa_translate <- sapply(unique(data_frame$VDJ_sequence_correctedCDR3), .translate_sequence)
   seq_aa_df <- data.frame(nt = names(seq_aa_translate), aa = unname(seq_aa_translate))
   converted_object$sequence_alignment_aa <- seq_aa_df$aa[match(converted_object$sequence_alignment, seq_aa_df$nt)]
 
@@ -151,14 +151,28 @@ export_AIRR_format <- function(object, dir, fileName = NULL, germline_aln = "mas
                           c("fwr1", "fwr1_aa", "cdr1", "cdr1_aa", "fwr2", "fwr2_aa", "cdr2", "cdr2_aa", "fwr3", "fwr3_aa", "cdr3", "cdr3_aa", "fwr4", "fwr4_aa", "junction")]
 
   converted_object <- cbind(converted_object, merge_data)
+  converted_object$junction_length <- nchar(converted_object$junction)
+
+  if("Subclone_nReads" %in% colnames(data_frame)){
+    converted_object$duplicate_count <- data_frame$Subclone_nReads[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3)]
+    converted_object$clone_id <- data_frame$ClonotypeID[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3)]
+    converted_object$sample_id <- data_frame$SampleID[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3)]
+
+  } else{ ## WORK ON THIS!!!
+    converted_object$duplicate_count <- 1
+    converted_object$clone_id <- data_frame$ClonotypeID[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3)]
+    converted_object$sample_id <- data_frame$SampleID[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3)]
+  }
 
   colnames_AIRR <- c(
-    "sequence_id", "sequence", "locus", "productive", "rev_comp", "junction", "junction_aa",
+    "sequence_id", "sequence", "locus", "productive", "rev_comp",
+    "junction", "junction_aa", "junction_length",
     "v_call", "d_call", "j_call", "c_call",
     "sequence_alignment", "sequence_alignment_aa", "germline_alignment", "germline_alignment_aa",
     "v_cigar", "d_cigar", "j_cigar",
     "fwr1", "fwr1_aa", "cdr1", "cdr1_aa", "fwr2", "fwr2_aa", "cdr2", "cdr2_aa", "fwr3", "fwr3_aa", "cdr3", "cdr3_aa", "fwr4", "fwr4_aa",
-    "fwr1_start", "fwr1_end", "cdr1_start", "cdr1_end", "fwr2_start", "fwr2_end", "cdr2_start", "cdr2_end", "fwr3_start", "fwr3_end", "cdr3_start", "cdr3_end", "fwr4_start", "fwr4_end")
+    "fwr1_start", "fwr1_end", "cdr1_start", "cdr1_end", "fwr2_start", "fwr2_end", "cdr2_start", "cdr2_end", "fwr3_start", "fwr3_end", "cdr3_start", "cdr3_end", "fwr4_start", "fwr4_end",
+    "duplicate_count", "clone_id", "sample_id")
 
   converted_object <- converted_object[, colnames_AIRR]
 
