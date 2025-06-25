@@ -1,0 +1,52 @@
+---
+title: "IgScan Installation"
+author: 
+  name: Ian Márquez-López
+  email: iamarquez@recerca.clinic.cat
+  affiliation: Institut d’Investigacions Biomèdiques August Pi i Sunyer (FRCB-IDIBAPS)
+date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{IgScan install}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Installing from GitHub (Recommended)
+
+To install the development version of **IgScan** (v.1.0.0) from GitHub:
+
+```{r, eval=FALSE}
+install.packages("devtools")
+library(devtools)
+
+devtools::install_github("IanMarquezIDIBAPS/IgScan", build_vignettes = T, dependencies = T)
+```
+
+## Installing from Local Source
+
+If you have downloaded or cloned the IgScan repository locally:
+
+#### Using R
+
+```{r, eval=FALSE}
+devtools::install("path/to/IgScan", build_vignettes = T, dependencies = T)
+```
+
+#### From the terminal
+
+```{r, eval=FALSE}
+R CMD INSTALL path/to/IgScan/
+```
+
+Make sure you have a working R development environment (Rtools on Windows, Xcode on macOS, or build tools on Linux).
+
+## Accessing Vignettes
+
+After installation, you can explore the package vignettes (detailed tutorials) by running...
+
+```{r, eval=FALSE}
+browseVignettes("IgScan")
+```
+
+... or access them through the IgScan website.

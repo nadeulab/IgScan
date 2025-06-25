@@ -1,7 +1,7 @@
 url: https://github.com/IanMarquezIDIBAPS/IgScan
-template:
-  bootstrap: 5
-  bootswatch: flatly
+Template:
+  params:
+    bootswatch: flatly
 home:
   sidebar:
     structure:
@@ -24,7 +24,7 @@ navbar:
     - text: Filter out sample crossed contamination
       href: articles/filter_out_crossed_contamination.html
     - text: '-------'
-    - text: Understand IgScan Output
+    - text: Understand IgScan output
       href: articles/understand_IgScan_output.html
     - text: Interpret IgBlast report files
       href: articles/interpret_IgBlast_report.html
