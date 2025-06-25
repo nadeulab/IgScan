@@ -1,4 +1,67 @@
 url: https://github.com/IanMarquezIDIBAPS/IgScan
 template:
   bootstrap: 5
-
+  bootswatch: flatly
+home:
+  sidebar:
+    structure:
+    - links
+    - license
+    - authors
+navbar:
+  left:
+  - text: Getting Started
+    href: index.html
+  - text: Install
+    href: articles/Installation.html
+  - text: Vignettes
+    menu:
+    - text: IgScan BulkNGS workflow
+      href: articles/IgScan_bulkngs_workflow.html
+    - text: IgScan single-cell workflow
+      href: articles/IgScan_singlecell_workflow.html
+    - text: '-------'
+    - text: Filter out sample crossed contamination
+      href: articles/filter_out_crossed_contamination.html
+    - text: '-------'
+    - text: Understand IgScan Output
+      href: articles/understand_IgScan_output.html
+    - text: Interpret IgBlast report files
+      href: articles/interpret_IgBlast_report.html
+  - text: News/Changelog
+    href: news/index.html
+  - text: Reference
+    href: reference/index.html
+  - text: FAQ
+    href: articles/FAQ.html
+reference:
+- title: Running IgScan workflows
+  desc: Functions that load input data and run the main steps of the IgScan workflow.
+- contents:
+  - Run_IgBlast_from_RawData
+  - Run_IgScan_Annotation
+  - Run_IgScan_FullWorkflow
+- title: Combining IgScan with single cell objects
+  desc: Functions to combine the IgScan contig annotation with a scRNA-seq object.
+- contents:
+  - combine_IgScan_Seurat
+  - combine_IgScan_SingleCellExperiment
+- title: Assign incomplete BCR cells to clonotypes
+  desc: Function to infer the complete BCR in cells with partial information.
+- contents:
+  - rescue_single_chain_cells
+- title: Filtering of sample crossed contamination
+  desc: Functions that can be run to flag/remove crossed contamination in bulk and single-cell data.
+- contents:
+  - filter_BCR_contam_bulk
+  - filter_BCR_contam_single_cell
+  - filter_SampleTag_contam_BDRhapsody
+- title: Recalculation of clonal identifiers and clonal abundances
+  desc: Functions that must be run when filtering IgScan annotated datasets to re-estimate clonal frequencies.
+- contents:
+  - recalculate_IDs_bulk
+  - recalculate_IDs_single_cell
+- title: Export IgScan results in AIRR format
+  desc: Functions to export IgScan results in the consensus AIRR format.
+- contents:
+  - export_AIRR_format
