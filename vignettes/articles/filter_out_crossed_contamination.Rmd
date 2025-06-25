@@ -80,6 +80,6 @@ filter_cont_sc <- IgScan::filter_SampleTag_contam_Rhapsody(single_cell_object = 
 When `remove_contamination` is set to `FALSE`, the FLAGs of contamination in the data are stored in three different columns:
 
 |                 | Contamination_FLAG |     Contamination_Ratio      |                     Contamination_Sample                     |
-|:---------:|:----------------:|:---------------:|:-------------------------:|
+|:---------------:|:------------------:|:----------------------------:|:------------------------------------------------------------:|
 | **Description** | PASS / OUT / OUT_X | Ratio of contamination (A:B) | Sample from which the contamination is presumed to originate |
 |   **Example**   |        OUT         |            1:2500            |                           SampleB                            |

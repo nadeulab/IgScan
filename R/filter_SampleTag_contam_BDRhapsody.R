@@ -37,10 +37,10 @@
 #' @examples
 #' \dontrun{
 #' # Example with a SingleCellExperiment object:
-#' cont_filtered_sce <- filter_SampleTag_contam_Rhapsody(single_cell_object = sce, contamination_cutoff = 30)
+#' cont_filtered_sce <- filter_SampleTag_contam_BDRhapsody(single_cell_object = sce, contamination_cutoff = 30)
 #' }
 #'
-filter_SampleTag_contam_Rhapsody <- function(single_cell_object, contamination_cutoff = 10, remove_contamination = F, recalc_column = "orig.ident"){
+filter_SampleTag_contam_BDRhapsody <- function(single_cell_object, contamination_cutoff = 10, remove_contamination = F, recalc_column = "orig.ident"){
 
   if(class(single_cell_object)[1] == "SingleCellExperiment"){
     meta_data <- colData(single_cell_object)
