@@ -27,7 +27,7 @@ IgScan provides a set of functions to identify, flag and (if intended) remove po
 
 -   `IgScan::filter_BCR_contam_single_cell()`: Filters out single-cell barcodes that are likely the result of cross-sample contamination in multiplexed single-cell experiments.
 
--   `IgScan::filter_SampleTag_contam_Rhapsody()`: Tailored for *BD Rhapsody* datasets using SampleTag barcoding. This function detects and removes cells with conflicting or ambiguous SampleTag signals, which typically arise from index swapping or barcode leakage within the same experiment.
+-   `IgScan::filter_SampleTag_contam_BDRhapsody()`: Tailored for *BD Rhapsody* datasets using SampleTag barcoding. This function detects and removes cells with conflicting or ambiguous SampleTag signals, which typically arise from index swapping or barcode leakage within the same experiment.
 
 In this vingette, the last two functions, as well as the rational behind the detection of crossed contamination in high-throughput sequencing data will be covered.
 
@@ -69,7 +69,7 @@ The function looks for clonotypes (igClonotypeID) that are found across multiple
 Similarly to the previous function, the user can choose whether contaminated cells should be automatically removed from the object or simply flagged for manual inspection.
 
 ```{r cont_bd, tidy = FALSE, message=FALSE, warning=FALSE, eval=FALSE}
-filter_cont_sc <- IgScan::filter_SampleTag_contam_Rhapsody(single_cell_object = sc3,
+filter_cont_sc <- IgScan::filter_SampleTag_contam_BDRhapsody(single_cell_object = sc3,
                                                            contamination_cutoff = 10,
                                                            remove_contamination = T,
                                                            recalc_column = "orig.ident")
@@ -80,6 +80,6 @@ filter_cont_sc <- IgScan::filter_SampleTag_contam_Rhapsody(single_cell_object = 
 When `remove_contamination` is set to `FALSE`, the FLAGs of contamination in the data are stored in three different columns:
 
 |                 | Contamination_FLAG |     Contamination_Ratio      |                     Contamination_Sample                     |
-|:---------------:|:------------------:|:----------------------------:|:------------------------------------------------------------:|
+|:--------------:|:--------------:|:--------------:|:----------------------:|
 | **Description** | PASS / OUT / OUT_X | Ratio of contamination (A:B) | Sample from which the contamination is presumed to originate |
 |   **Example**   |        OUT         |            1:2500            |                           SampleB                            |
