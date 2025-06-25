@@ -1,3 +1,3 @@
-# IgScan 1.0.0
+# IgScan 1.0.0 (development version)
 
-* Initial CRAN submission.
+-   Initial IgScan release.

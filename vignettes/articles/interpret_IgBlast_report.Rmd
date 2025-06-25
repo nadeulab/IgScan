@@ -18,7 +18,7 @@ We recommend generating and reviewing this report before running further IgScan 
 
 To explain how to interpret this report, we will follow an example of a tumoral sample analyzed by IGH-NGS plot by plot.
 
-### Sequence completeness and productiveness
+### Sequence completeness and functionality
 
 The first panel in the IgBlast report shows the proportion of Productive/Unproductive sequences, as well as the percentage of sequences with stop codons, frameshift V gene or incomplete VDJ.
 
