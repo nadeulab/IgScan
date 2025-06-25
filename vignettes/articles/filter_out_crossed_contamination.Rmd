@@ -1,0 +1,85 @@
+---
+title: "Filter out crossed contamination"
+author: 
+  name: Ian Márquez-López
+  email: iamarquez@recerca.clinic.cat
+  affiliation: Institut d’Investigacions Biomèdiques August Pi i Sunyer (FRCB-IDIBAPS)
+date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Crossed contamination}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, warning=FALSE, message=FALSE}
+library(devtools)
+load_all("~/Desktop/IgScan/")
+```
+
+In high-throughput sequencing technologies, particularly in multiplexed experimental designs, low-level cross-sample contamination is a common and well-documented issue. Even with stringent library preparation and indexing protocols, reads/cells from highly abundant clonotypes in one sample can occasionally appear at very low frequencies in other samples due to barcode misassignment, index hopping, or ambient RNA contamination.
+
+This is especially relevant in the analysis of B-cell receptor (BCR) repertoires, where highly expanded clonotypes from one individual or condition may "leak" into unrelated samples. If not identified and filtered, these contaminating sequences can distort the interpretation of clonal diversity, expansion, or convergence.
+
+IgScan provides a set of functions to identify, flag and (if intended) remove potential cross-sample contamination based on clonotype abundance patterns across samples. Particularly, within the IgScan package three different functions are provided:
+
+-   `IgScan::filter_BCR_contam_bulk()`: Designed to remove contaminating clonotypes in *bulk NGS* datasets, particularly when multiple samples have been processed and/or sequenced in the same batch. Detailed usage of this function is covered in the [IgScan BulkNGS workflow](IgScan_bulkngs_workflow.html) vingette.
+
+-   `IgScan::filter_BCR_contam_single_cell()`: Filters out single-cell barcodes that are likely the result of cross-sample contamination in multiplexed single-cell experiments.
+
+-   `IgScan::filter_SampleTag_contam_Rhapsody()`: Tailored for *BD Rhapsody* datasets using SampleTag barcoding. This function detects and removes cells with conflicting or ambiguous SampleTag signals, which typically arise from index swapping or barcode leakage within the same experiment.
+
+In this vingette, the last two functions, as well as the rational behind the detection of crossed contamination in high-throughput sequencing data will be covered.
+
+## Filter BCR contamination in single cell data
+
+This function takes as input a list of single cell objects that must contain the following information:
+
+-   **SampleID**
+
+-   **CaseID**: Groups samples that belong to the same biological case (e.g., patient or donor). Clonotypes shared within the same CaseID are **not** flagged as contamination, under the assumption that clonal expansion across samples of the same case is biologically plausible.
+
+-   **BatchID**: Indicates the batch in which the samples were processed or sequenced. Contamination detection is restricted within each batch, preventing false positives when combining samples from independent runs or technologies.
+
+Regarding the cut-off settings, two arguments need to be defined by the user:
+
+-   **contamination_cutoff**: Fold-change ratio to consider a cell as contamination. The default value is 10, meaning that a subclonal BCR sequence is considered contamination if it appears **at least 10 times more frequently** in one sample compared to another within the same batch.
+
+-   **contamination_clone_cutoff**: Fraction of cells within a clonotype that must be flagged as contamination for the entire clonotype to be considered contaminated. Default is 80, meaning that if 80% or more of the cells in a clonotype are flagged, the remaining 20% will also be flagged.
+
+Finally, the user can choose whether contaminated cells should be automatically **removed** from the object or simply **flagged** for manual inspection. This is controlled with the `remove_contamination` parameter. If set to `TRUE`, contaminated cells will be filtered out, and clonal group IDs will be **automatically recalculated**. In this case, the user must specify the `recalc_column` parameter, which defines the grouping variable used during the original IgScan annotation. For example, if clonotypes were assigned per case, then `recalc_column = "case"` ensures that the recalculated IDs remain consistent with the original grouping logic.
+
+```{r cont_sc, tidy = FALSE, message=FALSE, warning=FALSE, eval=FALSE}
+filter_cont_bd <- IgScan::filter_BCR_contam_single_cell(single_cell_list = list(sc1, sc2),
+                                                        sample_col = "orig.ident", 
+                                                        batch_col = "processing_batch",
+                                                        case_col = "case", 
+                                                        contamination_cutoff = 10,
+                                                        contamination_clone_cutoff = 80,
+                                                        remove_contamination = T, 
+                                                        recalc_column = "case")
+```
+
+## Filter SampleTag contamination in BD Rhapsody
+
+The input for this function must be a single cell object pre-processed using the BD Rhapsody analysis pipeline, since a `Sample_Tag` column is needed in the metadata. Cells labeled as "Multiplet" or "Undetermined" in the `Sample_Tag` field are excluded from the contamination analysis.
+
+The function looks for clonotypes (igClonotypeID) that are found across multiple SampleTags. For each such clonotype, it identifies the sample tag where the clonotype is most abundant and compares its frequency to that in all other SampleTags. If the abundance in the most frequent SampleTag is at least `contamination_cutoff` times higher than in another SampleTag, the cells in the lower-frequency SampleTag are flagged as "OUT" (putative contamination).
+
+Similarly to the previous function, the user can choose whether contaminated cells should be automatically removed from the object or simply flagged for manual inspection.
+
+```{r cont_bd, tidy = FALSE, message=FALSE, warning=FALSE, eval=FALSE}
+filter_cont_sc <- IgScan::filter_SampleTag_contam_Rhapsody(single_cell_object = sc3,
+                                                           contamination_cutoff = 10,
+                                                           remove_contamination = T,
+                                                           recalc_column = "orig.ident")
+```
+
+## Contamination FLAG columns
+
+When `remove_contamination` is set to `FALSE`, the FLAGs of contamination in the data are stored in three different columns:
+
+|                 | Contamination_FLAG |     Contamination_Ratio      |                     Contamination_Sample                     |
+|:---------:|:----------------:|:---------------:|:-------------------------:|
+| **Description** | PASS / OUT / OUT_X | Ratio of contamination (A:B) | Sample from which the contamination is presumed to originate |
+|   **Example**   |        OUT         |            1:2500            |                           SampleB                            |

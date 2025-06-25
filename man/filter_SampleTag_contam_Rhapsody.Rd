@@ -7,7 +7,8 @@
 filter_SampleTag_contam_Rhapsody(
   single_cell_object,
   contamination_cutoff = 10,
-  remove_contamination = F
+  remove_contamination = F,
+  recalc_column = "orig.ident"
 )
 }
 \arguments{
