@@ -18,7 +18,13 @@ Since this is the first release of **IgScan**, we do not have frequently asked q
 
 We will update this section as users begin to interact with the package and share their doubts or suggestions.
 
-In the meantime, feel free to: - Check out the [Get Started](../index.html) guide - Explore the [Reference](../reference/index.html) section - Or open an [issue on GitHub](https://github.com/IanMarquezIDIBAPS/IgScan/issues) if you have any questions.
+In the meantime, feel free to:
+
+-   Check out the [Get Started](../index.html) guide.
+
+-   Explore the [Reference](../reference/index.html) section.
+
+-   Open an [issue on GitHub](https://github.com/IanMarquezIDIBAPS/IgScan/issues) if you have any questions.
 
 ------------------------------------------------------------------------
 

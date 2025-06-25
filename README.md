@@ -5,10 +5,9 @@
 
 ## A high-throughput analysis toolkit for dissecting immune repertoires in B-cell neoplasms and beyond
 
-### Introduction
+<img src="man/figures/IgScan_logo.png" align="right" width="182" />
 
-<img src="man/figures/IgScan_logo3.png" align="right"
-width="276" />
+### Introduction
 
 The analysis of the immune repertoire has become one of the cornerstones
 in basic and clinical research in B-cell neoplasms over the past few
