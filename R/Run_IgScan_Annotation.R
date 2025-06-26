@@ -106,18 +106,15 @@
 #'
 Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = NULL, input_format, outputDir, analysis_mode = "single", material_type = "rna", v_primer = "full_length", data_type = "single_cell", min_reads = 2, remove_tmp = TRUE, hc_similarity_cutoff = 0.2, hc_mode = "average", cdr3_mode = "nt", cdr3_InDel_correction_mode = "soft_filter", annotate_CLL_immGen = FALSE, annotate_satellite_subsets = TRUE, summary_file = NULL, threads = 1){
 
+
   ## First checks
   if(is.null(sample_labels)){
     sample_labels <- "all_samples"
-    analysis_mode <- "single"
   } else{
-    if(is.null(case_labels)){
-      analysis_mode <- "single"
-    } else{
-      analysis_mode <- tolower(analysis_mode)
-      if(!analysis_mode %in% c("single","joint")){stop("Invalid value for 'analysis_mode'. It should be either 'single' or 'joint'.")}
-      if(analysis_mode == "joint" & length(case_labels) != length(sample_labels)){stop("Invalid list of cases. There is different number of samples and case indexes!")}
-    }
+    analysis_mode <- tolower(analysis_mode)
+    if(!analysis_mode %in% c("single","joint")){stop("Invalid value for 'analysis_mode'. It should be either 'single' or 'joint'.")}
+    if(is.null(case_labels) & analysis_mode == "joint"){stop("'case_labels' is required when 'analyisis_mode' is set to 'joint'. Please, set a valid combination of parameters!")}
+    if(analysis_mode == "joint" & length(case_labels) != length(sample_labels)){stop("Invalid list of cases. There is different number of samples and case indexes!")}
   }
 
   if(!is.logical(remove_tmp)){stop("Invalid value for 'remove_tmp'. It should be either TRUE or FALSE.")}
