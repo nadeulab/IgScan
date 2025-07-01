@@ -57,7 +57,7 @@ The primary output of IgScan workflows is a dataframe containing the immunogenet
 +-------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | VDJ_positions                 | Position indices of each segment of the VDJ sequence (FR1-CDR1-FR2-CDR2-FR3-CDR3-FR4).                                                                                                                                                                      |
 +-------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
-| V_length                      | Nucleotide squence length of the V region.                                                                                                                                                                                                                  |
+| V_length                      | Nucleotide squence length of the V region from FR1 to FR3 (exlcuding CDR3 nucleotides that are part part of the V gene).                                                                                                                                    |
 +-------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
 | InDels                        | Detected insertions and deletions within the VDJ region.                                                                                                                                                                                                    |
 +-------------------------------+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -191,3 +191,4 @@ As can be seen, IgScan annotations are appended to the right side of the single-
     -   Two blocks for the potentially rearranged **light chains** (kappa or lambda)
 
     Each block corresponds to one possible V(D)J rearrangement observed in the cell, allowing for full reconstruction of both monoallelic and biallelic configurations.
+
