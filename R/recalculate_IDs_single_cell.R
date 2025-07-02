@@ -175,56 +175,61 @@ recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.id
       barcode <- rownames(subset_df)
       append_df <- data.frame(contig_id = paste0(barcode, "_", writen_contigs), barcode = barcode)
 
-      append_df$Raw_sequence <- unique(subset_df[, paste0(chain, "_Raw_sequence")])[1]
-      append_df$Raw_VDJ_sequence <- unique(subset_df[, paste0(chain, "_Raw_VDJ_sequence")])
-      append_df$VDJ_sequence <- unique(subset_df[, paste0(chain, "_VDJ_sequence")])
-      append_df$IgBlast_Germline_alignment <- unique(subset_df[, paste0(chain, "_IgBlast_Germline_alignment")])
-      append_df$VDJ_sequence_correctedCDR3 <- unique(subset_df[, paste0(chain, "_VDJ_sequence_correctedCDR3")])
-      append_df$VDJ_sequence_correctedCDR3_aa <- unique(subset_df[, paste0(chain, "_VDJ_sequence_correctedCDR3_aa")])
-      append_df$Consensus_Germline <- unique(subset_df[, paste0(chain, "_Consensus_Germline")])
-      append_df$Consensus_Germline_aa <- unique(subset_df[, paste0(chain, "_Consensus_Germline_aa")])
-      append_df$VDJ_genes <- unique(subset_df[, paste0(chain, "_VDJ_genes")])
-      append_df$C_gene <- unique(subset_df[, paste0(chain, "_C_gene")])
-      append_df$Functionality <- unique(subset_df[, paste0(chain, "_Functionality")])
-      append_df$Junction_aa <- unique(subset_df[, paste0(chain, "_Junction_aa")])
-      append_df$Junction_lenght <- unique(subset_df[, paste0(chain, "_Junction_lenght")])
-      append_df$V_identity <- unique(subset_df[, paste0(chain, "_V_identity")])
-      append_df$VDJ_positions <- unique(subset_df[, paste0(chain, "_VDJ_positions")])
-      append_df$V_length <- unique(subset_df[, paste0(chain, "_V_length")])
-      append_df$InDels <- unique(subset_df[, paste0(chain, "_InDels")])
+      ## Example old way: append_df$Raw_sequence <- unique(subset_df[, paste0(chain, "_Raw_sequence")])
+      append_df$Raw_sequence <- subset_df[barcode, paste0(chain, "_Raw_sequence")]
+      append_df$Raw_VDJ_sequence <- subset_df[barcode, paste0(chain, "_Raw_VDJ_sequence")]
+      append_df$VDJ_sequence <- subset_df[barcode, paste0(chain, "_VDJ_sequence")]
+      append_df$IgBlast_Germline_alignment <- subset_df[barcode, paste0(chain, "_IgBlast_Germline_alignment")]
+      append_df$VDJ_sequence_correctedCDR3 <- subset_df[barcode, paste0(chain, "_VDJ_sequence_correctedCDR3")]
+      append_df$VDJ_sequence_correctedCDR3_aa <- subset_df[barcode, paste0(chain, "_VDJ_sequence_correctedCDR3_aa")]
+      append_df$Consensus_Germline <- subset_df[barcode, paste0(chain, "_Consensus_Germline")]
+      append_df$Consensus_Germline_aa <- subset_df[barcode, paste0(chain, "_Consensus_Germline_aa")]
+      append_df$VDJ_genes <- subset_df[barcode, paste0(chain, "_VDJ_genes")]
+      append_df$C_gene <- subset_df[barcode, paste0(chain, "_C_gene")]
+      append_df$Functionality <- subset_df[barcode, paste0(chain, "_Functionality")]
+      append_df$Junction_aa <- subset_df[barcode, paste0(chain, "_Junction_aa")]
+      append_df$Junction_lenght <- subset_df[barcode, paste0(chain, "_Junction_lenght")]
+      append_df$V_identity <- subset_df[barcode, paste0(chain, "_V_identity")]
+      append_df$VDJ_positions <- subset_df[barcode, paste0(chain, "_VDJ_positions")]
+      append_df$V_length <- subset_df[barcode, paste0(chain, "_V_length")]
+      append_df$InDels <- subset_df[barcode, paste0(chain, "_InDels")]
+
       if(paste0(chain, "_CLL_Stereotype_Subsets") %in% colnames(subset_df)) {
-        append_df$CLL_Stereotype_Subsets <- unique(subset_df[, paste0(chain, "_CLL_Stereotype_Subsets")])
+        append_df$CLL_Stereotype_Subsets <- subset_df[barcode, paste0(chain, "_CLL_Stereotype_Subsets")]
       }
 
-      append_df$ClonotypeID <- unique(subset_df[, paste0(chain, "_ClonotypeID")])
-      append_df$Clonotype_Consensus_CDR3aa <- unique(subset_df[, paste0(chain, "_Clonotype_Consensus_CDR3aa")])
+      append_df$ClonotypeID <- subset_df[barcode, paste0(chain, "_ClonotypeID")]
+      append_df$Clonotype_Consensus_CDR3aa <- subset_df[barcode, paste0(chain, "_Clonotype_Consensus_CDR3aa")]
+
       if(paste0(chain, "_Clonotype_CLL_Stereotype_Subsets") %in% colnames(subset_df)) {
-        append_df$Clonotype_CLL_Stereotype_Subsets <- unique(subset_df[, paste0(chain, "_Clonotype_CLL_Stereotype_Subsets")])
+        append_df$Clonotype_CLL_Stereotype_Subsets <- subset_df[barcode, paste0(chain, "_Clonotype_CLL_Stereotype_Subsets")]
       }
 
-      append_df$ClonotypeVariantID <- unique(subset_df[, paste0(chain, "_ClonotypeVariantID")])
-      append_df$SubcloneID <- unique(subset_df[, paste0(chain, "_SubcloneID")])
+      append_df$ClonotypeVariantID <- subset_df[barcode, paste0(chain, "_ClonotypeVariantID")]
+      append_df$SubcloneID <- subset_df[barcode, paste0(chain, "_SubcloneID")]
 
-      append_df$completeBCR <- unique(subset_df$completeBCR)
-      append_df$igClonotypeID_num <- unique(subset_df$igClonotypeID_num)
-      append_df$igClonotypeID <- unique(subset_df$igClonotypeID)
-      append_df$igClonotypeVariantID_num <- unique(subset_df$igClonotypeVariantID_num)
-      append_df$igClonotypeVariantID <- unique(subset_df$igClonotypeVariantID)
-      append_df$igSubcloneID_in_ClonotypeVariant_num <- unique(subset_df$igSubcloneID_in_ClonotypeVariant_num)
-      append_df$igSubcloneID_in_Clonotype_num <- unique(subset_df$igSubcloneID_in_Clonotype_num)
-      append_df$igSubcloneID <- unique(subset_df$igSubcloneID)
-      append_df$igRaw_VDJ_sequence <- unique(subset_df$igRaw_VDJ_sequence)
-      append_df$igVDJ_sequence <- unique(subset_df$igVDJ_sequence)
-      append_df$igVDJ_sequence_aa <- unique(subset_df$igVDJ_sequence_aa)
-      append_df$igClonotype_Consensus_Germline <- unique(subset_df$igClonotype_Consensus_Germline)
-      append_df$igClonotype_Consensus_Germline_aa <- unique(subset_df$igClonotype_Consensus_Germline_aa)
-      append_df$igVDJ_positions <- unique(subset_df$igVDJ_positions)
-      append_df$igInDels <- unique(subset_df$igInDels)
-      append_df$igClonotype_Consensus_CDR3aa <- unique(subset_df$igClonotype_Consensus_CDR3aa)
+      append_df$completeBCR <- subset_df[barcode, "completeBCR"]
+      append_df$igClonotypeID_num <- subset_df[barcode, "igClonotypeID_num"]
+      append_df$igClonotypeID <- subset_df[barcode, "igClonotypeID"]
+      append_df$igClonotypeVariantID_num <- subset_df[barcode, "igClonotypeVariantID_num"]
+      append_df$igClonotypeVariantID <- subset_df[barcode, "igClonotypeVariantID"]
+      append_df$igSubcloneID_in_ClonotypeVariant_num <- subset_df[barcode, "igSubcloneID_in_ClonotypeVariant_num"]
+      append_df$igSubcloneID_in_Clonotype_num <- subset_df[barcode, "igSubcloneID_in_Clonotype_num"]
+      append_df$igSubcloneID <- subset_df[barcode, "igSubcloneID"]
+      append_df$igRaw_VDJ_sequence <- subset_df[barcode, "igRaw_VDJ_sequence"]
+      append_df$igVDJ_sequence <- subset_df[barcode, "igVDJ_sequence"]
+      append_df$igVDJ_sequence_aa <- subset_df[barcode, "igVDJ_sequence_aa"]
+      append_df$igClonotype_Consensus_Germline <- subset_df[barcode, "igClonotype_Consensus_Germline"]
+      append_df$igClonotype_Consensus_Germline_aa <- subset_df[barcode, "igClonotype_Consensus_Germline_aa"]
+      append_df$igVDJ_positions <- subset_df[barcode, "igVDJ_positions"]
+      append_df$igInDels <- subset_df[barcode, "igInDels"]
+      append_df$igClonotype_Consensus_CDR3aa <- subset_df[barcode, "igClonotype_Consensus_CDR3aa"]
+
       if("igCLL_Stereotype_Subsets" %in% colnames(subset_df)) {
-        append_df$igCLL_Stereotype_Subsets <- unique(subset_df$igCLL_Stereotype_Subsets)
+        append_df$igCLL_Stereotype_Subsets <- subset_df[barcode, "igCLL_Stereotype_Subsets"]
       }
-      append_df$SampleID <- as.character(unique(subset_df$tmp_col))
+
+      append_df$SampleID <- as.character(subset_df[barcode, "tmp_col"])
 
       igscan_out <- rbind(igscan_out, append_df)
       writen_contigs <- writen_contigs + 1
