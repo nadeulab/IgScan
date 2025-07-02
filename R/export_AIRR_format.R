@@ -186,7 +186,7 @@ export_AIRR_format <- function(object, dir, fileName = NULL, germline_aln = "mas
   } else{ stop("Invalid input file format: missing IgScan-BulkNGS or IgScan-SingleCell fields.") }
 
   if(!is.null(metadata)){
-    metadata_cols <- data_frame[match(converted_object$sequence_alignment, data_frame$VDJ_sequence_correctedCDR3), metadata, drop=FALSE]
+    metadata_cols <- data_frame[match(converted_object$sequence_id, data_frame$contig_id), metadata, drop=FALSE]
     converted_object <- cbind(converted_object, metadata_cols)
     colnames_AIRR <- c(colnames_AIRR, metadata)
   }
