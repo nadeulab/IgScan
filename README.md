@@ -60,7 +60,7 @@ repository by:
 install.packages("devtools")
 library(devtools)
 
-devtools::install_github("https://github.com/IanMarquezIDIBAPS/IgScan/tree/main",
+devtools::install_github("https://github.com/ianmarquezlopez/IgScan/tree/main",
                          build_vignettes = T, dependencies = T)
 ```
 
@@ -91,15 +91,15 @@ seurat_2 <- system.file("extdata/igscan_test_10xSeurat_sample2.rds", package = "
 
 To suggest improvements, modifications or request additional
 functionalities for IgScan, please, submit them as [GitHub
-issues](https://github.com/IanMarquezIDIBAPS/IgScan/issues).
+issues](https://github.com/ianmarquezlopez/IgScan/issues).
 
 If running into any bugs or issues also submit a [GitHub
-issue](https://github.com/IanMarquezIDIBAPS/IgScan/issues) with some
+issue](https://github.com/ianmarquezlopez/IgScan/issues) with some
 details of the problem. Submitting a [reproducible
 example](https://reprex.tidyverse.org/) would be of help.
 
 We are also open for [pull
-requests](https://github.com/IanMarquezIDIBAPS/IgScan/pulls) for fixing
+requests](https://github.com/ianmarquezlopez/IgScan/pulls) for fixing
 bugs or add new features.
 
 ## Please Cite
