@@ -74,7 +74,7 @@ To facilitate this, we provide an auxiliary preprocessing workflow that:
 
 -   Collapses identical sequences while preserving their abundance.
 
-To run the preprocessing workflow, first copy or clone the [`BulkNGS_preprocessing/`](https://github.com/IanMarquezIDIBAPS/IgScan/tree/main/BulkNGS_preprocessing) directory located within the IgScan package to a directory on your system where you have permission to execute and write files.
+To run the preprocessing workflow, first copy or clone the [`BulkNGS_preprocessing/`](https://github.com/ianmarquezlopez/IgScan/tree/main/BulkNGS_preprocessing) directory located within the IgScan package to a directory on your system where you have permission to execute and write files.
 
 You can then run the script using the following command:
 

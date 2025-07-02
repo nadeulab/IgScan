@@ -24,7 +24,7 @@ To install the development version of **IgScan** (v.1.0.0) from GitHub:
 install.packages("devtools")
 library(devtools)
 
-devtools::install_github("IanMarquezIDIBAPS/IgScan", build_vignettes = T, dependencies = T)
+devtools::install_github("ianmarquezlopez/IgScan", build_vignettes = T, dependencies = T)
 ```
 
 ## Installing from Local Source

@@ -28,7 +28,7 @@ In the meantime, feel free to:
 
 -   Explore the [Reference](../reference/index.html) section.
 
--   Open an [issue on GitHub](https://github.com/IanMarquezIDIBAPS/IgScan/issues) if you have any questions.
+-   Open an [issue on GitHub](https://github.com/ianmarquezlopez/IgScan/issues) if you have any questions.
 
 ------------------------------------------------------------------------
 
