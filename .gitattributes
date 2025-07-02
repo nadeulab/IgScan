@@ -1,0 +1,4 @@
+# Exclude rendered HTML files from linguist analysis
+docs/* linguist-vendored
+docs/** linguist-vendored
+vignettes/*.html linguist-generated
