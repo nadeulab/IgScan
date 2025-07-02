@@ -28,6 +28,9 @@ navbar:
       href: articles/understand_IgScan_output.html
     - text: Interpret IgBlast report files
       href: articles/interpret_IgBlast_report.html
+    - text: '-------'
+    - text: Build BCR phylogenies
+      href: articles/build_BCR_phylogenies.html
   - text: News/Changelog
     href: news/index.html
   - text: Reference

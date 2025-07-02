@@ -12,6 +12,10 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r, echo=FALSE}
+options(rmarkdown.html_vignette.check_title = FALSE)
+```
+
 ## Background and relevance of BCR phylogenies
 
 The generation of diversity in B cell receptors (BCRs) is a cornerstone of the adaptive immune system. Through mechanisms such as V(D)J recombination and somatic hypermutation (SHM), B cells are able to produce a vast repertoire of antigen-specific receptors. This process is most active in germinal centers (GCs), transient microanatomical structures within secondary lymphoid organs where B cells undergo rapid proliferation, affinity maturation, and selection.
@@ -29,7 +33,13 @@ The current version of IgScan supports the possibility to build phylogenetic tre
 For both alternatives, we will take as input the data of a single cell object with IgScan annotation in its metadata.
 
 ```{r read_seurat, message=FALSE, warning=FALSE, tidy=FALSE}
-s <- system.file("extdata/igscan_test_10xSeurat_IgScan_sample4.rds", package = "IgScan", mustWork = T)
+library(devtools)
+load_all("~/Desktop/IgScan/")
+library(dowser)
+
+s <- system.file("extdata/igscan_test_10xSeurat_IgScan_sample4.rds", 
+                 package = "IgScan", mustWork = T)
+
 so <- readRDS(s)
 ```
 
@@ -60,24 +70,24 @@ clones <- formatClones(airr,
                        nproc=1, 
                        collapse = TRUE, ## to remove duplicated sequences (keep count)
                        split_light = TRUE, 
-                       minseq = 2, 
+                       minseq = 3, 
                        germ = "germline_alignment", ## custom germline sequence
                        traits = "igSubcloneID_in_Clonotype_num") ## metadata to include
 ```
 
 Once the sequences have been formatted, we can use the `clones` object to build BCR phylogenies. The *dowser* framework supports multiple modes for phylogenetic inference. In this vingette, we will use the default mode (*parsimony ratchet* or *pratchet*), but you can learn how to use more complex phylogenetic models in the [*dowser* website](https://dowser.readthedocs.io/en/latest/).
 
-```{r dowser_phylo, message=FALSE, warning=FALSE, tidy=FALSE, fig.height=5, fig.width=10}
+```{r dowser_phylo, message=FALSE, warning=FALSE, tidy=FALSE, fig.height=4, fig.width=7}
 clones <- getTrees(clones)
 
 plots <- plotTrees(clones,
                    tipsize="collapse_count", # tip size based on abundance
                    tips = "igSubcloneID_in_Clonotype_num") ## tip color based on metadata
 
-plots[[1]]+plots[[2]]
+plots[[1]]
 ```
 
-As you can see in the plot above, we have produced BCR-based phylogenetic trees for all the clones with at least two different nucleotide sequences (`minseq = 2`). This has left us with two different trees, for different clonotypes (C1 and C2 in the Seurat object).
+As you can see in the plot above, we have produced BCR-based phylogenetic trees for all the clones with at least three different nucleotide sequences (`minseq = 3`). This has left us with one tree, for the dominant clonotype in the sample (C1).
 
 Of interest, we have been able to set the size of the tips proportional to the abundance of each subclone, which are represented by the different tip colors.
 
@@ -97,7 +107,7 @@ Now that we have generated the required *gctree* input files, we need to run sev
 
 **NOTE:** To install *gctree* you can follow the instructions on the [*gctree* website](https://matsen.group/gctree/install.html). Then once installed, you should activate the conda environment or whatever needed to run the *gctree* commands.
 
-```{bash run_gctree}
+```{bash, eval=FALSE}
 
 ## Change working directory to the outDir
 cd 'outDir'
@@ -114,7 +124,7 @@ gctree infer outfile abundances.csv --root GL --frame 1 --verbose
 
 After running the commands above, the following phylogenetic tree of C1 is generated in the `outDir` directory.
 
-```{r, out.width="100%", echo=FALSE}
+```{r, out.width="80%", out.height="80%", echo=FALSE}
 knitr::include_graphics("images/gctree_example_outputTree.png")
 ```
 

@@ -12,6 +12,10 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r, echo=FALSE}
+options(rmarkdown.html_vignette.check_title = FALSE)
+```
+
 As mentioned in previous vignettes, IgScan workflows allow the user to generate a detailed **report file** of the sequence re-annotation step using the IgBlast tool. This report can help the user to understand key aspects of the data that are needed to properly adjust the parameters for the following IgScan steps, such as the level of repertoire diversity or the quality of the alignment process.
 
 We recommend generating and reviewing this report before running further IgScan functuions, especially when working with **novel datasets**, **tumor samples with unknown purity** or **healthy samples**.

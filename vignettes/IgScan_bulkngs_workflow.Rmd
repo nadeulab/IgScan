@@ -17,6 +17,10 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r, echo=FALSE}
+options(rmarkdown.html_vignette.check_title = FALSE)
+```
+
 ```{r setup, warning=FALSE, message=FALSE}
 library(devtools)
 load_all("~/Desktop/IgScan/")

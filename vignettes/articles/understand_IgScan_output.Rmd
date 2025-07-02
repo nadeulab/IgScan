@@ -12,6 +12,10 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r, echo=FALSE}
+options(rmarkdown.html_vignette.check_title = FALSE)
+```
+
 The IgScan workflows—for both bulk NGS and single-cell datasets—produce a detailed output containing valuable immunogenetic information. It is therefore essential to understand the structure of the IgScan output and to correctly interpret the clonal groups defined by the package.
 
 In this vingette, we will go through the different fields in IgScan annotation dataframes, as well as the structure of the metadata in a single cell object that has been combined with IgScan.
