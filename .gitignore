@@ -9,6 +9,4 @@ docs
 # produced vignettes
 vignettes/*.html
 
-# pkgdown site
-docs/
 
