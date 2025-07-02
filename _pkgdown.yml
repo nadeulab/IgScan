@@ -65,3 +65,7 @@ reference:
   desc: Functions to export IgScan results in the consensus AIRR format.
 - contents:
   - export_AIRR_format
+- title: Infer BCR phylogenetic trees from IgScan
+  desc: Functions to adapt IgScan outputs for other tools for BCR phylogenetic inference.
+- contents:
+  - prepare_gctree_input
