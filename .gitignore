@@ -5,3 +5,10 @@
 .DS_Store
 inst/doc
 docs
+
+# produced vignettes
+vignettes/*.html
+
+# pkgdown site
+docs/
+
