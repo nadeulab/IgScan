@@ -6,7 +6,7 @@
 \usage{
 export_AIRR_format(
   object,
-  dir,
+  dir = NULL,
   fileName = NULL,
   germline_aln = "masked",
   sample_col = "SampleID",
@@ -18,7 +18,8 @@ export_AIRR_format(
 containing IgScan annotation fields. For data frames, it is expected to match
 the IgScan format (specific column names will be validated).}
 
-\item{dir}{A character string specifying the output directory. If it does not exist, it will be created.}
+\item{dir}{A character string specifying the output directory. If it does not exist, it will be created. Default is \code{NULL},
+meaning that the AIRR file will not be written to a file, it will only be returned by the function as a \code{data.frame}.}
 
 \item{fileName}{A character string for the output file name. Defaults to \code{"IgScan_AIRR_formatted.tsv"} if not provided.}
 

@@ -8,7 +8,8 @@
 #' @param object A data frame, `Seurat` object, or `SingleCellExperiment` object
 #' containing IgScan annotation fields. For data frames, it is expected to match
 #' the IgScan format (specific column names will be validated).
-#' @param dir A character string specifying the output directory. If it does not exist, it will be created.
+#' @param dir A character string specifying the output directory. If it does not exist, it will be created. Default is `NULL`,
+#' meaning that the AIRR file will not be written to a file, it will only be returned by the function as a `data.frame`.
 #' @param fileName A character string for the output file name. Defaults to `"IgScan_AIRR_formatted.tsv"` if not provided.
 #' @param germline_aln Type of germline alignment to be included in the AIRR file.
 #' Options are `masked` (uses IgBlast masked germline alignment) and `consensus` (uses the IgScan custom-built
@@ -36,24 +37,28 @@
 #' export_AIRR_format(seurat_obj, dir = "results/", germline_aln = "consensus")
 #' }
 #'
-export_AIRR_format <- function(object, dir, fileName = NULL, germline_aln = "masked", sample_col = "SampleID", metadata = NULL){
+export_AIRR_format <- function(object, dir = NULL, fileName = NULL, germline_aln = "masked", sample_col = "SampleID", metadata = NULL){
 
   germline_aln <- tolower(germline_aln)
   if(!germline_aln %in% c("masked", "consensus")){stop("Invalid value for `germline_aln`. Please set an option between `masked` or `consensus`.")}
   if(!endsWith(dir, "/")){dir <- paste0(dir, "/")}
-  if(!dir.exists(dir)){
-    message("The indicated output directory does not exist. Creating it...")
-    system(paste0("mkdir ", dir))
-  }
+  if(is.null(dir) & !is.null(fileName)){warning("You specified a `fileName` without specifying a value for `dir`. The AIRR file will not be written, just returned by the function.")}
 
   converted_object <- .convert_IgScan_to_AIRR(object, germline_aln, sample_col, metadata)
 
-  if(is.null(fileName)){
-    message("No fileName specified. Output file will be named as `IgScan_AIRR_formatted.tsv`.")
-    fileName <- "IgScan_AIRR_formatted.tsv"
-  }
+  if(!is.null(dir)){
+    if(!dir.exists(dir)){
+      message("The indicated output directory does not exist. Creating it...")
+      system(paste0("mkdir ", dir))
+    }
 
-  fwrite(converted_object, file = paste0(dir, fileName), quote = F, sep = "\t", col.names = T, row.names = F)
+    if(is.null(fileName)){
+      message("No fileName specified. Output file will be named as `IgScan_AIRR_formatted.tsv`.")
+      fileName <- "IgScan_AIRR_formatted.tsv"
+    }
+
+    fwrite(converted_object, file = paste0(dir, fileName), quote = F, sep = "\t", col.names = T, row.names = F)
+  }
   return(converted_object)
 }
 
