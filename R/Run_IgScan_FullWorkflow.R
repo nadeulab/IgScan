@@ -133,7 +133,7 @@ Run_IgScan_FullWorkflow <- function(sample_paths, sample_labels, Evalue_cutoff =
 
   write(x = paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - Running IgBlast..."), file = summary_file)
   message(paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - Running IgBlast..."))
-  samples_list <- Run_IgBlast_from_RawData(sample_paths = sample_paths, sample_labels = sample_labels, input_format = input_format, data_type = data_type, Evalue_cutoff = Evalue_cutoff, annotate_C = annotate_C, threads_IgBlast = threads_IgBlast, outputDir = outputDir, threads = threads, run_IgBlast_report = F)
+  Run_IgBlast_from_RawData(sample_paths = sample_paths, sample_labels = sample_labels, input_format = input_format, data_type = data_type, Evalue_cutoff = Evalue_cutoff, annotate_C = annotate_C, threads_IgBlast = threads_IgBlast, outputDir = outputDir, threads = threads, run_IgBlast_report = F)
 
   write(x = paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - Starting IgScan annotation..."), file = summary_file, append = T)
   message(paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - Starting IgScan annotation..."))

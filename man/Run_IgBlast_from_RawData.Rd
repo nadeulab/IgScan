@@ -50,8 +50,9 @@ IgBLAST results.}
 Default is 1.}
 }
 \value{
-A list containing the paths of all generated IgBLAST output files. If
-\code{run_IgBlast_report = TRUE}, also includes the path to the PDF report.
+This function does not return a value. It directly generates the IgBlast outputs
+in the corresponding output directory. If \code{run_IgBlast_report = TRUE}, it also generates
+the PDF report.
 }
 \description{
 This function processes raw sequencing data and runs IgBLAST to perform

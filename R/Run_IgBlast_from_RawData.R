@@ -27,9 +27,10 @@
 #' @param run_IgBlast_report Logical. If `TRUE`, generates a PDF report summarizing
 #'   IgBLAST results.
 #'
-#' @return A list containing the paths of all generated IgBLAST output files. If
-#'   `run_IgBlast_report = TRUE`, also includes the path to the PDF report.
-
+#' @return This function does not return a value. It directly generates the IgBlast outputs
+#' in the corresponding output directory. If `run_IgBlast_report = TRUE`, it also generates
+#' the PDF report.
+#'
 #' @details
 #' This function performs the following steps:
 #'
@@ -125,7 +126,7 @@ Run_IgBlast_from_RawData <- function(sample_paths, sample_labels, input_format, 
   ## Run IgBlast in parallel for all samples
   .runIgBLAST_Parallel(sample_labels, outputDir, IgBlastDir, IgBlastRef, Evalue_cutoff, annotate_C, threads_IgBlast, run_IgBlast_report, threads)
 
-  return(samples_list)
+  invisible(NULL)
 }
 
 .load_RawData <- function(sample_paths, input_format){

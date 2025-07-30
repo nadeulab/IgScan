@@ -95,7 +95,7 @@ After that, if `run_IgBlast_report = TRUE`, an exploratory data analysis of IgBl
 s1 <- system.file("extdata/igscan_test_bulkNGS_sample1.fasta", package = "IgScan", mustWork = T)
 s2 <- system.file("extdata/igscan_test_bulkNGS_sample2.fasta", package = "IgScan", mustWork = T)
 
-sample_list <- IgScan::Run_IgBlast_from_RawData(
+IgScan::Run_IgBlast_from_RawData(
   sample_paths = c(s1, s2), 
   sample_labels = c("Sample1", "Sample2"), 
   input_format = "fasta", 
