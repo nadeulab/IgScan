@@ -31,6 +31,9 @@ navbar:
     - text: '-------'
     - text: Build BCR phylogenies
       href: articles/build_BCR_phylogenies.html
+    - text: '-------'
+    - text: Annotate tumor-specific immunogenetics
+      href: articles/annotate_tumor_specific_traits.html
   - text: News/Changelog
     href: news/index.html
   - text: Reference
