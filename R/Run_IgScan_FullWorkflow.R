@@ -60,6 +60,8 @@
 #'   information such as CLL stereotyped subsets and the R110 mutation. Default is FALSE.
 #' @param annotate_satellite_subsets Logical value indicating whether to annotate Satellite CLL stereotyped subsets.
 #' Only needed if `annotate_CLL_immGen` is set to TRUE. Default is TRUE.
+#' @param annotate_ags Logical value indicating whether to annotate IGH Acquired N-Glycosylation Sites (AGS).
+#' Default is FALSE.
 #' @param outputDir Path to the directory containing the previous IgScan outputs coming from the
 #'   Run_IgBlast_from_RawData function. There is NO default value for this parameter.
 #' @param remove_tmp Logical value indicating whether to remove the temporary files (all files
@@ -111,7 +113,7 @@
 #'   threads = 4)
 #' }
 #'
-Run_IgScan_FullWorkflow <- function(sample_paths, sample_labels, Evalue_cutoff = NULL, annotate_C = TRUE, threads = 1, threads_IgBlast = 1, case_labels = NULL, input_format, analysis_mode = "single", material_type = "rna", v_primer = "full_length", data_type = "single_cell", min_reads = 2, remove_tmp = TRUE, outputDir = NULL, hc_similarity_cutoff = 0.2, hc_mode = "average", cdr3_mode = "nt", cdr3_InDel_correction_mode = "soft_filter", annotate_CLL_immGen = FALSE, annotate_satellite_subsets = TRUE){
+Run_IgScan_FullWorkflow <- function(sample_paths, sample_labels, Evalue_cutoff = NULL, annotate_C = TRUE, threads = 1, threads_IgBlast = 1, case_labels = NULL, input_format, analysis_mode = "single", material_type = "rna", v_primer = "full_length", data_type = "single_cell", min_reads = 2, remove_tmp = TRUE, outputDir = NULL, hc_similarity_cutoff = 0.2, hc_mode = "average", cdr3_mode = "nt", cdr3_InDel_correction_mode = "soft_filter", annotate_CLL_immGen = FALSE, annotate_satellite_subsets = TRUE, annotate_ags = FALSE){
 
   if(is.null(outputDir)){
     outputDir <- paste0("./", format(Sys.time(), "%d-%m-%Y_%H%M%S-IgScanResults/"))
@@ -137,7 +139,7 @@ Run_IgScan_FullWorkflow <- function(sample_paths, sample_labels, Evalue_cutoff =
 
   write(x = paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - Starting IgScan annotation..."), file = summary_file, append = T)
   message(paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - Starting IgScan annotation..."))
-  annotated_df_list <- Run_IgScan_Annotation(sample_labels = sample_labels, case_labels = case_labels, input_format = input_format, outputDir = outputDir, analysis_mode = analysis_mode, material_type = material_type, v_primer = v_primer, data_type = data_type, min_reads = min_reads, remove_tmp = remove_tmp, hc_similarity_cutoff = hc_similarity_cutoff, hc_mode = hc_mode, cdr3_mode = cdr3_mode, cdr3_InDel_correction_mode = cdr3_InDel_correction_mode, annotate_CLL_immGen = annotate_CLL_immGen, annotate_satellite_subsets = annotate_satellite_subsets, summary_file = summary_file, threads = threads)
+  annotated_df_list <- Run_IgScan_Annotation(sample_labels = sample_labels, case_labels = case_labels, input_format = input_format, outputDir = outputDir, analysis_mode = analysis_mode, material_type = material_type, v_primer = v_primer, data_type = data_type, min_reads = min_reads, remove_tmp = remove_tmp, hc_similarity_cutoff = hc_similarity_cutoff, hc_mode = hc_mode, cdr3_mode = cdr3_mode, cdr3_InDel_correction_mode = cdr3_InDel_correction_mode, annotate_CLL_immGen = annotate_CLL_immGen, annotate_satellite_subsets = annotate_satellite_subsets, annotate_ags = annotate_ags, summary_file = summary_file, threads = threads)
 
   return(annotated_df_list)
 }

@@ -21,6 +21,7 @@ Run_IgScan_Annotation(
   cdr3_InDel_correction_mode = "soft_filter",
   annotate_CLL_immGen = FALSE,
   annotate_satellite_subsets = TRUE,
+  annotate_ags = FALSE,
   summary_file = NULL,
   threads = 1
 )
@@ -80,6 +81,9 @@ information such as CLL stereotyped subsets and the R110 mutation. Default is FA
 \item{annotate_satellite_subsets}{Logical value indicating whether to annotate Satellite CLL stereotyped subsets.
 Only needed if \code{annotate_CLL_immGen} is set to TRUE. Default is TRUE.}
 
+\item{annotate_ags}{Logical value indicating whether to annotate IGH Acquired N-Glycosylation Sites (AGS).
+Default is FALSE.}
+
 \item{threads}{An integer specifying the number of threads for processing samples.
 Default is 1.}
 }
@@ -92,9 +96,9 @@ This function performs the IgScan annotation on Run_IgBlast_from_RawData output 
 It groups sequences into clonotypic clusters based on a highly customizable hierarchical
 clustering approach. The function processes clonotypes to provide key immunogenetic
 information, such as germline sequences, somatic hypermutation levels, CLL stereotype
-subsets, R110 mutation, and more. Then, it organizes this information according
-to the input data type: for single-cell datasets, it groups heavy-light chains by cell
-barcodes, while for bulk-NGS datasets, it reports the cumulative number of reads and
+subsets, R110 mutation, Acquired N-Glycosylation sites (AGS) and more. Then, it organizes
+this information according to the input data type: for single-cell datasets, it groups heavy-light
+chains by cell barcodes, while for bulk-NGS datasets, it reports the cumulative number of reads and
 clonotype frequencies.
 }
 \examples{
@@ -116,6 +120,7 @@ result <- Run_IgScan_Annotation(analysis_mode = "joint",
    cdr3_InDel_correction_mode = "soft_filter",
    annotate_CLL_immGen = TRUE,
    annotate_satellite_subsets = FALSE,
+   annotate_ags = TRUE,
    threads = 4)
 
 # Example 2: XXXXX
@@ -136,6 +141,7 @@ result <- Run_IgScan_Annotation(
    cdr3_InDel_correction_mode = "soft_filter",
    annotate_CLL_immGen = TRUE,
    annotate_satellite_subsets = FALSE,
+   annotate_ags = TRUE,
    threads = 4)
 }
 

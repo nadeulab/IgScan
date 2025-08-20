@@ -25,7 +25,8 @@ Run_IgScan_FullWorkflow(
   cdr3_mode = "nt",
   cdr3_InDel_correction_mode = "soft_filter",
   annotate_CLL_immGen = FALSE,
-  annotate_satellite_subsets = TRUE
+  annotate_satellite_subsets = TRUE,
+  annotate_ags = FALSE
 )
 }
 \arguments{
@@ -96,6 +97,9 @@ information such as CLL stereotyped subsets and the R110 mutation. Default is FA
 
 \item{annotate_satellite_subsets}{Logical value indicating whether to annotate Satellite CLL stereotyped subsets.
 Only needed if \code{annotate_CLL_immGen} is set to TRUE. Default is TRUE.}
+
+\item{annotate_ags}{Logical value indicating whether to annotate IGH Acquired N-Glycosylation Sites (AGS).
+Default is FALSE.}
 }
 \value{
 A list containing an IgScan annotation dataframe for every sample analyzed, which are also
