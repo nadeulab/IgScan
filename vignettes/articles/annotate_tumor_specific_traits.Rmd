@@ -30,14 +30,6 @@ In CLL, approximately 40% of cases harbor **stereotyped BCRs**, defined by highl
 
 IgScan enables the user to annotate major CLL stereotyped subsets in bulk and single-cell datasets, thus making this layer of annotation accessible in high-throughput analyses. To do so, the user must set the argument `annotate_CLL_immGen=TRUE` when running IgScan.
 
-```{r, out.width="70%", fig.align='center', echo=FALSE}
-knitr::include_graphics("images/MajorSubset_image.png")
-```
-
-::: {style="text-align: center;"}
-<p>~Figure from Stamatopoulos *et al., Leukemia* (2016).~</p>
-:::
-
 In addition to major CLL subsets, IgScan also enables the annotation of **satellite stereotyped subsets**, which are more relaxed definitions of stereotypy and indicate that a given sequence closely resembles a major subset [Agathangelidis et al., 2012]. To do so, the user must set the argument `annotate_satellite_subsets=TRUE` when running IgScan.
 
 ### IGLV3-21^R110^ mutation
@@ -46,24 +38,8 @@ A paradigm-shifting discovery in CLL immunogenetics has been the recognition of 
 
 By annotating the presence of this mutation, IgScan enables the precise identification of cases carrying this poor-prognostic biomarker, which has now been incorporated into the modern immunogenetic classification of CLL. To do so, the user must set the argument `annotate_CLL_immGen=TRUE` when running IgScan.
 
-```{r, out.width="70%", fig.align='center', echo=FALSE}
-knitr::include_graphics("images/R110_image.png")
-```
-
-::: {style="text-align: center;"}
-<p>~Figure from Nadeu *et al., Blood* (2021).~</p>
-:::
-
 ### Acquired N-glycosylation sites (AGS)
 
 Another relevant immunogenetic feature arises from **acquired N-glycosylation sites (AGS)**, generated through somatic hypermutation. These consensus motifs (N-X-S/T) frequently appear in the variable domains of immunoglobulins, particularly in FL, where they are thought to provide a selective growth advantage via interactions with lectins in the tumor microenvironment [[Hollander *et al.*, 2017](https://www.frontiersin.org/journals/immunology/articles/10.3389/fimmu.2017.00912/full)]. Interestingly, AGS in the complementary determining regions (CDR) have been recently described to define a subgroup with poor outcome of germinal center B-cell like (GCB) DLBCL [Tatterton *et al*., 2025].
 
 IgScan includes automated detection of AGS, facilitating systematic analysis of this feature across high throughput datasets. To annotate AGS, the user must set the argument `annotate_ags=TRUE` when running IgScan.
-
-```{r, out.width="70%", fig.align='center', echo=FALSE}
-knitr::include_graphics("images/AGS_image.png")
-```
-
-::: {style="text-align: center;"}
-<p>~Figure adapted from XXX.~</p>
-:::
