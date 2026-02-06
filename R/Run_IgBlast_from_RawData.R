@@ -168,6 +168,7 @@ Run_IgBlast_from_RawData <- function(sample_paths, sample_labels, input_format, 
   mclapply(1:length(samples_list), function(i) {
 
     fasta_file <- paste0(outputDir,"fasta_inputs/",sample_labels[i],"_igblast_in.fa")
+    if(file.exists(fasta_file)) {file.remove(fasta_file)}
 
     if(input_format %in% c("10xbcr_fasta", "fasta")){
       system(paste0("cp ", samples_list[[i]]," ", fasta_file))
