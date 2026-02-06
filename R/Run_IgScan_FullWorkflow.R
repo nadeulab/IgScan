@@ -128,6 +128,7 @@ Run_IgScan_FullWorkflow <- function(sample_paths, sample_labels, Evalue_cutoff =
     warning(paste0("Output directory has been set to ", outputDir), call. = FALSE)
 
   } else{
+    if(!endsWith(outputDir, "/")){outputDir <- paste0(outputDir, "/")}
     if(!dir.exists(outputDir)){system(paste0("mkdir ",outputDir))}
   }
 
