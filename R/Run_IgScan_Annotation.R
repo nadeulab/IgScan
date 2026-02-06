@@ -163,7 +163,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
       }
       fwrite(merge_df, paste0(outputDir,"per_case_merge/",case,"_merge_df.tsv"), quote = F, sep = "\t", row.names = F, col.names = T)
     }
-    files_to_annotate <- list.files(paste0(outputDir,"per_case_merge"), full.names = T)
+    files_to_annotate <- paste0(outputDir, "per_case_merge/", unique(case_labels), "_merge.df.tsv")
   }
 
   all_out_list <- .run_Core_IgScan_annotation(files_to_annotate, outputDir, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, annotate_satellite_subsets, annotate_ags, summary_file, threads, input_format)
