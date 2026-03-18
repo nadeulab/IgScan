@@ -7,7 +7,8 @@
 rescue_single_chain_cells(
   single_cell_object,
   group_col = "orig.ident",
-  threads = 1
+  threads = 1,
+  relaxed_rescue = FALSE
 )
 }
 \arguments{
@@ -19,6 +20,12 @@ IgScan data.frames coming from the analysis of single cell data.}
 Default is 'orig.ident', thus rescuing and recalculating BCR IDs based in each sample independently.}
 
 \item{threads}{The number of threads to perform single_chain cells rescuing. Default is 1.}
+
+\item{relaxed_rescue}{Logical value indicating whether to apply a relaxed clonotype rescue mode.
+The default (recommended) is \code{FALSE}, requiring exact V(D)J nucleotide sequence matches to rescue
+single-chain cells. If set to \code{TRUE}, which we recommend only for the analysis of Mission Bio
+single-cell V(D)J data, rescue is performed at the clonotype level rather than by exact nucleotide
+sequence identity.}
 }
 \value{
 The input single cell object (or IgScan data.frame) with updated

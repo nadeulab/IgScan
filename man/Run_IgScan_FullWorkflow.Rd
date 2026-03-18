@@ -26,7 +26,9 @@ Run_IgScan_FullWorkflow(
   cdr3_InDel_correction_mode = "soft_filter",
   annotate_CLL_immGen = FALSE,
   annotate_satellite_subsets = TRUE,
-  annotate_ags = FALSE
+  annotate_ags = FALSE,
+  rescue_single_chain = FALSE,
+  relaxed_rescue = FALSE
 )
 }
 \arguments{
@@ -68,7 +70,7 @@ matrial_type='rna', unproductive sequences are not expected, and will be directl
 Options: 'full_length', 'fr1', 'fr2' and 'fr3'. Note that sequences with unexpected length pattern based on
 the chosen primer will be directly excluded from the analysis. Default is 'full_length'.}
 
-\item{data_type}{The type of data. Options: 'single_cell' and 'bulk'. Default is 'single_cell'.}
+\item{data_type}{The type of data. Options: 'single_cell', 'bulk' or 'missionbio'. Default is 'single_cell'.}
 
 \item{min_reads}{The minimum number of reads required to keep a sequence in the downstream analyses.
 Only needed for bulk NGS data. Default is 2.}
@@ -100,6 +102,15 @@ Only needed if \code{annotate_CLL_immGen} is set to TRUE. Default is TRUE.}
 
 \item{annotate_ags}{Logical value indicating whether to annotate IGH Acquired N-Glycosylation Sites (AGS).
 Default is FALSE.}
+
+\item{rescue_single_chain}{Logical value indicating whether to hard assign cells with one chain detected to the most
+plausible complete clonotype (see \code{rescue_single_chain_cells} function documentation for more details). Default is FALSE.}
+
+\item{relaxed_rescue}{Logical value indicating whether to apply a relaxed clonotype rescue mode.
+Only needed if \code{rescue_single_chain} is set to \code{TRUE}.The default (recommended) is \code{FALSE}, requiring exact
+V(D)J nucleotide sequence matches to rescue single-chain cells. If set to \code{TRUE}, which we recommend only
+for the analysis of Mission Bio single-cell V(D)J data, rescue is performed at the clonotype level rather
+than by exact nucleotide sequence identity.}
 }
 \value{
 A list containing an IgScan annotation dataframe for every sample analyzed, which are also
@@ -110,8 +121,11 @@ This function provides a streamlined pipeline to process raw
 sequencing data, perform IgBLAST reannotation, and run IgScan to generate
 advanced immunogenetic analyses. It combines the functionalities of
 \code{Run_IgBlast_from_RawData} and \code{Run_IgScan_Annotation} into a single step,
-allowing users to process raw single_cell/bulk NGS data, annotate immunoglobulin
-sequences, and analyze clonotypes in a unified workflow.
+allowing users to process raw scRNA-seq/bulk NGS data, annotate immunoglobulin
+sequences, and analyze clonotypes in a unified workflow. In addition, the workflow is
+also compatible with single-cell V(D)J data generated using the Mission Bio platform,
+provided that the IgScan input has been produced using our dedicated raw-data
+preprocessing pipeline (see IgScan GitHub).
 
 It supports data from multiple sequencing platforms and file types:
 \itemize{

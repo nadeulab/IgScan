@@ -4,8 +4,11 @@
 #' sequencing data, perform IgBLAST reannotation, and run IgScan to generate
 #' advanced immunogenetic analyses. It combines the functionalities of
 #' `Run_IgBlast_from_RawData` and `Run_IgScan_Annotation` into a single step,
-#' allowing users to process raw single_cell/bulk NGS data, annotate immunoglobulin
-#' sequences, and analyze clonotypes in a unified workflow.
+#' allowing users to process raw scRNA-seq/bulk NGS data, annotate immunoglobulin
+#' sequences, and analyze clonotypes in a unified workflow. In addition, the workflow is
+#' also compatible with single-cell V(D)J data generated using the Mission Bio platform,
+#' provided that the IgScan input has been produced using our dedicated raw-data
+#' preprocessing pipeline (see IgScan GitHub).
 #'
 #' It supports data from multiple sequencing platforms and file types:
 #' \itemize{
@@ -33,7 +36,7 @@
 #' @param input_format A string specifying the format of the input data, currently supporting:
 #'   '10xBCR_fasta', '10xBCR_csv', 'ParseBCR', 'BDRhapsodyBCR', 'MiXCR',
 #'   'TRUST4', 'AIRR', 'IMGT_AIRR' and 'fasta'.
-#' @param data_type The type of data. Options: 'single_cell' and 'bulk'. Default is 'single_cell'.
+#' @param data_type The type of data. Options: 'single_cell', 'bulk' or 'missionbio'. Default is 'single_cell'.
 #' @param material_type The biological source of material. Options: 'dna' and 'rna'. Note that for
 #'   matrial_type='rna', unproductive sequences are not expected, and will be directly removed. Default is 'rna'.
 #' @param v_primer The primer sequence used for the V-region amplification.
@@ -62,6 +65,13 @@
 #' Only needed if `annotate_CLL_immGen` is set to TRUE. Default is TRUE.
 #' @param annotate_ags Logical value indicating whether to annotate IGH Acquired N-Glycosylation Sites (AGS).
 #' Default is FALSE.
+#' @param rescue_single_chain Logical value indicating whether to hard assign cells with one chain detected to the most
+#' plausible complete clonotype (see `rescue_single_chain_cells` function documentation for more details). Default is FALSE.
+#' @param relaxed_rescue Logical value indicating whether to apply a relaxed clonotype rescue mode.
+#' Only needed if `rescue_single_chain` is set to `TRUE`.The default (recommended) is `FALSE`, requiring exact
+#' V(D)J nucleotide sequence matches to rescue single-chain cells. If set to `TRUE`, which we recommend only
+#' for the analysis of Mission Bio single-cell V(D)J data, rescue is performed at the clonotype level rather
+#' than by exact nucleotide sequence identity.
 #' @param outputDir Path to the directory containing the previous IgScan outputs coming from the
 #'   Run_IgBlast_from_RawData function. There is NO default value for this parameter.
 #' @param remove_tmp Logical value indicating whether to remove the temporary files (all files
@@ -113,7 +123,7 @@
 #'   threads = 4)
 #' }
 #'
-Run_IgScan_FullWorkflow <- function(sample_paths, sample_labels, Evalue_cutoff = NULL, annotate_C = TRUE, threads = 1, threads_IgBlast = 1, case_labels = NULL, input_format, analysis_mode = "single", material_type = "rna", v_primer = "full_length", data_type = "single_cell", min_reads = 2, remove_tmp = TRUE, outputDir = NULL, hc_similarity_cutoff = 0.2, hc_mode = "average", cdr3_mode = "nt", cdr3_InDel_correction_mode = "soft_filter", annotate_CLL_immGen = FALSE, annotate_satellite_subsets = TRUE, annotate_ags = FALSE){
+Run_IgScan_FullWorkflow <- function(sample_paths, sample_labels, Evalue_cutoff = NULL, annotate_C = TRUE, threads = 1, threads_IgBlast = 1, case_labels = NULL, input_format, analysis_mode = "single", material_type = "rna", v_primer = "full_length", data_type = "single_cell", min_reads = 2, remove_tmp = TRUE, outputDir = NULL, hc_similarity_cutoff = 0.2, hc_mode = "average", cdr3_mode = "nt", cdr3_InDel_correction_mode = "soft_filter", annotate_CLL_immGen = FALSE, annotate_satellite_subsets = TRUE, annotate_ags = FALSE, rescue_single_chain = FALSE, relaxed_rescue = FALSE){
 
   if(is.null(outputDir)){
     outputDir <- paste0("./", format(Sys.time(), "%d-%m-%Y_%H%M%S-IgScanResults/"))
@@ -140,7 +150,7 @@ Run_IgScan_FullWorkflow <- function(sample_paths, sample_labels, Evalue_cutoff =
 
   write(x = paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - Starting IgScan annotation..."), file = summary_file, append = T)
   message(paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - Starting IgScan annotation..."))
-  annotated_df_list <- Run_IgScan_Annotation(sample_labels = sample_labels, case_labels = case_labels, input_format = input_format, outputDir = outputDir, analysis_mode = analysis_mode, material_type = material_type, v_primer = v_primer, data_type = data_type, min_reads = min_reads, remove_tmp = remove_tmp, hc_similarity_cutoff = hc_similarity_cutoff, hc_mode = hc_mode, cdr3_mode = cdr3_mode, cdr3_InDel_correction_mode = cdr3_InDel_correction_mode, annotate_CLL_immGen = annotate_CLL_immGen, annotate_satellite_subsets = annotate_satellite_subsets, annotate_ags = annotate_ags, summary_file = summary_file, threads = threads)
+  annotated_df_list <- Run_IgScan_Annotation(sample_labels = sample_labels, case_labels = case_labels, input_format = input_format, outputDir = outputDir, analysis_mode = analysis_mode, material_type = material_type, v_primer = v_primer, data_type = data_type, min_reads = min_reads, remove_tmp = remove_tmp, hc_similarity_cutoff = hc_similarity_cutoff, hc_mode = hc_mode, cdr3_mode = cdr3_mode, cdr3_InDel_correction_mode = cdr3_InDel_correction_mode, annotate_CLL_immGen = annotate_CLL_immGen, annotate_satellite_subsets = annotate_satellite_subsets, annotate_ags = annotate_ags, rescue_single_chain = rescue_single_chain, relaxed_rescue = relaxed_rescue, summary_file = summary_file, threads = threads)
 
   return(annotated_df_list)
 }

@@ -12,7 +12,8 @@ recalculate_IDs_single_cell(
 }
 \arguments{
 \item{single_cell_object}{A single-cell object combined with IgScan annotation
-in either \code{SingleCellExperiment} or \code{Seurat} format.}
+in either \code{SingleCellExperiment} or \code{Seurat} format. This function also supports
+IgScan data.frames coming from the analysis of single cell data.}
 
 \item{group_col}{A vector with the name of the column or columns containing the grouping variable/s.
 Default is 'orig.ident', thus recalculating BCR IDs based in each sample independently.}

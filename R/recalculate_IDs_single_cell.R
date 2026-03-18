@@ -7,7 +7,8 @@
 #' and `Seurat` classes.
 #'
 #' @param single_cell_object A single-cell object combined with IgScan annotation
-#' in either `SingleCellExperiment` or `Seurat` format.
+#' in either `SingleCellExperiment` or `Seurat` format. This function also supports
+#' IgScan data.frames coming from the analysis of single cell data.
 #' @param group_col A vector with the name of the column or columns containing the grouping variable/s.
 #' Default is 'orig.ident', thus recalculating BCR IDs based in each sample independently.
 #' @param threads The number of threads to perform BCR ID recalculation. Default is 1.
@@ -34,6 +35,9 @@ recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.id
     meta_data <- as.data.frame(single_cell_object@colData)
   } else if(class(single_cell_object)[1] == "Seurat"){
     meta_data <- as.data.frame(single_cell_object@meta.data)
+  } else if(class(single_cell_object)[1] == "data.frame"){
+    meta_data <- single_cell_object
+    if(!"barcode" %in% colnames(meta_data)){meta_data$barcode <- sapply(meta_data$contig_id, function(x) strsplit(x, "_")[[1]][1])}
   }
 
   if(!all(group_col %in% colnames(meta_data))){stop(paste0("\nUnknown column (", group_col[!group_col %in% colnames(meta_data)], ") selected for BCR ID recalculation! Please, set a valid column name."))}
@@ -41,7 +45,12 @@ recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.id
   meta_data$tmp_col <- apply(meta_data[,group_col, drop = FALSE], 1, function(row) paste(row, collapse = "_"))
 
   recalc_df_list <- mclapply(unique(meta_data$tmp_col), function(col_v){
-    tmp_df <- .extract_IgScanDf_from_SingleCell(meta_data[meta_data$tmp_col == col_v,])
+
+    if(class(single_cell_object)[1] == "data.frame"){
+      tmp_df <- meta_data[meta_data$tmp_col == col_v,]
+    } else{
+      tmp_df <- .extract_IgScanDf_from_SingleCell(meta_data[meta_data$tmp_col == col_v,])
+    }
 
     if(nrow(tmp_df) == 0){return(NULL)}
 
@@ -151,6 +160,8 @@ recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.id
     single_cell_object <- combine_IgScan_SingleCellExperiment(igscan_out = recalc_df, sce = single_cell_object, sce_sample_col = group_col, igscan_sample_col = "SampleID", threads = threads)
   } else if(class(single_cell_object)[1] == "Seurat"){
     single_cell_object <- combine_IgScan_Seurat(igscan_out = recalc_df, seurat_object = single_cell_object, seurat_sample_col = group_col, igscan_sample_col = "SampleID", threads = threads)
+  } else if(class(single_cell_object)[1] != "data.frame"){
+    single_cell_object <- recalc_df[, colnames(recalc_df) != c("barcode", "tmp_col")]
   }
   return(single_cell_object)
 }

@@ -12,6 +12,11 @@
 #' @param group_col A vector with the name of the column or columns containing the grouping variable/s.
 #' Default is 'orig.ident', thus rescuing and recalculating BCR IDs based in each sample independently.
 #' @param threads The number of threads to perform single_chain cells rescuing. Default is 1.
+#' @param relaxed_rescue Logical value indicating whether to apply a relaxed clonotype rescue mode.
+#' The default (recommended) is `FALSE`, requiring exact V(D)J nucleotide sequence matches to rescue
+#' single-chain cells. If set to `TRUE`, which we recommend only for the analysis of Mission Bio
+#' single-cell V(D)J data, rescue is performed at the clonotype level rather than by exact nucleotide
+#' sequence identity.
 #'
 #' @return The input single cell object (or IgScan data.frame) with updated
 #' metadata, where the `completeBCR`field in some "single chain" cells may now be marked as "Yes_rescue".
@@ -30,23 +35,24 @@
 #' igscan_df <- rescue_single_chain_cells(igscan_df, group_col = "SampleID", threads = 2)
 #' }
 #'
-rescue_single_chain_cells <- function(single_cell_object, group_col = "orig.ident", threads = 1){
+rescue_single_chain_cells <- function(single_cell_object, group_col = "orig.ident", threads = 1, relaxed_rescue = FALSE){
 
   if(class(single_cell_object)[1] == "SingleCellExperiment"){
-    single_cell_object <- .rescue_single_chain_sce(single_cell_object, group_col, threads)
+    single_cell_object <- .rescue_single_chain_sce(single_cell_object, group_col, threads, relaxed_rescue)
     single_cell_object <- recalculate_IDs_single_cell(single_cell_object, group_col, threads)
 
   } else if(class(single_cell_object)[1] == "Seurat"){
-    single_cell_object <- .rescue_single_chain_seurat(single_cell_object, group_col, threads)
+    single_cell_object <- .rescue_single_chain_seurat(single_cell_object, group_col, threads, relaxed_rescue)
     single_cell_object <- recalculate_IDs_single_cell(single_cell_object, group_col, threads)
 
   } else if(class(single_cell_object)[1] == "data.frame"){
-    single_cell_object <- .rescue_single_chain_igscandf(single_cell_object, group_col, threads)
+    single_cell_object <- .rescue_single_chain_igscandf(single_cell_object, group_col, threads, relaxed_rescue)
+    single_cell_object <- recalculate_IDs_single_cell(single_cell_object, group_col, threads)
   }
   return(single_cell_object)
 }
 
-.rescue_single_chain_sce <- function(single_cell_object, group_col, threads){
+.rescue_single_chain_sce <- function(single_cell_object, group_col, threads, relaxed_rescue){
 
   if(!all(group_col %in% colnames(colData(single_cell_object)))) {stop(paste0("\nUnknown column (", group_col[!group_col %in% colnames(colData(single_cell_object))], ") selected for BCR ID recalculation! Please, set a valid column name."))}
   colData(single_cell_object)$tmp_col <- apply(as.data.frame(colData(single_cell_object)[, group_col, drop = FALSE]), 1, function(row) paste(row, collapse = "_"))
@@ -70,18 +76,34 @@ rescue_single_chain_cells <- function(single_cell_object, group_col = "orig.iden
     dict_single <- meta[meta$completeBCR %in% c("Single_chain_1", "Single_chain_2"), cols_dict, drop = FALSE]
     dict_single <- dict_single[!duplicated(dict_single),]
 
-    for(row in 1:nrow(dict_single)){
-      sbc_single <- dict_single$igSubcloneID[row]
-      resc_df <- dict_yes[grepl(paste0(sbc_single, "-"), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single, "-"), dict_yes$igSubcloneID),]
+    if(relaxed_rescue){
+      for(row in 1:nrow(dict_single)){
+        clt_single <- dict_single$igClonotypeID[row]
+        resc_df <- dict_yes[grepl(paste0(clt_single, "-"), dict_yes$igClonotypeID) | grepl(paste0("-", clt_single), dict_yes$igClonotypeID) | grepl(paste0("-", clt_single, "-"), dict_yes$igClonotypeID),]
 
-      if(length(unique(resc_df$igClonotypeID_num)) > 1 | nrow(resc_df) == 0){ next }
+        if(length(unique(resc_df$igClonotypeID_num)) > 1 | nrow(resc_df) == 0){ next }
 
-      selection <- meta$igSubcloneID == sbc_single & meta$completeBCR %in% c("Single_chain_1", "Single_chain_2")
-      meta$igClonotypeID_num[selection] <- unique(resc_df$igClonotypeID_num)
-      meta$igClonotypeVariantID_num[selection] <- names(which.min(sapply(unique(resc_df$igClonotypeVariantID_num), function(x) as.numeric(strsplit(x, "\\.CV")[[1]][2]))))
-      meta$igSubcloneID_in_ClonotypeVariant_num[selection] <- names(which.min(sapply(unique(resc_df$igSubcloneID_in_ClonotypeVariant_num), function(x) as.numeric(strsplit(x, "\\.S")[[1]][2]))))
-      meta$igSubcloneID_in_Clonotype_num[selection] <- names(which.min(sapply(unique(resc_df$igSubcloneID_in_Clonotype_num), function(x) as.numeric(strsplit(x, "\\.")[[1]][2]))))
-      meta$completeBCR[selection] <- "Yes_rescue"
+        selection <- meta$igClonotypeID == clt_single & meta$completeBCR %in% c("Single_chain_1", "Single_chain_2")
+        meta$igClonotypeID_num[selection] <- unique(resc_df$igClonotypeID_num)
+        meta$igClonotypeVariantID_num[selection] <- names(which.min(sapply(unique(resc_df$igClonotypeVariantID_num), function(x) as.numeric(strsplit(x, "\\.CV")[[1]][2]))))
+        meta$igSubcloneID_in_ClonotypeVariant_num[selection] <- names(which.min(sapply(unique(resc_df$igSubcloneID_in_ClonotypeVariant_num), function(x) as.numeric(strsplit(x, "\\.S")[[1]][2]))))
+        meta$igSubcloneID_in_Clonotype_num[selection] <- names(which.min(sapply(unique(resc_df$igSubcloneID_in_Clonotype_num), function(x) as.numeric(strsplit(x, "\\.")[[1]][2]))))
+        meta$completeBCR[selection] <- "Yes_rescue"
+      }
+    } else{
+      for(row in 1:nrow(dict_single)){
+        sbc_single <- dict_single$igSubcloneID[row]
+        resc_df <- dict_yes[grepl(paste0(sbc_single, "-"), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single, "-"), dict_yes$igSubcloneID),]
+
+        if(length(unique(resc_df$igClonotypeID_num)) > 1 | nrow(resc_df) == 0){ next }
+
+        selection <- meta$igSubcloneID == sbc_single & meta$completeBCR %in% c("Single_chain_1", "Single_chain_2")
+        meta$igClonotypeID_num[selection] <- unique(resc_df$igClonotypeID_num)
+        meta$igClonotypeVariantID_num[selection] <- names(which.min(sapply(unique(resc_df$igClonotypeVariantID_num), function(x) as.numeric(strsplit(x, "\\.CV")[[1]][2]))))
+        meta$igSubcloneID_in_ClonotypeVariant_num[selection] <- names(which.min(sapply(unique(resc_df$igSubcloneID_in_ClonotypeVariant_num), function(x) as.numeric(strsplit(x, "\\.S")[[1]][2]))))
+        meta$igSubcloneID_in_Clonotype_num[selection] <- names(which.min(sapply(unique(resc_df$igSubcloneID_in_Clonotype_num), function(x) as.numeric(strsplit(x, "\\.")[[1]][2]))))
+        meta$completeBCR[selection] <- "Yes_rescue"
+      }
     }
     meta$cell_id <- colnames(tmp)
     return(meta)
@@ -97,7 +119,7 @@ rescue_single_chain_cells <- function(single_cell_object, group_col = "orig.iden
   return(single_cell_object)
 }
 
-.rescue_single_chain_seurat <- function(single_cell_object, group_col, threads){
+.rescue_single_chain_seurat <- function(single_cell_object, group_col, threads, relaxed_rescue){
 
   if(!all(group_col %in% colnames(single_cell_object@meta.data))){stop(paste0("\nUnknown column (", group_col[!group_col %in% colnames(single_cell_object@meta.data)], ") selected for BCR ID recalculation! Please, set a valid column name."))}
   single_cell_object@meta.data$tmp_col <- apply(single_cell_object@meta.data[,group_col, drop = FALSE], 1, function(row) paste(row, collapse = "_"))
@@ -118,18 +140,34 @@ rescue_single_chain_cells <- function(single_cell_object, group_col = "orig.iden
     dict_single <- tmp@meta.data[tmp@meta.data$completeBCR %in% c("Single_chain_1", "Single_chain_2"), cols_dict, drop = FALSE]
     dict_single <- dict_single[!duplicated(dict_single),]
 
-    for(row in 1:nrow(dict_single)){
-      sbc_single <- dict_single$igSubcloneID[row]
-      resc_df <- dict_yes[grepl(paste0(sbc_single, "-"), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single, "-"), dict_yes$igSubcloneID),]
+    if(relaxed_rescue){
+      for(row in 1:nrow(dict_single)){
+        clt_single <- dict_single$igClonotypeID[row]
+        resc_df <- dict_yes[grepl(paste0(clt_single, "-"), dict_yes$igClonotypeID) | grepl(paste0("-", clt_single), dict_yes$igClonotypeID) | grepl(paste0("-", clt_single, "-"), dict_yes$igClonotypeID),]
 
-      if(length(unique(resc_df$igClonotypeID_num)) > 1 | nrow(resc_df) == 0){next}
+        if(length(unique(resc_df$igClonotypeID_num)) > 1 | nrow(resc_df) == 0){next}
 
-      selection <- tmp@meta.data$igSubcloneID == sbc_single & tmp@meta.data$completeBCR %in% c("Single_chain_1", "Single_chain_2")
-      tmp@meta.data$igClonotypeID_num[selection] <- unique(resc_df$igClonotypeID_num)
-      tmp@meta.data$igClonotypeVariantID_num[selection] <- names(which.min(sapply(unique(resc_df$igClonotypeVariantID_num), function(x) as.numeric(strsplit(x, "\\.CV")[[1]][2]))))
-      tmp@meta.data$igSubcloneID_in_ClonotypeVariant_num[selection] <- names(which.min(sapply(unique(resc_df$igSubcloneID_in_ClonotypeVariant_num), function(x) as.numeric(strsplit(x, "\\.S")[[1]][2]))))
-      tmp@meta.data$igSubcloneID_in_Clonotype_num[selection] <- names(which.min(sapply(unique(resc_df$igSubcloneID_in_Clonotype_num), function(x) as.numeric(strsplit(x, "\\.")[[1]][2]))))
-      tmp@meta.data$completeBCR[selection] <- "Yes_rescue"
+        selection <- tmp$igClonotypeID == clt_single & tmp$completeBCR %in% c("Single_chain_1", "Single_chain_2")
+        tmp$igClonotypeID_num[selection] <- unique(resc_df$igClonotypeID_num)
+        tmp$igClonotypeVariantID_num[selection] <- names(which.min(sapply(unique(resc_df$igClonotypeVariantID_num), function(x) as.numeric(strsplit(x, "\\.CV")[[1]][2]))))
+        tmp$igSubcloneID_in_ClonotypeVariant_num[selection] <- names(which.min(sapply(unique(resc_df$igSubcloneID_in_ClonotypeVariant_num), function(x) as.numeric(strsplit(x, "\\.S")[[1]][2]))))
+        tmp$igSubcloneID_in_Clonotype_num[selection] <- names(which.min(sapply(unique(resc_df$igSubcloneID_in_Clonotype_num), function(x) as.numeric(strsplit(x, "\\.")[[1]][2]))))
+        tmp$completeBCR[selection] <- "Yes_rescue"
+      }
+    } else{
+      for(row in 1:nrow(dict_single)){
+        sbc_single <- dict_single$igSubcloneID[row]
+        resc_df <- dict_yes[grepl(paste0(sbc_single, "-"), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single, "-"), dict_yes$igSubcloneID),]
+
+        if(length(unique(resc_df$igClonotypeID_num)) > 1 | nrow(resc_df) == 0){next}
+
+        selection <- tmp$igSubcloneID == sbc_single & tmp$completeBCR %in% c("Single_chain_1", "Single_chain_2")
+        tmp$igClonotypeID_num[selection] <- unique(resc_df$igClonotypeID_num)
+        tmp$igClonotypeVariantID_num[selection] <- names(which.min(sapply(unique(resc_df$igClonotypeVariantID_num), function(x) as.numeric(strsplit(x, "\\.CV")[[1]][2]))))
+        tmp$igSubcloneID_in_ClonotypeVariant_num[selection] <- names(which.min(sapply(unique(resc_df$igSubcloneID_in_ClonotypeVariant_num), function(x) as.numeric(strsplit(x, "\\.S")[[1]][2]))))
+        tmp$igSubcloneID_in_Clonotype_num[selection] <- names(which.min(sapply(unique(resc_df$igSubcloneID_in_Clonotype_num), function(x) as.numeric(strsplit(x, "\\.")[[1]][2]))))
+        tmp$completeBCR[selection] <- "Yes_rescue"
+      }
     }
     return(tmp@meta.data)
   }, mc.cores = threads)
@@ -143,7 +181,7 @@ rescue_single_chain_cells <- function(single_cell_object, group_col = "orig.iden
   return(single_cell_object)
 }
 
-.rescue_single_chain_igscandf <- function(igscan_df, group_col, threads){
+.rescue_single_chain_igscandf <- function(igscan_df, group_col, threads, relaxed_rescue){
 
   if(!all(group_col %in% colnames(igscan_df))){stop(paste0("\nUnknown column (", group_col[!group_col %in% colnames(igscan_df@meta.data)], ") selected for BCR ID recalculation! Please, set a valid column name."))}
   igscan_df$tmp_col <- apply(igscan_df[,group_col, drop = FALSE], 1, function(row) paste(row, collapse = "_"))
@@ -164,18 +202,34 @@ rescue_single_chain_cells <- function(single_cell_object, group_col = "orig.iden
     dict_single <- tmp[tmp$completeBCR %in% c("Single_chain_1", "Single_chain_2"), cols_dict, drop = FALSE]
     dict_single <- dict_single[!duplicated(dict_single),]
 
-    for(row in 1:nrow(dict_single)){
-      sbc_single <- dict_single$igSubcloneID[row]
-      resc_df <- dict_yes[grepl(paste0(sbc_single, "-"), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single, "-"), dict_yes$igSubcloneID),]
+    if(relaxed_rescue){
+      for(row in 1:nrow(dict_single)){
+        clt_single <- dict_single$igClonotypeID[row]
+        resc_df <- dict_yes[grepl(paste0(clt_single, "-"), dict_yes$igClonotypeID) | grepl(paste0("-", clt_single), dict_yes$igClonotypeID) | grepl(paste0("-", clt_single, "-"), dict_yes$igClonotypeID),]
 
-      if(length(unique(resc_df$igClonotypeID_num)) > 1 | nrow(resc_df) == 0){next}
+        if(length(unique(resc_df$igClonotypeID_num)) > 1 | nrow(resc_df) == 0){next}
 
-      selection <- tmp$igSubcloneID == sbc_single & tmp$completeBCR %in% c("Single_chain_1", "Single_chain_2")
-      tmp$igClonotypeID_num[selection] <- unique(resc_df$igClonotypeID_num)
-      tmp$igClonotypeVariantID_num[selection] <- names(which.min(sapply(unique(resc_df$igClonotypeVariantID_num), function(x) as.numeric(strsplit(x, "\\.CV")[[1]][2]))))
-      tmp$igSubcloneID_in_ClonotypeVariant_num[selection] <- names(which.min(sapply(unique(resc_df$igSubcloneID_in_ClonotypeVariant_num), function(x) as.numeric(strsplit(x, "\\.S")[[1]][2]))))
-      tmp$igSubcloneID_in_Clonotype_num[selection] <- names(which.min(sapply(unique(resc_df$igSubcloneID_in_Clonotype_num), function(x) as.numeric(strsplit(x, "\\.")[[1]][2]))))
-      tmp$completeBCR[selection] <- "Yes_rescue"
+        selection <- tmp$igClonotypeID == clt_single & tmp$completeBCR %in% c("Single_chain_1", "Single_chain_2")
+        tmp$igClonotypeID_num[selection] <- unique(resc_df$igClonotypeID_num)
+        tmp$igClonotypeVariantID_num[selection] <- names(which.min(sapply(unique(resc_df$igClonotypeVariantID_num), function(x) as.numeric(strsplit(x, "\\.CV")[[1]][2]))))
+        tmp$igSubcloneID_in_ClonotypeVariant_num[selection] <- names(which.min(sapply(unique(resc_df$igSubcloneID_in_ClonotypeVariant_num), function(x) as.numeric(strsplit(x, "\\.S")[[1]][2]))))
+        tmp$igSubcloneID_in_Clonotype_num[selection] <- names(which.min(sapply(unique(resc_df$igSubcloneID_in_Clonotype_num), function(x) as.numeric(strsplit(x, "\\.")[[1]][2]))))
+        tmp$completeBCR[selection] <- "Yes_rescue"
+      }
+    } else{
+      for(row in 1:nrow(dict_single)){
+        sbc_single <- dict_single$igSubcloneID[row]
+        resc_df <- dict_yes[grepl(paste0(sbc_single, "-"), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single, "-"), dict_yes$igSubcloneID),]
+
+        if(length(unique(resc_df$igClonotypeID_num)) > 1 | nrow(resc_df) == 0){next}
+
+        selection <- tmp$igSubcloneID == sbc_single & tmp$completeBCR %in% c("Single_chain_1", "Single_chain_2")
+        tmp$igClonotypeID_num[selection] <- unique(resc_df$igClonotypeID_num)
+        tmp$igClonotypeVariantID_num[selection] <- names(which.min(sapply(unique(resc_df$igClonotypeVariantID_num), function(x) as.numeric(strsplit(x, "\\.CV")[[1]][2]))))
+        tmp$igSubcloneID_in_ClonotypeVariant_num[selection] <- names(which.min(sapply(unique(resc_df$igSubcloneID_in_ClonotypeVariant_num), function(x) as.numeric(strsplit(x, "\\.S")[[1]][2]))))
+        tmp$igSubcloneID_in_Clonotype_num[selection] <- names(which.min(sapply(unique(resc_df$igSubcloneID_in_Clonotype_num), function(x) as.numeric(strsplit(x, "\\.")[[1]][2]))))
+        tmp$completeBCR[selection] <- "Yes_rescue"
+      }
     }
     return(tmp)
   }, mc.cores = threads)
