@@ -5,9 +5,11 @@
 #' clustering approach. The function processes clonotypes to provide key immunogenetic
 #' information, such as germline sequences, somatic hypermutation levels, CLL stereotype
 #' subsets, R110 mutation, Acquired N-Glycosylation sites (AGS) and more. Then, it organizes
-#' this information according to the input data type: for single-cell datasets, it groups heavy-light
+#' this information according to the input data type: for single-cell RNA-seq datasets, it groups heavy-light
 #' chains by cell barcodes, while for bulk-NGS datasets, it reports the cumulative number of reads and
-#' clonotype frequencies.
+#' clonotype frequencies. In addition, the workflow is also compatible with single-cell V(D)J data
+#' generated using the Mission Bio platform, provided that the IgScan input has been produced
+#' using our dedicated raw-data preprocessing pipeline (see IgScan GitHub).
 #'
 #' @param analysis_mode Defines the mode of analysis to be performed. Options are
 #'   "single" and "joint". In "single" mode, each sample is annotated independently.
@@ -22,7 +24,7 @@
 #' @param input_format A string specifying the format of the input data, currently supporting:
 #'   '10xBCR_fasta', '10xBCR_csv', 'ParseBCR', 'BDRhapsodyBCR', 'MiXCR',
 #'   'TRUST4', 'AIRR', 'IMGT_AIRR' and 'fasta'.
-#' @param data_type The type of data. Options: 'single_cell' and 'bulk'. Default is 'single_cell'.
+#' @param data_type The type of data. Options: 'single_cell', 'bulk' or 'missionbio'. Default is 'single_cell'.
 #' @param material_type The biological source of material. Options: 'dna' and 'rna'. Note that for
 #'   matrial_type='rna', unproductive sequences are not expected, and will be directly removed. Default is 'rna'.
 #' @param v_primer The primer sequence used for the V-region amplification.
@@ -45,6 +47,13 @@
 #' Only needed if `annotate_CLL_immGen` is set to TRUE. Default is TRUE.
 #' @param annotate_ags Logical value indicating whether to annotate IGH Acquired N-Glycosylation Sites (AGS).
 #' Default is FALSE.
+#' @param rescue_single_chain Logical value indicating whether to hard assign cells with one chain detected to the most
+#' plausible complete clonotype (see `rescue_single_chain_cells` function documentation for more details). Default is FALSE.
+#' @param relaxed_rescue Logical value indicating whether to apply a relaxed clonotype rescue mode.
+#' Only needed if `rescue_single_chain` is set to `TRUE`.The default (recommended) is `FALSE`, requiring exact
+#' V(D)J nucleotide sequence matches to rescue single-chain cells. If set to `TRUE`, which we recommend only
+#' for the analysis of Mission Bio single-cell V(D)J data, rescue is performed at the clonotype level rather
+#' than by exact nucleotide sequence identity.
 #' @param outputDir Path to the directory containing the previous IgScan outputs coming from the
 #'   Run_IgBlast_from_RawData function. There is NO default value for this parameter.
 #' @param remove_tmp Logical value indicating whether to remove the temporary files (all files
@@ -63,6 +72,7 @@
 #' @importFrom parallel mclapply
 #' @import stringr
 #' @importFrom data.table fread fwrite
+#' @importFrom Seurat CreateSeuratObject
 #'
 #' @examples
 #' \dontrun{
@@ -108,7 +118,7 @@
 #'    threads = 4)
 #' }
 #'
-Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = NULL, input_format, outputDir, analysis_mode = "single", material_type = "rna", v_primer = "full_length", data_type = "single_cell", min_reads = 2, remove_tmp = TRUE, hc_similarity_cutoff = 0.2, hc_mode = "average", cdr3_mode = "nt", cdr3_InDel_correction_mode = "soft_filter", annotate_CLL_immGen = FALSE, annotate_satellite_subsets = TRUE, annotate_ags = FALSE, summary_file = NULL, threads = 1){
+Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = NULL, input_format, outputDir, analysis_mode = "single", material_type = "rna", v_primer = "full_length", data_type = "single_cell", min_reads = 2, remove_tmp = TRUE, hc_similarity_cutoff = 0.2, hc_mode = "average", cdr3_mode = "nt", cdr3_InDel_correction_mode = "soft_filter", annotate_CLL_immGen = FALSE, annotate_satellite_subsets = TRUE, annotate_ags = FALSE, rescue_single_chain = FALSE, relaxed_rescue = FALSE, summary_file = NULL, threads = 1){
 
 
   ## First checks
@@ -134,13 +144,21 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   input_format <- tolower(input_format)
   material_type <- tolower(material_type)
   if(!material_type %in% c("dna","rna")){stop("Invalid value for 'material_type'. It should be either 'dna' or 'rna'.")}
-  v_primer <- tolower(v_primer)
-  if(!v_primer %in% c("full_length","fr1", "fr2", "fr3")){stop("Invalid value for 'v_primer'. It should be either 'full_length', 'fr1', 'fr2' or 'fr3'.")}
   data_type <- tolower(data_type)
-  if(!data_type %in% c("single_cell","bulk")){stop("Invalid value for 'data_type'. It should be either 'single_cell' or 'bulk'.")}
+  if(!data_type %in% c("single_cell","bulk","missionbio")){stop("Invalid value for 'data_type'. It should be either 'single_cell' 'missionbio', or 'bulk'.")}
+  if(data_type == "single_cell"){
+    v_primer <- "full_length"
+  } else if(data_type == "missionbio"){
+    v_primer <- "missionbio"
+  } else{
+    v_primer <- tolower(v_primer)
+    if(!v_primer %in% c("full_length","fr1", "fr2", "fr3")){stop("Invalid value for 'v_primer'. It should be either 'full_length', 'fr1', 'fr2' or 'fr3'.")}
+  }
   if(!is.logical(annotate_CLL_immGen)){stop("Invalid value for 'annotate_CLL_immGen'. It should be either TRUE or FALSE.")}
   if(!is.logical(annotate_satellite_subsets)){stop("Invalid value for 'annotate_satellite_subsets'. It should be either TRUE or FALSE.")}
   if(!is.logical(annotate_ags)){stop("Invalid value for 'annotate_ags'. It should be either TRUE or FALSE.")}
+  if(!is.logical(rescue_single_chain)){stop("Invalid value for 'rescue_single_chain'. It should be either TRUE or FALSE.")}
+  if(!is.logical(relaxed_rescue)){stop("Invalid value for 'relaxed_rescue'. It should be either TRUE or FALSE.")}
 
   ## Create the annotation result directory
   system(paste0("mkdir ",outputDir,"annotation_results/"))
@@ -166,7 +184,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
     files_to_annotate <- paste0(outputDir, "per_case_merge/", unique(case_labels), "_merge_df.tsv")
   }
 
-  all_out_list <- .run_Core_IgScan_annotation(files_to_annotate, outputDir, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, annotate_satellite_subsets, annotate_ags, summary_file, threads, input_format)
+  all_out_list <- .run_Core_IgScan_annotation(files_to_annotate, outputDir, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, annotate_satellite_subsets, annotate_ags, rescue_single_chain, relaxed_rescue, summary_file, threads, input_format)
   flat_out_list <- list_flatten(all_out_list)
   final_list <- .name_final_list(flat_out_list)
 
@@ -179,18 +197,18 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
 }
 
 ## Function to parallelize the Core_IgScan_annotation function
-.run_Core_IgScan_annotation <- function(files_to_annotate, outputDir, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, annotate_satellite_subsets, annotate_ags, summary_file, threads, input_format){
+.run_Core_IgScan_annotation <- function(files_to_annotate, outputDir, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, annotate_satellite_subsets, annotate_ags, rescue_single_chain, relaxed_rescue, summary_file, threads, input_format){
   mclapply(files_to_annotate, function(i) {
     name <- gsub("_igblast_out.tsv|_merge_df.tsv", "", basename(i))
     input_df <- fread(i, header = T, sep = "\t", stringsAsFactors = F, data.table = F)
     if(endsWith(i, "_igblast_out.tsv")){input_df$sample <- name}
-    output_df <- .Core_IgScan_annotation(input_df, outputDir, name, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, annotate_satellite_subsets, annotate_ags, summary_file, input_format)
+    output_df <- .Core_IgScan_annotation(input_df, outputDir, name, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, annotate_satellite_subsets, annotate_ags, rescue_single_chain, relaxed_rescue, summary_file, input_format)
     return(output_df)
   }, mc.cores = threads)
 }
 
 ## General IgScan annotation function
-.Core_IgScan_annotation <- function(input_df, outputDir, name, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, annotate_satellite_subsets, annotate_ags, summary_file, input_format){
+.Core_IgScan_annotation <- function(input_df, outputDir, name, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, annotate_satellite_subsets, annotate_ags, rescue_single_chain, relaxed_rescue, summary_file, input_format){
 
   total_tasks <- ifelse(data_type == "bulk", 5, 9)
   completed_tasks <- 0
@@ -262,22 +280,24 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
     tidy_dataset$clonotypeLabel <- paste(v_gene, sapply(tidy_dataset$junction, function(x) paste0(strsplit(x, "")[[1]][4:(nchar(x)-3)], collapse = "")), sep = "_")
   }
 
-  ## Removing incomplete sequences
-  removed_rows <- 0
-  write(x = paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": Iterate ", length(unique(tidy_dataset$clonotypeLabel)), " clonotypes to remove incomplete sequences."), file = summary_file, append = T)
-  message(paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": Iterate ", length(unique(tidy_dataset$clonotypeLabel)), " clonotypes to remove incomplete sequences."))
-  rows_to_remove <- as.vector(unlist(sapply(unique(tidy_dataset$clonotypeLabel), function(clonotype){
-    return(which(tidy_dataset$clonotypeLabel == clonotype &
-                   nchar(tidy_dataset$VDJseq) != as.numeric(names(which.max(table(nchar(tidy_dataset$VDJseq[tidy_dataset$clonotypeLabel == clonotype])))))))
-  })))
-  if(length(rows_to_remove) > 0){
-    write(x = paste0("Sequence with ID ", tidy_dataset[rows_to_remove,"sequence_id"], " was removed from sample ", tidy_dataset[rows_to_remove,"sample"], " since VDJseq lenght was in disagreement with most recurrent sequence."), file = summary_file, append = T)
-    message(paste0("Sequence with ID ", tidy_dataset[rows_to_remove,"sequence_id"], " was removed from sample ", tidy_dataset[rows_to_remove,"sample"], " since VDJseq lenght was in disagreement with most recurrent sequence.\n"))
-    tidy_dataset <- tidy_dataset[-rows_to_remove,]
-    removed_rows <- length(rows_to_remove)
+  ## Removing incomplete sequences (not if missionbio)
+  if(data_type != "missionbio"){
+    removed_rows <- 0
+    write(x = paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": Iterate ", length(unique(tidy_dataset$clonotypeLabel)), " clonotypes to remove incomplete sequences."), file = summary_file, append = T)
+    message(paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": Iterate ", length(unique(tidy_dataset$clonotypeLabel)), " clonotypes to remove incomplete sequences."))
+    rows_to_remove <- as.vector(unlist(sapply(unique(tidy_dataset$clonotypeLabel), function(clonotype){
+      return(which(tidy_dataset$clonotypeLabel == clonotype &
+                     nchar(tidy_dataset$VDJseq) != as.numeric(names(which.max(table(nchar(tidy_dataset$VDJseq[tidy_dataset$clonotypeLabel == clonotype])))))))
+    })))
+    if(length(rows_to_remove) > 0){
+      write(x = paste0("Sequence with ID ", tidy_dataset[rows_to_remove,"sequence_id"], " was removed from sample ", tidy_dataset[rows_to_remove,"sample"], " since VDJseq lenght was in disagreement with most recurrent sequence."), file = summary_file, append = T)
+      message(paste0("Sequence with ID ", tidy_dataset[rows_to_remove,"sequence_id"], " was removed from sample ", tidy_dataset[rows_to_remove,"sample"], " since VDJseq lenght was in disagreement with most recurrent sequence.\n"))
+      tidy_dataset <- tidy_dataset[-rows_to_remove,]
+      removed_rows <- length(rows_to_remove)
+    }
+    write(paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": ", removed_rows, " sequences have been removed from this sample."), file = summary_file, append = T)
+    message(paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": ", removed_rows, " sequences have been removed from this sample."))
   }
-  write(paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": ", removed_rows, " sequences have been removed from this sample."), file = summary_file, append = T)
-  message(paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": ", removed_rows, " sequences have been removed from this sample."))
 
   write(x = paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": Starting IG Clonotype annotation... ",completed_tasks,"/",total_tasks," tasks completed."), file = summary_file, append = T)
   message(paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": Starting IG Clonotype annotation... ",completed_tasks,"/",total_tasks," tasks completed."))
@@ -287,7 +307,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   tidy_dataset <- assign_Clonotypes_out[[1]]
   completed_tasks <- assign_Clonotypes_out[[2]]
 
-  if(data_type == "single_cell"){
+  if(data_type %in% c("single_cell", "missionbio")){
     ## Combine Heavy-Chain + Light-Chain annotations
     write(x = paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": Combining clonotypeIDs by cell barcodeID... ",completed_tasks,"/",total_tasks," tasks completed."), file = summary_file, append = T)
     message(paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": Combining clonotypeIDs by cell barcodeID... ",completed_tasks,"/",total_tasks," tasks completed."))
@@ -307,9 +327,11 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
       chains <- as.character(sapply(strsplit(tidy_dataset$merge_clonotypeID[x], split = "-")[[1]], function(x){strsplit(x, split = "\\.")[[1]]})[1,])
       if(length(strsplit(tidy_dataset$merge_clonotypeID[x], split = "-")[[1]]) == 1){
         tidy_dataset$completeBCR[x] <- "Single_chain_1"
-      }else if((length(strsplit(tidy_dataset$merge_clonotypeID[x], split = "-")[[1]]) == 2) & !(("IGH" %in% chains) & ("IGK" %in% chains | "IGL" %in% chains)) ){
+      }else if(data_type == "missionbio" & (sum(chains == "IGH") > 1)){
+        tidy_dataset$completeBCR[x] <- "Potential_MB_doublet"
+      }else if((length(strsplit(tidy_dataset$merge_clonotypeID[x], split = "-")[[1]]) == 2) & !(("IGH" %in% chains) & ("IGK" %in% chains | "IGL" %in% chains))){
         tidy_dataset$completeBCR[x] <- "Single_chain_2"
-      }else if((length(strsplit(tidy_dataset$merge_clonotypeID[x], split = "-")[[1]]) == 3 | length(strsplit(tidy_dataset$merge_clonotypeID[x], split = "-")[[1]]) == 4) & !(("IGH" %in% chains) & ("IGK" %in% chains | "IGL" %in% chains)) ){
+      }else if((length(strsplit(tidy_dataset$merge_clonotypeID[x], split = "-")[[1]]) == 3 | length(strsplit(tidy_dataset$merge_clonotypeID[x], split = "-")[[1]]) == 4) & !(("IGH" %in% chains) & ("IGK" %in% chains | "IGL" %in% chains))){
         tidy_dataset$completeBCR[x] <- "Not_supported"
       } else if((length(strsplit(tidy_dataset$merge_clonotypeID[x], split = "-")[[1]]) > 4)){
         tidy_dataset$completeBCR[x] <- "Not_supported"
@@ -317,7 +339,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
     }
     tidy_dataset$completeBCR[sapply(tidy_dataset$merge_clonotypeID, function(x) any(duplicated(strsplit(x, split = "-")[[1]])))] <- "Repeated_chain"
 
-    tidy_dataset <- .correct_completeBCR(tidy_dataset)
+    tidy_dataset <- .correct_completeBCR(tidy_dataset, data_type)
 
     ## Correct clonotypeID (chain-specific clonotypeID) considering IG clonotype (ie combination of chains)
     write(x = paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": Correcting clonotype labels... ",completed_tasks,"/",total_tasks," tasks completed."), file = summary_file, append = T)
@@ -340,9 +362,9 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   message(paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": Annotating immunogenetic data... ",completed_tasks,"/",total_tasks," tasks completed."))
   completed_tasks <- completed_tasks + 1
 
-  tidy_dataset <- .annotate_Immunogenetics(tidy_dataset, annotate_CLL_immGen, annotate_satellite_subsets, annotate_ags)
+  tidy_dataset <- .annotate_Immunogenetics(tidy_dataset, annotate_CLL_immGen, annotate_satellite_subsets, annotate_ags, data_type)
 
-  if(data_type == "single_cell"){
+  if(data_type %in% c("single_cell", "missionbio")){
     tidy_dataset <- .combine_IG_metadata_by_chain(tidy_dataset, annotate_CLL_immGen)
   }
 
@@ -350,7 +372,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   write(x = paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": Preparing table to write... ",completed_tasks,"/",total_tasks," tasks completed."), file = summary_file, append = T)
   message(paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": Preparing table to write... ",completed_tasks,"/",total_tasks," tasks completed."))
 
-  if(data_type == "single_cell"){
+  if(data_type %in% c("single_cell", "missionbio")){
 
     dict_CV <- aggregate(x = tidy_dataset$merge_clonotypeVariantID[!is.na(tidy_dataset$igclonotypeID)], by = list(tidy_dataset$merge_clonotypeVariantID[!is.na(tidy_dataset$igclonotypeID)]), FUN = length)
     dict_CV <- merge(dict_CV, tidy_dataset[!duplicated(tidy_dataset$merge_clonotypeVariantID), c("merge_clonotypeVariantID","igclonotypeID")], by.x = "Group.1", by.y = "merge_clonotypeVariantID", all.x = T, all.y = F)
@@ -413,7 +435,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
                         "subcloneID_in_CV", "total_reads_unique_seq", "subclone_freq_in_CV", "subcloneID_in_Clt", "subclone_freq")
     perCell_data <- NA
 
-  } else if(data_type == "single_cell"){
+  } else if(data_type %in% c("single_cell", "missionbio")){
     contig_ID_data <- c("clonotypeID", "Clonotype_ConsensusCDR3", ifelse(annotate_CLL_immGen, "Clonotype_Subset", NA),
                         "clonotypeVariantID_in_Cltp", "Unique_SequenceID")
     perCell_data <- c("completeBCR", "igclonotypeID", "merge_clonotypeID", "igClonotypeVariantID", "merge_clonotypeVariantID",
@@ -431,11 +453,26 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   colnames(table_to_write) <- colnames_dictionary$FinalNames[match(colnames(table_to_write), colnames_dictionary$RawNames)]
   table_to_write[table_to_write == ""] <- NA
 
-  if(data_type == "single_cell"){
+  if(data_type %in% c("single_cell", "missionbio")){
+
+    if(rescue_single_chain){
+      table_to_write <- rescue_single_chain_cells(single_cell_object = table_to_write, group_col = "SampleID", threads = threads, relaxed_rescue)
+    }
+
+    if(data_type == "missionbio"){
+      barcodes <- sapply(table_to_write$contig_id, function(x) strsplit(x, "_")[[1]][1])
+      n_cells <- length(unique(barcodes))
+      fake_counts <- matrix(data = 0, nrow = 2, ncol = n_cells, dimnames = list(c("fake-gene1", "fake-gene2"), unique(barcodes)))
+      fake_seurat <- CreateSeuratObject(counts = as(fake_counts, "dgCMatrix"), assay = "RNA", project = "fake_seurat")
+      fake_seurat@meta.data$orig.ident <- table_to_write$SampleID[match(Cells(fake_seurat), barcodes)]
+      fake_seurat_igscan <- combine_IgScan_Seurat(igscan_out = table_to_write, seurat_object = fake_seurat, seurat_sample_col = "orig.ident", igscan_sample_col = "SampleID")
+      table_to_write_cell_mb <- fake_seurat_igscan@meta.data[,!colnames(fake_seurat_igscan@meta.data) %in% c("nCount_RNA", "nFeature_RNA")]
+    }
 
     if(analysis_mode == "single"){
       output_df <- table_to_write
       fwrite(output_df, file = paste0(outputDir,"annotation_results/",name,"_IGannotation.tsv"), sep = "\t", quote = F, col.names = T, row.names = F)
+      if(data_type == "missionbio"){fwrite(table_to_write_cell_mb, file = paste0(outputDir,"annotation_results/",name,"_IGannotation_per_MissionBio_barcode.tsv"), sep = "\t", quote = F, col.names = T, row.names = F)}
 
     } else if(analysis_mode == "joint"){
       output_df <- list()
@@ -443,6 +480,10 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
         wt <- table_to_write[table_to_write$SampleID == sample,]
         fwrite(wt, file = paste0(outputDir,"annotation_results/case_",name,"_sample_",sample,"_IGannotation.tsv"), sep = "\t", quote = F, col.names = T, row.names = F)
         output_df <- c(output_df, list(wt))
+        if(data_type == "missionbio"){
+          wt_cell_mb <- table_to_write_cell_mb[table_to_write_cell_mb$orig.ident == sample,]
+          fwrite(wt_cell_mb, file = paste0(outputDir,"annotation_results/case_",name,"_sample_",sample,"_IGannotation_per_MissionBio_barcode.tsv"), sep = "\t", quote = F, col.names = T, row.names = F)
+        }
       }
     }
 
@@ -490,6 +531,8 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
     sub_data <- sub_data[sub_data$fwr1 == "" & sub_data$cdr1 == "" & sub_data$fwr2 != "" & sub_data$cdr2 != "" & sub_data$fwr3 != "" & sub_data$cdr3 != "" & sub_data$fwr4 != "" & sub_data$complete_vdj %in% c("F", F),]
   } else if(v_primer == "fr3"){
     sub_data <- sub_data[sub_data$fwr1 == "" & sub_data$cdr1 == "" & sub_data$fwr2 == "" & sub_data$cdr2 == "" & sub_data$fwr3 != "" & sub_data$cdr3 != "" & sub_data$fwr4 != "" & sub_data$complete_vdj %in% c("F", F),]
+  } else if(v_primer == "missionbio"){
+    sub_data <- sub_data[sub_data$v_call != "" | sub_data$cdr3 != "",]
   }
 
   ## Extracting the V, D and J annotated genes and creating the VDJ column
@@ -676,7 +719,11 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
     tidy_dataset$CDR3len <- nchar(tidy_dataset$CDR3aa)
   }
 
-  tidy_dataset$Pre_Clonotype <- paste0(tidy_dataset$Vgene,"_",tidy_dataset$CDR3len, "_", tidy_dataset$len_no_CDR3)
+  if(data_type == "missionbio"){
+    tidy_dataset$Pre_Clonotype <- paste0(tidy_dataset$Vgene,"_",tidy_dataset$CDR3len)
+  } else{
+    tidy_dataset$Pre_Clonotype <- paste0(tidy_dataset$Vgene,"_",tidy_dataset$CDR3len, "_", tidy_dataset$len_no_CDR3)
+  }
 
   write(x = paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": Starting IG Clonotype hierarchical clustering... ",completed_tasks,"/",total_tasks," tasks completed."), file = summary_file, append = T)
   message(paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": Starting IG Clonotype hierarchical clustering.... ",completed_tasks,"/",total_tasks," tasks completed."))
@@ -723,7 +770,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
     tidy_dataset$CorrectClt <- tidy_dataset$Clonotype
   } else{
     tidy_dataset$CorrectClt <- NA
-    tidy_dataset$CorrectClt <- as.character(.correct_Clonotype_InDels(tidy_dataset, cdr3_mode, hc_similarity_cutoff, cdr3_InDel_correction_mode))
+    tidy_dataset$CorrectClt <- as.character(.correct_Clonotype_InDels(tidy_dataset, cdr3_mode, hc_similarity_cutoff, cdr3_InDel_correction_mode, data_type))
   }
 
   ## Undo the re-naming of V genes once the clonotype clustering has been performed
@@ -741,7 +788,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   }
 
   ## Make clonotypeIDs
-  if(data_type == "single_cell"){
+  if(data_type %in% c("single_cell", "missionbio")){
     dict_cltp <- aggregate(x = tidy_dataset$CorrectClt, by = list(tidy_dataset$CorrectClt), FUN = length)
     dict_cltp <- dict_cltp[order(dict_cltp$x, decreasing = T), ]
     dict_cltp$IGchain <- sapply(dict_cltp$Group.1, FUN = function(x) paste0(unlist(strsplit(x, split = ""))[1:3], collapse = ""))
@@ -781,30 +828,36 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   }
   return(list(as.data.frame(tidy_dataset[,return_fields]), completed_tasks))
 }
-.annotate_Immunogenetics <- function(tidy_dataset, annotate_CLL_immGen, annotate_satellite_subsets, annotate_ags){
+.annotate_Immunogenetics <- function(tidy_dataset, annotate_CLL_immGen, annotate_satellite_subsets, annotate_ags, data_type){
 
-  tidy_dataset$CorrectClonotypes_Consensus_Germline <- NA
-  correct_germline_subMat <- matrix(-1, nrow = 6, ncol = 6, dimnames = list(c("A", "T", "C", "G", "X", "N"), c("A", "T", "C", "G", "X", "N")))
-  diag(correct_germline_subMat) <- 1
-  correct_germline_subMat[nrow(correct_germline_subMat),] <- 1
-  correct_germline_subMat[,ncol(correct_germline_subMat)] <- 1
+  if(data_type == "missionbio"){
+    tidy_dataset$CorrectClonotypes_Consensus_Germline <- tidy_dataset$germline_alignment
+    tidy_dataset$VDJseq_correctedCDR3 <- tidy_dataset$VDJseq
 
-  tidy_dataset$VDJseq_correctedCDR3 <- tidy_dataset$VDJseq
-  for(cltp in unique(tidy_dataset$clonotypeID)){
-    cons_germ <- .consensus_germline(tidy_dataset[tidy_dataset$clonotypeID == cltp,])
-    tidy_dataset$CorrectClonotypes_Consensus_Germline[tidy_dataset$clonotypeID == cltp] <- cons_germ[[2]]
+  } else{
+    tidy_dataset$CorrectClonotypes_Consensus_Germline <- NA
+    correct_germline_subMat <- matrix(-1, nrow = 6, ncol = 6, dimnames = list(c("A", "T", "C", "G", "X", "N"), c("A", "T", "C", "G", "X", "N")))
+    diag(correct_germline_subMat) <- 1
+    correct_germline_subMat[nrow(correct_germline_subMat),] <- 1
+    correct_germline_subMat[,ncol(correct_germline_subMat)] <- 1
 
-    seqs_to_correct <- unique(tidy_dataset$Unique_SequenceID[tidy_dataset$clonotypeID == cltp & tidy_dataset$CDR3len != cons_germ[[1]]])
-    if(length(seqs_to_correct) > 0){
-      for(seq in seqs_to_correct){
-        corr_germ <- .correct_consensus_germline(tidy_dataset$VDJseq[tidy_dataset$Unique_SequenceID == seq][1], tidy_dataset$germline_alignment[tidy_dataset$Unique_SequenceID == seq][1], cons_germ[[2]], correct_germline_subMat)
-        tidy_dataset$indel[tidy_dataset$Unique_SequenceID == seq] <- paste0(unique(c(strsplit(tidy_dataset$indel[tidy_dataset$Unique_SequenceID == seq][1], ",")[[1]], strsplit(corr_germ[[1]], ",")[[1]])), collapse = ",")
-        tidy_dataset$VDJseq_correctedCDR3[tidy_dataset$Unique_SequenceID == seq] <- corr_germ[[2]]
+    tidy_dataset$VDJseq_correctedCDR3 <- tidy_dataset$VDJseq
+    for(cltp in unique(tidy_dataset$clonotypeID)){
+      cons_germ <- .consensus_germline(tidy_dataset[tidy_dataset$clonotypeID == cltp,])
+      tidy_dataset$CorrectClonotypes_Consensus_Germline[tidy_dataset$clonotypeID == cltp] <- cons_germ[[2]]
+
+      seqs_to_correct <- unique(tidy_dataset$Unique_SequenceID[tidy_dataset$clonotypeID == cltp & tidy_dataset$CDR3len != cons_germ[[1]]])
+      if(length(seqs_to_correct) > 0){
+        for(seq in seqs_to_correct){
+          corr_germ <- .correct_consensus_germline(tidy_dataset$VDJseq[tidy_dataset$Unique_SequenceID == seq][1], tidy_dataset$germline_alignment[tidy_dataset$Unique_SequenceID == seq][1], cons_germ[[2]], correct_germline_subMat)
+          tidy_dataset$indel[tidy_dataset$Unique_SequenceID == seq] <- paste0(unique(c(strsplit(tidy_dataset$indel[tidy_dataset$Unique_SequenceID == seq][1], ",")[[1]], strsplit(corr_germ[[1]], ",")[[1]])), collapse = ",")
+          tidy_dataset$VDJseq_correctedCDR3[tidy_dataset$Unique_SequenceID == seq] <- corr_germ[[2]]
+        }
       }
     }
+    tidy_dataset$indel <- gsub("NA,", "", tidy_dataset$indel)
+    tidy_dataset$indel <- gsub("^,", "", tidy_dataset$indel)
   }
-  tidy_dataset$indel <- gsub("NA,", "", tidy_dataset$indel)
-  tidy_dataset$indel <- gsub("^,", "", tidy_dataset$indel)
 
   ## Compute Videntity by Corrected Clonotypes
   for(row in 1:nrow(tidy_dataset)){
@@ -957,7 +1010,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
 
   return(max(distance_matrix))
 }
-.correct_Clonotype_InDels <- function(data_frame_by_sample, cdr3_mode, hc_similarity_cutoff, cdr3_InDel_correction_mode){
+.correct_Clonotype_InDels <- function(data_frame_by_sample, cdr3_mode, hc_similarity_cutoff, cdr3_InDel_correction_mode, data_type){
 
   if(cdr3_mode == "aa"){
     amino_acids <- c("A", "R", "N", "D", "C", "Q", "E", "G", "H", "I", "L", "K", "M", "F", "P", "S", "T", "W", "Y", "V", "X", "*")
@@ -973,10 +1026,18 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
     if(all(is.na(data_frame_by_sample$CorrectClt[data_frame_by_sample$Clonotype == clone]))){
       vgene <- unique(data_frame_by_sample$Vgene[data_frame_by_sample$Clonotype == clone])
       len_cdr3 <- unique(data_frame_by_sample$CDR3len[data_frame_by_sample$Clonotype == clone])
-      len_no_cdr3 <- unique(data_frame_by_sample$len_no_CDR3[data_frame_by_sample$Clonotype == clone])
-      for(candidate_indel in unique(data_frame_by_sample$Clonotype[data_frame_by_sample$Vgene == vgene & data_frame_by_sample$CDR3len != len_cdr3 & data_frame_by_sample$len_no_CDR3 == len_no_cdr3])){
-        if(.compare_similar_clonotypes(data_frame_by_sample, clone, candidate_indel, cdr3_mode, cdr3_InDel_correction_mode, hc_similarity_cutoff, substitution_matrix) <= hc_similarity_cutoff){
-          list_Clt <- c(list_Clt, candidate_indel)
+      if(data_type == "missionbio"){
+        for(candidate_indel in unique(data_frame_by_sample$Clonotype[data_frame_by_sample$Vgene == vgene & data_frame_by_sample$CDR3len != len_cdr3])){
+          if(.compare_similar_clonotypes(data_frame_by_sample, clone, candidate_indel, cdr3_mode, cdr3_InDel_correction_mode, hc_similarity_cutoff, substitution_matrix) <= hc_similarity_cutoff){
+            list_Clt <- c(list_Clt, candidate_indel)
+          }
+        }
+      } else{
+        len_no_cdr3 <- unique(data_frame_by_sample$len_no_CDR3[data_frame_by_sample$Clonotype == clone])
+        for(candidate_indel in unique(data_frame_by_sample$Clonotype[data_frame_by_sample$Vgene == vgene & data_frame_by_sample$CDR3len != len_cdr3 & data_frame_by_sample$len_no_CDR3 == len_no_cdr3])){
+          if(.compare_similar_clonotypes(data_frame_by_sample, clone, candidate_indel, cdr3_mode, cdr3_InDel_correction_mode, hc_similarity_cutoff, substitution_matrix) <= hc_similarity_cutoff){
+            list_Clt <- c(list_Clt, candidate_indel)
+          }
         }
       }
       data_frame_by_sample$CorrectClt[data_frame_by_sample$Clonotype %in% list_Clt] <- paste(sort(list_Clt), collapse = ".")
@@ -1174,12 +1235,17 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
 }
 
 ## Function to correct the "completeBCR" field
-.correct_completeBCR <- function(tidy_dataset, flag.alternative.clonotypes = T, flag.clonotype.doublets = T){
-  dict_ct2 <- aggregate(x = tidy_dataset$merge_clonotypeID[tidy_dataset$completeBCR %in% c("Yes", "Single_chain_2")],
-                        by = list(tidy_dataset$merge_clonotypeID[tidy_dataset$completeBCR %in% c("Yes","Single_chain_2")]), FUN = length)
+.correct_completeBCR <- function(tidy_dataset, data_type, flag.alternative.clonotypes = T, flag.clonotype.doublets = T){
+  dict_ct2 <- aggregate(x = tidy_dataset$merge_clonotypeID[tidy_dataset$completeBCR %in% c("Yes", "Single_chain_2", "Potential_MB_doublet")],
+                        by = list(tidy_dataset$merge_clonotypeID[tidy_dataset$completeBCR %in% c("Yes","Single_chain_2", "Potential_MB_doublet")]), FUN = length)
   dict_ct2$original_completeBCR <- tidy_dataset$completeBCR[match(dict_ct2$Group.1, tidy_dataset$merge_clonotypeID)]
 
-  dict_ct2 <- dict_ct2[order(dict_ct2$x, decreasing = T), ]
+  if(data_type == "missionbio"){
+    dict_ct2 <- dict_ct2[order(dict_ct2$original_completeBCR == "Potential_MB_doublet", -dict_ct2$x),]
+  } else{
+    dict_ct2 <- dict_ct2[order(dict_ct2$x, decreasing = T), ]
+  }
+
   dict_ct2$New_ClonotypeID <- NA
   dict_ct2$completeBCR <- NA
 
@@ -1248,16 +1314,30 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
     group_by(tmp) %>%
     mutate(New_x = sum(x))
 
+  if(data_type == "missionbio"){
+    fix_df <- dict_ct2[dict_ct2$original_completeBCR == "Potential_MB_doublet" & is.na(dict_ct2$completeBCR),]
+    if(nrow(fix_df) > 0){
+      for(row in 1:nrow(fix_df)){
+        chains <- as.character(sapply(strsplit(fix_df$Group.1[row], split = "-")[[1]], function(x){strsplit(x, split = "\\.")[[1]]})[1,])
+        if((length(strsplit(fix_df$Group.1[row], split = "-")[[1]]) == 2) & !(("IGH" %in% chains) & ("IGK" %in% chains | "IGL" %in% chains))){
+          dict_ct2$completeBCR[dict_ct2$Group.1 == fix_df$Group.1[row]] <- "Single_chain_2"
+        }
+      }
+    }
+  }
+
   dict_ct2 <- dict_ct2[order(dict_ct2$New_x, decreasing = T), ]
   dict_ct2$igclonotypeID <- NA
-  dict_ct2$igclonotypeID[dict_ct2$completeBCR != "Clonotype_doublet" | is.na(dict_ct2$completeBCR)] <- paste0("C",as.integer(factor(paste0(dict_ct2$tmp[dict_ct2$completeBCR != "Clonotype_doublet" | is.na(dict_ct2$completeBCR)],
-                                                                                                                                           dict_ct2$New_ClonotypeID[dict_ct2$completeBCR != "Clonotype_doublet" | is.na(dict_ct2$completeBCR)]),
-                                                                                                                                    levels = unique(paste0(dict_ct2$tmp[dict_ct2$completeBCR != "Clonotype_doublet" | is.na(dict_ct2$completeBCR)],
-                                                                                                                                                           dict_ct2$New_ClonotypeID[dict_ct2$completeBCR != "Clonotype_doublet" | is.na(dict_ct2$completeBCR)])))))
+  dict_ct2$igclonotypeID[!dict_ct2$completeBCR %in% c("Clonotype_doublet", "Single_chain_2") | is.na(dict_ct2$completeBCR)] <- paste0("C",as.integer(factor(paste0(dict_ct2$tmp[!dict_ct2$completeBCR %in% c("Clonotype_doublet", "Single_chain_2") | is.na(dict_ct2$completeBCR)],
+                                                                                                                                           dict_ct2$New_ClonotypeID[!dict_ct2$completeBCR %in% c("Clonotype_doublet", "Single_chain_2") | is.na(dict_ct2$completeBCR)]),
+                                                                                                                                    levels = unique(paste0(dict_ct2$tmp[!dict_ct2$completeBCR %in% c("Clonotype_doublet", "Single_chain_2") | is.na(dict_ct2$completeBCR)],
+                                                                                                                                                           dict_ct2$New_ClonotypeID[!dict_ct2$completeBCR %in% c("Clonotype_doublet", "Single_chain_2") | is.na(dict_ct2$completeBCR)])))))
 
   tidy_dataset <- merge(tidy_dataset, dict_ct2[,c("Group.1","igclonotypeID")], by.x = "merge_clonotypeID", by.y = "Group.1", all.x = TRUE)
   tidy_dataset$completeBCR[tidy_dataset$merge_clonotypeID %in% dict_ct2$Group.1[dict_ct2$completeBCR == "Alternative_clonotype"]] <- "Alternative_clonotype"
   tidy_dataset$completeBCR[tidy_dataset$merge_clonotypeID %in% dict_ct2$Group.1[dict_ct2$completeBCR == "Clonotype_doublet"]] <- "Clonotype_doublet"
+  tidy_dataset$completeBCR[tidy_dataset$merge_clonotypeID %in% dict_ct2$Group.1[dict_ct2$completeBCR == "Single_chain_2"]] <- "Single_chain_2"
+
   return(tidy_dataset)
 }
 

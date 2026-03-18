@@ -22,6 +22,8 @@ Run_IgScan_Annotation(
   annotate_CLL_immGen = FALSE,
   annotate_satellite_subsets = TRUE,
   annotate_ags = FALSE,
+  rescue_single_chain = FALSE,
+  relaxed_rescue = FALSE,
   summary_file = NULL,
   threads = 1
 )
@@ -54,7 +56,7 @@ matrial_type='rna', unproductive sequences are not expected, and will be directl
 Options: 'full_length', 'fr1', 'fr2' and 'fr3'. Note that sequences with unexpected length pattern based on
 the chosen primer will be directly excluded from the analysis. Default is 'full_length'.}
 
-\item{data_type}{The type of data. Options: 'single_cell' and 'bulk'. Default is 'single_cell'.}
+\item{data_type}{The type of data. Options: 'single_cell', 'bulk' or 'missionbio'. Default is 'single_cell'.}
 
 \item{min_reads}{The minimum number of reads required to keep a sequence in the downstream analyses.
 Only needed for bulk NGS data. Default is 2.}
@@ -84,6 +86,15 @@ Only needed if \code{annotate_CLL_immGen} is set to TRUE. Default is TRUE.}
 \item{annotate_ags}{Logical value indicating whether to annotate IGH Acquired N-Glycosylation Sites (AGS).
 Default is FALSE.}
 
+\item{rescue_single_chain}{Logical value indicating whether to hard assign cells with one chain detected to the most
+plausible complete clonotype (see \code{rescue_single_chain_cells} function documentation for more details). Default is FALSE.}
+
+\item{relaxed_rescue}{Logical value indicating whether to apply a relaxed clonotype rescue mode.
+Only needed if \code{rescue_single_chain} is set to \code{TRUE}.The default (recommended) is \code{FALSE}, requiring exact
+V(D)J nucleotide sequence matches to rescue single-chain cells. If set to \code{TRUE}, which we recommend only
+for the analysis of Mission Bio single-cell V(D)J data, rescue is performed at the clonotype level rather
+than by exact nucleotide sequence identity.}
+
 \item{threads}{An integer specifying the number of threads for processing samples.
 Default is 1.}
 }
@@ -97,9 +108,11 @@ It groups sequences into clonotypic clusters based on a highly customizable hier
 clustering approach. The function processes clonotypes to provide key immunogenetic
 information, such as germline sequences, somatic hypermutation levels, CLL stereotype
 subsets, R110 mutation, Acquired N-Glycosylation sites (AGS) and more. Then, it organizes
-this information according to the input data type: for single-cell datasets, it groups heavy-light
+this information according to the input data type: for single-cell RNA-seq datasets, it groups heavy-light
 chains by cell barcodes, while for bulk-NGS datasets, it reports the cumulative number of reads and
-clonotype frequencies.
+clonotype frequencies. In addition, the workflow is also compatible with single-cell V(D)J data
+generated using the Mission Bio platform, provided that the IgScan input has been produced
+using our dedicated raw-data preprocessing pipeline (see IgScan GitHub).
 }
 \examples{
 \dontrun{
