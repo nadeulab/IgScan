@@ -40,8 +40,9 @@
 #' @param material_type The biological source of material. Options: 'dna' and 'rna'. Note that for
 #'   matrial_type='rna', unproductive sequences are not expected, and will be directly removed. Default is 'rna'.
 #' @param v_primer The primer sequence used for the V-region amplification.
-#'   Options: 'full_length', 'fr1', 'fr2' and 'fr3'. Note that sequences with unexpected length pattern based on
-#'   the chosen primer will be directly excluded from the analysis. Default is 'full_length'.
+#'   Options: 'full_length', 'fr1', 'fr2' and 'fr3'. Only required for `data_type='bulk'`. Default is
+#'   'full_length'.Note that sequences with unexpected length pattern based on the chosen primer
+#'   will be directly excluded from the analysis.
 #' @param annotate_C Logical. If `TRUE`, the function performs an IgBlast annotation of
 #'   constant regions using the NCBI IG C region database.
 #' @param Evalue_cutoff A numeric value specifying the E-value cutoff for IgBLAST alignment.

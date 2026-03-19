@@ -28,8 +28,9 @@
 #' @param material_type The biological source of material. Options: 'dna' and 'rna'. Note that for
 #'   matrial_type='rna', unproductive sequences are not expected, and will be directly removed. Default is 'rna'.
 #' @param v_primer The primer sequence used for the V-region amplification.
-#'   Options: 'full_length', 'fr1', 'fr2' and 'fr3'. Note that sequences with unexpected length pattern based on
-#'   the chosen primer will be directly excluded from the analysis. Default is 'full_length'.
+#'   Options: 'full_length', 'fr1', 'fr2' and 'fr3'. Only required for `data_type='bulk'`. Default is
+#'   'full_length'.Note that sequences with unexpected length pattern based on the chosen primer
+#'   will be directly excluded from the analysis.
 #' @param min_reads The minimum number of reads required to keep a sequence in the downstream analyses.
 #'   Only needed for bulk NGS data. Default is 2.
 #' @param hc_similarity_cutoff Hierarchical clustering distance in CDR3 identity to consider two sequences
@@ -202,13 +203,13 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
     name <- gsub("_igblast_out.tsv|_merge_df.tsv", "", basename(i))
     input_df <- fread(i, header = T, sep = "\t", stringsAsFactors = F, data.table = F)
     if(endsWith(i, "_igblast_out.tsv")){input_df$sample <- name}
-    output_df <- .Core_IgScan_annotation(input_df, outputDir, name, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, annotate_satellite_subsets, annotate_ags, rescue_single_chain, relaxed_rescue, summary_file, input_format)
+    output_df <- .Core_IgScan_annotation(input_df, outputDir, name, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, annotate_satellite_subsets, annotate_ags, rescue_single_chain, relaxed_rescue, summary_file, input_format, threads)
     return(output_df)
   }, mc.cores = threads)
 }
 
 ## General IgScan annotation function
-.Core_IgScan_annotation <- function(input_df, outputDir, name, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, annotate_satellite_subsets, annotate_ags, rescue_single_chain, relaxed_rescue, summary_file, input_format){
+.Core_IgScan_annotation <- function(input_df, outputDir, name, analysis_mode, material_type, v_primer, data_type, min_reads, sample_labels, hc_similarity_cutoff, hc_mode, cdr3_mode, cdr3_InDel_correction_mode, annotate_CLL_immGen, annotate_satellite_subsets, annotate_ags, rescue_single_chain, relaxed_rescue, summary_file, input_format, threads){
 
   total_tasks <- ifelse(data_type == "bulk", 5, 9)
   completed_tasks <- 0
