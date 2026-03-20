@@ -41,7 +41,7 @@
 #'   matrial_type='rna', unproductive sequences are not expected, and will be directly removed. Default is 'rna'.
 #' @param v_primer The primer sequence used for the V-region amplification.
 #'   Options: 'full_length', 'fr1', 'fr2' and 'fr3'. Only required for `data_type='bulk'`. Default is
-#'   'full_length'.Note that sequences with unexpected length pattern based on the chosen primer
+#'   'full_length'. Note that sequences with unexpected length pattern based on the chosen primer
 #'   will be directly excluded from the analysis.
 #' @param annotate_C Logical. If `TRUE`, the function performs an IgBlast annotation of
 #'   constant regions using the NCBI IG C region database.

@@ -68,7 +68,7 @@ matrial_type='rna', unproductive sequences are not expected, and will be directl
 
 \item{v_primer}{The primer sequence used for the V-region amplification.
 Options: 'full_length', 'fr1', 'fr2' and 'fr3'. Only required for \code{data_type='bulk'}. Default is
-'full_length'.Note that sequences with unexpected length pattern based on the chosen primer
+'full_length'. Note that sequences with unexpected length pattern based on the chosen primer
 will be directly excluded from the analysis.}
 
 \item{data_type}{The type of data. Options: 'single_cell', 'bulk' or 'missionbio'. Default is 'single_cell'.}
