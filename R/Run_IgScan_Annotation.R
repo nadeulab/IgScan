@@ -29,7 +29,7 @@
 #'   matrial_type='rna', unproductive sequences are not expected, and will be directly removed. Default is 'rna'.
 #' @param v_primer The primer sequence used for the V-region amplification.
 #'   Options: 'full_length', 'fr1', 'fr2' and 'fr3'. Only required for `data_type='bulk'`. Default is
-#'   'full_length'.Note that sequences with unexpected length pattern based on the chosen primer
+#'   'full_length'. Note that sequences with unexpected length pattern based on the chosen primer
 #'   will be directly excluded from the analysis.
 #' @param min_reads The minimum number of reads required to keep a sequence in the downstream analyses.
 #'   Only needed for bulk NGS data. Default is 2.
@@ -316,6 +316,11 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
 
     tidy_dataset$barcode <- matrix(unlist(strsplit(tidy_dataset$sequence_id, split = "_")), ncol=3, byrow = T)[,1]
     tidy_dataset$barcode <- paste0(tidy_dataset$barcode, "_", tidy_dataset$sample)
+
+    ## Correct cells with repeated clonotypes of the same chain
+    rm_rep_chain <- unlist(sapply(unique(tidy_dataset$barcode), function(bc) tidy_dataset$sequence_id[tidy_dataset$barcode == bc][duplicated(tidy_dataset$clonotypeID[tidy_dataset$barcode == bc])]))
+    tidy_dataset <- tidy_dataset[!tidy_dataset$sequence_id %in% rm_rep_chain,]
+
     tidy_dataset <- .combine_clonotypeID_by_chains(tidy_dataset)
 
     ## Adjust IGH - IGK/IGL rearrangements:
@@ -325,20 +330,23 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
 
     tidy_dataset$completeBCR <- "Yes"
     for(x in 1:nrow(tidy_dataset)){
-      chains <- as.character(sapply(strsplit(tidy_dataset$merge_clonotypeID[x], split = "-")[[1]], function(x){strsplit(x, split = "\\.")[[1]]})[1,])
+      chains <- as.character(sapply(unique(strsplit(tidy_dataset$merge_clonotypeID[x], split = "-")[[1]]), function(x){strsplit(x, split = "\\.")[[1]]})[1,])
       if(length(strsplit(tidy_dataset$merge_clonotypeID[x], split = "-")[[1]]) == 1){
         tidy_dataset$completeBCR[x] <- "Single_chain_1"
-      }else if(data_type == "missionbio" & (sum(chains == "IGH") > 1)){
-        tidy_dataset$completeBCR[x] <- "Potential_MB_doublet"
       }else if((length(strsplit(tidy_dataset$merge_clonotypeID[x], split = "-")[[1]]) == 2) & !(("IGH" %in% chains) & ("IGK" %in% chains | "IGL" %in% chains))){
         tidy_dataset$completeBCR[x] <- "Single_chain_2"
       }else if((length(strsplit(tidy_dataset$merge_clonotypeID[x], split = "-")[[1]]) == 3 | length(strsplit(tidy_dataset$merge_clonotypeID[x], split = "-")[[1]]) == 4) & !(("IGH" %in% chains) & ("IGK" %in% chains | "IGL" %in% chains))){
+        tidy_dataset$completeBCR[x] <- "Not_supported"
+      }else if(length(strsplit(tidy_dataset$merge_clonotypeID[x], "-")[[1]]) == 4 && (sum(chains == "IGH") > 2 || sum(chains %in% c("IGK","IGL")) > 2)){
         tidy_dataset$completeBCR[x] <- "Not_supported"
       } else if((length(strsplit(tidy_dataset$merge_clonotypeID[x], split = "-")[[1]]) > 4)){
         tidy_dataset$completeBCR[x] <- "Not_supported"
       }
     }
-    tidy_dataset$completeBCR[sapply(tidy_dataset$merge_clonotypeID, function(x) any(duplicated(strsplit(x, split = "-")[[1]])))] <- "Repeated_chain"
+
+    if(data_type == "missionbio"){
+      tidy_dataset$completeBCR[sapply(tidy_dataset$merge_clonotypeID, function(x) sum(grepl("IGH\\.", strsplit(x, "-")[[1]])) > 1) & tidy_dataset$completeBCR != "Not_supported"] <- "Potential_MB_doublet"
+    }
 
     tidy_dataset <- .correct_completeBCR(tidy_dataset, data_type)
 
@@ -461,19 +469,27 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
     }
 
     if(data_type == "missionbio"){
-      barcodes <- sapply(table_to_write$contig_id, function(x) strsplit(x, "_")[[1]][1])
+      barcodes <- sapply(table_to_write$contig_id[table_to_write$completeBCR != "Not_supported"], function(x) strsplit(x, "_")[[1]][1])
       n_cells <- length(unique(barcodes))
       fake_counts <- matrix(data = 0, nrow = 2, ncol = n_cells, dimnames = list(c("fake-gene1", "fake-gene2"), unique(barcodes)))
       fake_seurat <- CreateSeuratObject(counts = as(fake_counts, "dgCMatrix"), assay = "RNA", project = "fake_seurat")
       fake_seurat@meta.data$orig.ident <- table_to_write$SampleID[match(Cells(fake_seurat), barcodes)]
-      fake_seurat_igscan <- combine_IgScan_Seurat(igscan_out = table_to_write, seurat_object = fake_seurat, seurat_sample_col = "orig.ident", igscan_sample_col = "SampleID")
+      fake_seurat_igscan <- combine_IgScan_Seurat(igscan_out = table_to_write[table_to_write$completeBCR != "Not_supported",], seurat_object = fake_seurat, seurat_sample_col = "orig.ident", igscan_sample_col = "SampleID")
       table_to_write_cell_mb <- fake_seurat_igscan@meta.data[,!colnames(fake_seurat_igscan@meta.data) %in% c("nCount_RNA", "nFeature_RNA")]
+
+      if(any(table_to_write$completeBCR == "Not_supported")){
+        barcodes_notsup <- unique(sapply(table_to_write$contig_id[table_to_write$completeBCR == "Not_supported"], function(x) strsplit(x, "_")[[1]][1]))
+        tmp_df <- as.data.frame(matrix(NA, nrow = length(barcodes_notsup), ncol = ncol(table_to_write_cell_mb), dimnames = list(barcodes_notsup, colnames(table_to_write_cell_mb))))
+        tmp_df$orig.ident <- unique(table_to_write_cell_mb$orig.ident)
+        tmp_df$completeBCR <- "Not_supported"
+        table_to_write_cell_mb <- rbind(table_to_write_cell_mb, tmp_df)
+      }
     }
 
     if(analysis_mode == "single"){
       output_df <- table_to_write
       fwrite(output_df, file = paste0(outputDir,"annotation_results/",name,"_IGannotation.tsv"), sep = "\t", quote = F, col.names = T, row.names = F)
-      if(data_type == "missionbio"){fwrite(table_to_write_cell_mb, file = paste0(outputDir,"annotation_results/",name,"_IGannotation_per_MissionBio_barcode.tsv"), sep = "\t", quote = F, col.names = T, row.names = F)}
+      if(data_type == "missionbio"){fwrite(table_to_write_cell_mb, file = paste0(outputDir,"annotation_results/",name,"_IGannotation_per_MissionBio_barcode.tsv"), sep = "\t", quote = F, col.names = T, row.names = T)}
 
     } else if(analysis_mode == "joint"){
       output_df <- list()
@@ -483,7 +499,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
         output_df <- c(output_df, list(wt))
         if(data_type == "missionbio"){
           wt_cell_mb <- table_to_write_cell_mb[table_to_write_cell_mb$orig.ident == sample,]
-          fwrite(wt_cell_mb, file = paste0(outputDir,"annotation_results/case_",name,"_sample_",sample,"_IGannotation_per_MissionBio_barcode.tsv"), sep = "\t", quote = F, col.names = T, row.names = F)
+          fwrite(wt_cell_mb, file = paste0(outputDir,"annotation_results/case_",name,"_sample_",sample,"_IGannotation_per_MissionBio_barcode.tsv"), sep = "\t", quote = F, col.names = T, row.names = T)
         }
       }
     }
@@ -520,7 +536,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
 
   sub_data <- input_df[,fields_igblast]
 
-  if(material_type == "rna"){
+  if(material_type == "rna" | v_primer == "missionbio"){
     sub_data <- sub_data[sub_data$productive %in% c("T", T),]
   }
 
@@ -558,6 +574,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   tidy_dataset <- subset(sub_data, select = tidy_fields)
   tidy_dataset$productive <- ifelse(tidy_dataset$productive %in% c(T,"T"), "productive", "unproductive")
   tidy_dataset$clonotypeLabel <- NA
+  tidy_dataset <- tidy_dataset[order(tidy_dataset$sequence_id),]
 
   return(tidy_dataset)
 }
@@ -1242,7 +1259,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   dict_ct2$original_completeBCR <- tidy_dataset$completeBCR[match(dict_ct2$Group.1, tidy_dataset$merge_clonotypeID)]
 
   if(data_type == "missionbio"){
-    dict_ct2 <- dict_ct2[order(dict_ct2$original_completeBCR == "Potential_MB_doublet", -dict_ct2$x),]
+    dict_ct2 <- dict_ct2[order(factor(dict_ct2$original_completeBCR, levels = c("Yes", "Single_chain_2", "Potential_MB_doublet")), -dict_ct2$x),]
   } else{
     dict_ct2 <- dict_ct2[order(dict_ct2$x, decreasing = T), ]
   }
@@ -1322,6 +1339,8 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
         chains <- as.character(sapply(strsplit(fix_df$Group.1[row], split = "-")[[1]], function(x){strsplit(x, split = "\\.")[[1]]})[1,])
         if((length(strsplit(fix_df$Group.1[row], split = "-")[[1]]) == 2) & !(("IGH" %in% chains) & ("IGK" %in% chains | "IGL" %in% chains))){
           dict_ct2$completeBCR[dict_ct2$Group.1 == fix_df$Group.1[row]] <- "Single_chain_2"
+        } else{
+          dict_ct2$completeBCR[dict_ct2$Group.1 == fix_df$Group.1[row]] <- "Yes"
         }
       }
     }
@@ -1335,9 +1354,10 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
                                                                                                                                                            dict_ct2$New_ClonotypeID[!dict_ct2$completeBCR %in% c("Clonotype_doublet", "Single_chain_2") | is.na(dict_ct2$completeBCR)])))))
 
   tidy_dataset <- merge(tidy_dataset, dict_ct2[,c("Group.1","igclonotypeID")], by.x = "merge_clonotypeID", by.y = "Group.1", all.x = TRUE)
-  tidy_dataset$completeBCR[tidy_dataset$merge_clonotypeID %in% dict_ct2$Group.1[dict_ct2$completeBCR == "Alternative_clonotype"]] <- "Alternative_clonotype"
-  tidy_dataset$completeBCR[tidy_dataset$merge_clonotypeID %in% dict_ct2$Group.1[dict_ct2$completeBCR == "Clonotype_doublet"]] <- "Clonotype_doublet"
-  tidy_dataset$completeBCR[tidy_dataset$merge_clonotypeID %in% dict_ct2$Group.1[dict_ct2$completeBCR == "Single_chain_2"]] <- "Single_chain_2"
+  tidy_dataset$completeBCR[tidy_dataset$merge_clonotypeID %in% dict_ct2$Group.1[dict_ct2$completeBCR %in% "Yes"]] <- "Yes"
+  tidy_dataset$completeBCR[tidy_dataset$merge_clonotypeID %in% dict_ct2$Group.1[dict_ct2$completeBCR %in% "Alternative_clonotype"]] <- "Alternative_clonotype"
+  tidy_dataset$completeBCR[tidy_dataset$merge_clonotypeID %in% dict_ct2$Group.1[dict_ct2$completeBCR %in% "Clonotype_doublet"]] <- "Clonotype_doublet"
+  tidy_dataset$completeBCR[tidy_dataset$merge_clonotypeID %in% dict_ct2$Group.1[dict_ct2$completeBCR %in% "Single_chain_2"]] <- "Single_chain_2"
 
   return(tidy_dataset)
 }
