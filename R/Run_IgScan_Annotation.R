@@ -121,7 +121,6 @@
 #'
 Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = NULL, input_format, outputDir, analysis_mode = "single", material_type = "rna", v_primer = "full_length", data_type = "single_cell", min_reads = 2, remove_tmp = TRUE, hc_similarity_cutoff = 0.2, hc_mode = "average", cdr3_mode = "nt", cdr3_InDel_correction_mode = "soft_filter", annotate_CLL_immGen = FALSE, annotate_satellite_subsets = TRUE, annotate_ags = FALSE, rescue_single_chain = FALSE, relaxed_rescue = FALSE, summary_file = NULL, threads = 1){
 
-
   ## First checks
   if(is.null(sample_labels)){
     sample_labels <- "all_samples"
