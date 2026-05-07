@@ -72,6 +72,7 @@
 #' @importFrom purrr list_flatten
 #' @importFrom parallel mclapply
 #' @import stringr
+#' @import igraph
 #' @importFrom data.table fread fwrite
 #' @importFrom Seurat CreateSeuratObject
 #'
@@ -260,20 +261,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   }
 
   ## Label clonotype labels (V gene + CDR3 amino acid sequence)
-  list_unique_Vs <- unique(sapply(tidy_dataset$VDJ, function(x) strsplit(x, split = "/")[[1]][1]))
-  list_unique_Vs <- unname(sapply(list_unique_Vs, function(x) str_replace_all(x, "\\*\\d+", "")))
-  list_unique_Vs <- unique(unname(sapply(list_unique_Vs, function(x) paste0(sort(unique(strsplit(x, ",")[[1]])), collapse = ","))))
-  list_unique_Vs <- list_unique_Vs[order(nchar(list_unique_Vs), decreasing = TRUE)]
-
-  final_IGHV <- sapply(.combine_IGHV_genes(strsplit(list_unique_Vs, ",")), function(group) {
-    paste(sort(group), collapse = ",")
-  })
-
-  v_gene <- unname(sapply(tidy_dataset$VDJ, function(x) strsplit(x, split = "\\*")[[1]][1]))
-  u_v_gene <- unique(v_gene)
-  u_v_gene_match <- unname(unlist(sapply(u_v_gene, function(v) { final_IGHV[sapply(final_IGHV, function(x) v %in% strsplit(x, ",")[[1]])] })))
-  v_gene <- u_v_gene_match[match(v_gene, u_v_gene)]
-
+  v_gene <- .build_IGV_clusters(tidy_dataset$VDJ)
   if(cdr3_mode == "aa"){
     tidy_dataset$clonotypeLabel <- paste(v_gene, sapply(tidy_dataset$junction_aa, function(x) paste0(strsplit(x, "")[[1]][2:(nchar(x)-1)], collapse = "")), sep = "_")
   }else if(cdr3_mode == "nt"){
@@ -1181,28 +1169,64 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
 }
 
 ## Function to combine IGHV genes
-.combine_IGHV_genes <- function(ighv) {
-  combined_groups <- list()
-  group_index <- integer(length(ighv))
+.build_IGV_clusters <- function(vdj_vector){
 
-  for (i in seq_along(ighv)) {
-    added <- FALSE
-    for (j in seq_along(combined_groups)) {
-      if (length(intersect(ighv[[i]], combined_groups[[j]])) > 0) {
-        combined_groups[[j]] <- union(combined_groups[[j]], ighv[[i]])
-        group_index[i] <- j
-        added <- TRUE
-        break
+  v_lists <- lapply(vdj_vector, .normalize_v_call)
+
+  all_genes <- unique(unlist(v_lists))
+
+  edge_list <- do.call(rbind, lapply(v_lists, function(genes){
+      if(length(genes) < 2){
+        return(NULL)
       }
+      t(combn(genes, 2))
+    }))
+
+  if(is.null(edge_list)){
+    cluster_strings <- all_genes
+    names(cluster_strings) <- all_genes
+
+  } else {
+    g <- graph_from_edgelist(edge_list, directed = FALSE)
+    missing_nodes <- setdiff(all_genes, V(g)$name)
+
+    if(length(missing_nodes) > 0){
+      g <- add_vertices(g,
+                        nv = length(missing_nodes),
+                        name = missing_nodes)
     }
-    if (!added) {
-      combined_groups[[length(combined_groups) + 1]] <- ighv[[i]]
-      group_index[i] <- length(combined_groups)
-    }
+
+    comps <- components(g)
+    cluster_list <- split(names(comps$membership), comps$membership)
+    cluster_strings <- lapply(cluster_list, function(x){paste(sort(unique(x)), collapse = ",")})
+    cluster_strings <- setNames(rep(unlist(cluster_strings), lengths(cluster_list)), unlist(cluster_list))
   }
 
-  return(combined_groups)
+  result <- vapply(v_lists, function(genes){
+      if(length(genes) == 0){
+        return(NA_character_)
+      }
+      cluster_strings[[genes[1]]]
+    }, FUN.VALUE = character(1))
+
+  return(result)
 }
+
+.normalize_v_call <- function(v_call){
+
+  if(is.na(v_call) || v_call == ""){
+    return(character(0))
+  }
+
+  v_call <- sub("/.*", "", v_call)
+  v_call <- gsub("\\*\\d+", "", v_call)
+  genes <- strsplit(v_call, ",", fixed = TRUE)[[1]]
+  genes <- trimws(genes)
+  genes <- genes[genes != ""]
+
+  return(sort(unique(genes)))
+}
+
 
 ## Function to combine IGH and IGK/IGL clonotypeIDs
 .combine_clonotypeID_by_chains  <- function(tidy_dataset){
