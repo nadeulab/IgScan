@@ -79,7 +79,7 @@ rescue_single_chain_cells <- function(single_cell_object, group_col = "orig.iden
     if(relaxed_rescue){
       for(row in 1:nrow(dict_single)){
         clt_single <- dict_single$igClonotypeID[row]
-        resc_df <- dict_yes[grepl(paste0(clt_single, "-"), dict_yes$igClonotypeID) | grepl(paste0("-", clt_single), dict_yes$igClonotypeID) | grepl(paste0("-", clt_single, "-"), dict_yes$igClonotypeID),]
+        resc_df <- dict_yes[grepl(paste0("^", clt_single, "-"), dict_yes$igClonotypeID) | grepl(paste0("-", clt_single, "$"), dict_yes$igClonotypeID) | grepl(paste0("-", clt_single, "-"), dict_yes$igClonotypeID),]
 
         if(length(unique(resc_df$igClonotypeID_num)) > 1 | nrow(resc_df) == 0){ next }
 
@@ -93,7 +93,7 @@ rescue_single_chain_cells <- function(single_cell_object, group_col = "orig.iden
     } else{
       for(row in 1:nrow(dict_single)){
         sbc_single <- dict_single$igSubcloneID[row]
-        resc_df <- dict_yes[grepl(paste0(sbc_single, "-"), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single, "-"), dict_yes$igSubcloneID),]
+        resc_df <- dict_yes[grepl(paste0("^", sbc_single, "-"), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single, "$"), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single, "-"), dict_yes$igSubcloneID),]
 
         if(length(unique(resc_df$igClonotypeID_num)) > 1 | nrow(resc_df) == 0){ next }
 
@@ -143,7 +143,7 @@ rescue_single_chain_cells <- function(single_cell_object, group_col = "orig.iden
     if(relaxed_rescue){
       for(row in 1:nrow(dict_single)){
         clt_single <- dict_single$igClonotypeID[row]
-        resc_df <- dict_yes[grepl(paste0(clt_single, "-"), dict_yes$igClonotypeID) | grepl(paste0("-", clt_single), dict_yes$igClonotypeID) | grepl(paste0("-", clt_single, "-"), dict_yes$igClonotypeID),]
+        resc_df <- dict_yes[grepl(paste0("^", clt_single, "-"), dict_yes$igClonotypeID) | grepl(paste0("-", clt_single, "$"), dict_yes$igClonotypeID) | grepl(paste0("-", clt_single, "-"), dict_yes$igClonotypeID),]
 
         if(length(unique(resc_df$igClonotypeID_num)) > 1 | nrow(resc_df) == 0){next}
 
@@ -157,7 +157,7 @@ rescue_single_chain_cells <- function(single_cell_object, group_col = "orig.iden
     } else{
       for(row in 1:nrow(dict_single)){
         sbc_single <- dict_single$igSubcloneID[row]
-        resc_df <- dict_yes[grepl(paste0(sbc_single, "-"), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single, "-"), dict_yes$igSubcloneID),]
+        resc_df <- dict_yes[grepl(paste0("^", sbc_single, "-"), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single, "$"), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single, "-"), dict_yes$igSubcloneID),]
 
         if(length(unique(resc_df$igClonotypeID_num)) > 1 | nrow(resc_df) == 0){next}
 
@@ -205,7 +205,7 @@ rescue_single_chain_cells <- function(single_cell_object, group_col = "orig.iden
     if(relaxed_rescue){
       for(row in 1:nrow(dict_single)){
         clt_single <- dict_single$igClonotypeID[row]
-        resc_df <- dict_yes[grepl(paste0(clt_single, "-"), dict_yes$igClonotypeID) | grepl(paste0("-", clt_single), dict_yes$igClonotypeID) | grepl(paste0("-", clt_single, "-"), dict_yes$igClonotypeID),]
+        resc_df <- dict_yes[grepl(paste0("^", clt_single, "-"), dict_yes$igClonotypeID) | grepl(paste0("-", clt_single, "$"), dict_yes$igClonotypeID) | grepl(paste0("-", clt_single, "-"), dict_yes$igClonotypeID),]
 
         if(length(unique(resc_df$igClonotypeID_num)) > 1 | nrow(resc_df) == 0){next}
 
@@ -219,7 +219,7 @@ rescue_single_chain_cells <- function(single_cell_object, group_col = "orig.iden
     } else{
       for(row in 1:nrow(dict_single)){
         sbc_single <- dict_single$igSubcloneID[row]
-        resc_df <- dict_yes[grepl(paste0(sbc_single, "-"), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single, "-"), dict_yes$igSubcloneID),]
+        resc_df <- dict_yes[grepl(paste0("^", sbc_single, "-"), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single, "$"), dict_yes$igSubcloneID) | grepl(paste0("-", sbc_single, "-"), dict_yes$igSubcloneID),]
 
         if(length(unique(resc_df$igClonotypeID_num)) > 1 | nrow(resc_df) == 0){next}
 
