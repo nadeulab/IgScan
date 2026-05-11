@@ -58,6 +58,7 @@ recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.id
     clt_dict <- aggregate(x = tmp_df$ClonotypeID[!is.na(tmp_df$ClonotypeID)], by = list(tmp_df$ClonotypeID[!is.na(tmp_df$ClonotypeID)]), FUN = length)
     clt_dict$chain <- sapply(clt_dict$Group.1, function(x) substr(x, 1, 3))
     clt_dict$cloneID_no_x <- sapply(clt_dict$Group.1, function(x) strsplit(x, "x")[[1]][1])
+    clt_dict$NAfield <- sapply(clt_dict$Group.1, function(x) ifelse(grepl("xNA", strsplit(x, "x")[[1]][2]), strsplit(x, "x")[[1]][2], NA))
     clt_dict <- clt_dict[order(clt_dict$x, decreasing = T),]
 
     chain_count <- list(IGH = 1, IGK = 1, IGL = 1)
@@ -77,6 +78,10 @@ recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.id
         clt_dict$NewName[clt_dict$NewName == sim_c] <- paste0(sim_c, "x", 1:length(clt_dict$NewName[clt_dict$NewName == sim_c]))
       }
     }
+
+    idx <- which(!is.na(clt_dict$NAfield))
+    clt_dict$NewName[idx] <- paste0(sub("x.*", "", clt_dict$NewName[idx]), "x", clt_dict$NAfield[idx])
+
     tmp_df$ClonotypeID <- clt_dict$NewName[match(tmp_df$ClonotypeID, clt_dict$Group.1)]
 
     ## To correct ClonotypeVariantID

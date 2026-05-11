@@ -354,8 +354,8 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   }
 
   ## Annotate immunogenetic data such as Ig V gene identity, stereotype subsets, R110, etc
-  write(x = paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": Annotating immunogenetic data... ",completed_tasks,"/",total_tasks," tasks completed."), file = summary_file, append = T)
-  message(paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": Annotating immunogenetic data... ",completed_tasks,"/",total_tasks," tasks completed."))
+  write(x = paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": Annotating immunogenetic features... ",completed_tasks,"/",total_tasks," tasks completed."), file = summary_file, append = T)
+  message(paste0("[", format(Sys.time(), "%d-%m-%Y %H:%M:%S"), "] - ", ifelse(analysis_mode == "joint", "Case_", "Sample_"), name, ": Annotating immunogenetic features... ",completed_tasks,"/",total_tasks," tasks completed."))
   completed_tasks <- completed_tasks + 1
 
   tidy_dataset <- .annotate_Immunogenetics(tidy_dataset, annotate_CLL_immGen, annotate_satellite_subsets, annotate_ags, data_type)
@@ -1399,27 +1399,30 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   }
   # Add chain if no need of split
   tidy_dataset$clonotypeID_new[is.na(tidy_dataset$clonotypeID_new) & tidy_dataset$completeBCR == "Yes"] <- tidy_dataset$clonotypeID[is.na(tidy_dataset$clonotypeID_new) & tidy_dataset$completeBCR == "Yes"]
-
-  tidy_dataset$clonotypeID_new[is.na(tidy_dataset$clonotypeID_new)] <- sapply(tidy_dataset$clonotypeVariantID_in_Cltp[is.na(tidy_dataset$clonotypeID_new)], function(cv){
-    if(length(tidy_dataset$clonotypeID_new[tidy_dataset$completeBCR == "Yes" & tidy_dataset$clonotypeVariantID_in_Cltp == cv]) == 0){
-      NA
-    }else{
-      dict_ct3 <- aggregate(x = tidy_dataset$clonotypeID_new[tidy_dataset$completeBCR == "Yes" & tidy_dataset$clonotypeVariantID_in_Cltp == cv],
-                            by = list(tidy_dataset$clonotypeID_new[tidy_dataset$completeBCR == "Yes" & tidy_dataset$clonotypeVariantID_in_Cltp == cv]), FUN = length)
-      dict_ct3 <- dict_ct3[order(dict_ct3$x, decreasing = T),]
-      dict_ct3$Group.1[1]
+  na_idx <- which(is.na(tidy_dataset$clonotypeID_new))
+  for(cv in unique(tidy_dataset$clonotypeVariantID_in_Cltp[na_idx])){
+    idx_cv_na <- which(is.na(tidy_dataset$clonotypeID_new) & tidy_dataset$clonotypeVariantID_in_Cltp == cv)
+    assigned_ids <- tidy_dataset$clonotypeID_new[tidy_dataset$completeBCR == "Yes" & tidy_dataset$clonotypeVariantID_in_Cltp == cv]
+    if(length(assigned_ids) == 0){
+      tidy_dataset$clonotypeID_new[idx_cv_na] <- NA
+    } else {
+      dict_ct3 <- aggregate(x = assigned_ids, by = list(assigned_ids), FUN = length)
+      dict_ct3 <- dict_ct3[order(dict_ct3$x, decreasing = TRUE),]
+      num_cells <- length(idx_cv_na)
+      if(nrow(dict_ct3) == 1 || dict_ct3$x[1] > dict_ct3$x[2]){
+        tidy_dataset$clonotypeID_new[idx_cv_na] <- dict_ct3$Group.1[1]
+      } else {
+        base_name <- strsplit(dict_ct3$Group.1[1], "x")[[1]][1]
+        tidy_dataset$clonotypeID_new[idx_cv_na] <- paste0(base_name, "xNA", seq_len(num_cells))
+      }
     }
-  })
+  }
 
   # If still NA... add chain based on CV like it was an independent clonotype (from number of current clonotypes to nClones)
   for(row in 1:nrow(tidy_dataset)){
-
     if(!is.na(tidy_dataset$clonotypeID_new[row])){next}
-
     cltp <- tidy_dataset$clonotypeID[row]
-
     newCltps <- unique(tidy_dataset$clonotypeID_new[!is.na(tidy_dataset$clonotypeID_new) & tidy_dataset$clonotypeID == cltp])
-
     if(length(newCltps) == 0){
       tidy_dataset$clonotypeID_new[row] <- cltp
     }else if(length(newCltps) == 1){
