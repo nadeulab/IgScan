@@ -58,7 +58,7 @@ recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.id
     clt_dict <- aggregate(x = tmp_df$ClonotypeID[!is.na(tmp_df$ClonotypeID)], by = list(tmp_df$ClonotypeID[!is.na(tmp_df$ClonotypeID)]), FUN = length)
     clt_dict$chain <- sapply(clt_dict$Group.1, function(x) substr(x, 1, 3))
     clt_dict$cloneID_no_x <- sapply(clt_dict$Group.1, function(x) strsplit(x, "x")[[1]][1])
-    clt_dict$NAfield <- sapply(clt_dict$Group.1, function(x) ifelse(grepl("xNA", strsplit(x, "x")[[1]][2]), strsplit(x, "x")[[1]][2], NA))
+    clt_dict$NAfield <- sapply(clt_dict$Group.1, function(x) ifelse(grepl("NA", strsplit(x, "x")[[1]][2]), strsplit(x, "x")[[1]][2], NA))
     clt_dict <- clt_dict[order(clt_dict$x, decreasing = T),]
 
     chain_count <- list(IGH = 1, IGK = 1, IGL = 1)
