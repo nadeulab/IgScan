@@ -456,18 +456,22 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
     }
 
     if(data_type == "missionbio"){
-      barcodes <- sapply(table_to_write$contig_id[table_to_write$completeBCR != "Not_supported"], function(x) strsplit(x, "_")[[1]][1])
+      all_barcodes <- sapply(table_to_write$contig_id, function(x) strsplit(x, "_")[[1]][1])
+      supported_idx <- table_to_write$completeBCR != "Not_supported"
+      barcodes <- all_barcodes[supported_idx]
       n_cells <- length(unique(barcodes))
+
       fake_counts <- matrix(data = 0, nrow = 2, ncol = n_cells, dimnames = list(c("fake-gene1", "fake-gene2"), unique(barcodes)))
       fake_seurat <- CreateSeuratObject(counts = as(fake_counts, "dgCMatrix"), assay = "RNA", project = "fake_seurat")
-      fake_seurat@meta.data$orig.ident <- table_to_write$SampleID[match(Cells(fake_seurat), barcodes)]
-      fake_seurat_igscan <- combine_IgScan_Seurat(igscan_out = table_to_write[table_to_write$completeBCR != "Not_supported",], seurat_object = fake_seurat, seurat_sample_col = "orig.ident", igscan_sample_col = "SampleID")
-      table_to_write_cell_mb <- fake_seurat_igscan@meta.data[,!colnames(fake_seurat_igscan@meta.data) %in% c("nCount_RNA", "nFeature_RNA")]
+      fake_seurat@meta.data$orig.ident <-table_to_write$SampleID[match(Cells(fake_seurat), barcodes)]
+      fake_seurat_igscan <- combine_IgScan_Seurat(igscan_out = table_to_write[supported_idx, ], seurat_object = fake_seurat, seurat_sample_col = "orig.ident", igscan_sample_col = "SampleID")
 
-      if(any(table_to_write$completeBCR == "Not_supported")){
-        barcodes_notsup <- unique(sapply(table_to_write$contig_id[table_to_write$completeBCR == "Not_supported"], function(x) strsplit(x, "_")[[1]][1]))
+      table_to_write_cell_mb <- fake_seurat_igscan@meta.data[, !colnames(fake_seurat_igscan@meta.data) %in% c("nCount_RNA", "nFeature_RNA")]
+
+      if(any(!supported_idx)){
+        barcodes_notsup <- unique(all_barcodes[!supported_idx])
         tmp_df <- as.data.frame(matrix(NA, nrow = length(barcodes_notsup), ncol = ncol(table_to_write_cell_mb), dimnames = list(barcodes_notsup, colnames(table_to_write_cell_mb))))
-        tmp_df$orig.ident <- unique(table_to_write_cell_mb$orig.ident)
+        tmp_df$orig.ident <- table_to_write$SampleID[match(barcodes_notsup, all_barcodes)]
         tmp_df$completeBCR <- "Not_supported"
         table_to_write_cell_mb <- rbind(table_to_write_cell_mb, tmp_df)
       }
