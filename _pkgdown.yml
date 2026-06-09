@@ -1,4 +1,4 @@
-url: https://github.com/nadeulab/IgScan
+url: https://nadeulab.github.io/IgScan/
 Template:
   params:
     bootswatch: flatly
@@ -54,24 +54,24 @@ reference:
   - combine_IgScan_SingleCellExperiment
 - title: Assign incomplete BCR cells to clonotypes
   desc: Function to infer the complete BCR in cells with partial information.
-- contents:
-  - rescue_single_chain_cells
+- contents: rescue_single_chain_cells
 - title: Filtering of sample crossed contamination
-  desc: Functions that can be run to flag/remove crossed contamination in bulk and single-cell data.
+  desc: Functions that can be run to flag/remove crossed contamination in bulk and
+    single-cell data.
 - contents:
   - filter_BCR_contam_bulk
   - filter_BCR_contam_single_cell
   - filter_SampleTag_contam_BDRhapsody
 - title: Recalculation of clonal identifiers and clonal abundances
-  desc: Functions that must be run when filtering IgScan annotated datasets to re-estimate clonal frequencies.
+  desc: Functions that must be run when filtering IgScan annotated datasets to re-estimate
+    clonal frequencies.
 - contents:
   - recalculate_IDs_bulk
   - recalculate_IDs_single_cell
 - title: Export IgScan results in AIRR format
   desc: Functions to export IgScan results in the consensus AIRR format.
-- contents:
-  - export_AIRR_format
+- contents: export_AIRR_format
 - title: Infer BCR phylogenetic trees from IgScan
   desc: Functions to adapt IgScan outputs for other tools for BCR phylogenetic inference.
-- contents:
-  - prepare_gctree_input
+- contents: prepare_gctree_input
+

@@ -46,8 +46,9 @@ biological contexts.
 
 ## Working with IgScan
 
-The IgScan website provides extensive documentation and step-by-step
-tutorials for all core functions.
+The [IgScan website](https://nadeulab.github.io/IgScan/) provides
+extensive documentation and step-by-step tutorials for all core
+functions.
 
 ## Installation
 
