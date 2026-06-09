@@ -18,13 +18,13 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 
 ## Installing from GitHub (Recommended)
 
-To install the development version of **IgScan** (v.1.0.0) from GitHub:
+To install the development version of **IgScan** (v.0.1.0) from GitHub:
 
 ```{r, eval=FALSE}
 install.packages("devtools")
 library(devtools)
 
-devtools::install_github("ianmarquezlopez/IgScan", build_vignettes = T, dependencies = T)
+devtools::install_github("nadeulab/IgScan", build_vignettes = T, dependencies = T)
 ```
 
 ## Installing from Local Source

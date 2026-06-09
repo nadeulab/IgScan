@@ -60,7 +60,7 @@ repository by:
 install.packages("devtools")
 library(devtools)
 
-devtools::install_github("https://github.com/ianmarquezlopez/IgScan/tree/main",
+devtools::install_github("https://github.com/nadeulab/IgScan/tree/main",
                          build_vignettes = T, dependencies = T)
 ```
 
