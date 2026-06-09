@@ -20,7 +20,6 @@
 #'
 #' @export
 #'
-#' @importFrom qs qread qsave
 #' @importFrom stringr str_count
 #' @import Seurat
 #' @import SeuratObject
@@ -89,7 +88,7 @@ combine_IgScan_Seurat <- function(igscan_out, seurat_object, seurat_sample_col =
       tmp_seurat@meta.data[[paste0(n, "_VDJ_genes")]] <- tmp_igscan$VDJ_genes[match(subclone, tmp_igscan$SubcloneID)]
       tmp_seurat@meta.data[[paste0(n, "_C_gene")]] <- tmp_igscan$C_gene[match(subclone, tmp_igscan$SubcloneID)]
       tmp_seurat@meta.data[[paste0(n, "_Junction_aa")]] <- tmp_igscan$Junction_aa[match(subclone, tmp_igscan$SubcloneID)]
-      tmp_seurat@meta.data[[paste0(n, "_Junction_lenght")]] <- tmp_igscan$Junction_lenght[match(subclone, tmp_igscan$SubcloneID)]
+      tmp_seurat@meta.data[[paste0(n, "_Junction_length")]] <- tmp_igscan$Junction_length[match(subclone, tmp_igscan$SubcloneID)]
       tmp_seurat@meta.data[[paste0(n, "_Functionality")]] <- tmp_igscan$Functionality[match(subclone, tmp_igscan$SubcloneID)]
       tmp_seurat@meta.data[[paste0(n, "_V_length")]] <- tmp_igscan$V_length[match(subclone, tmp_igscan$SubcloneID)]
       tmp_seurat@meta.data[[paste0(n, "_V_identity")]] <- tmp_igscan$V_identity[match(subclone, tmp_igscan$SubcloneID)]

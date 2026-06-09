@@ -278,8 +278,8 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
                      nchar(tidy_dataset$VDJseq) != as.numeric(names(which.max(table(nchar(tidy_dataset$VDJseq[tidy_dataset$clonotypeLabel == clonotype])))))))
     })))
     if(length(rows_to_remove) > 0){
-      write(x = paste0("Sequence with ID ", tidy_dataset[rows_to_remove,"sequence_id"], " was removed from sample ", tidy_dataset[rows_to_remove,"sample"], " since VDJseq lenght was in disagreement with most recurrent sequence."), file = summary_file, append = T)
-      message(paste0("Sequence with ID ", tidy_dataset[rows_to_remove,"sequence_id"], " was removed from sample ", tidy_dataset[rows_to_remove,"sample"], " since VDJseq lenght was in disagreement with most recurrent sequence.\n"))
+      write(x = paste0("Sequence with ID ", tidy_dataset[rows_to_remove,"sequence_id"], " was removed from sample ", tidy_dataset[rows_to_remove,"sample"], " since VDJseq length was in disagreement with most recurrent sequence."), file = summary_file, append = T)
+      message(paste0("Sequence with ID ", tidy_dataset[rows_to_remove,"sequence_id"], " was removed from sample ", tidy_dataset[rows_to_remove,"sample"], " since VDJseq length was in disagreement with most recurrent sequence.\n"))
       tidy_dataset <- tidy_dataset[-rows_to_remove,]
       removed_rows <- length(rows_to_remove)
     }

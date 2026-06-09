@@ -91,25 +91,23 @@ seurat_2 <- system.file("extdata/igscan_test_10xSeurat_sample2.rds", package = "
 
 To suggest improvements, modifications or request additional
 functionalities for IgScan, please, submit them as [GitHub
-issues](https://github.com/ianmarquezlopez/IgScan/issues).
+issues](https://github.com/nadeulab/IgScan/issues).
 
 If running into any bugs or issues also submit a [GitHub
-issue](https://github.com/ianmarquezlopez/IgScan/issues) with some
-details of the problem. Submitting a [reproducible
+issue](https://github.com/nadeulab/IgScan/issues) with some details of
+the problem. Submitting a [reproducible
 example](https://reprex.tidyverse.org/) would be of help.
 
 We are also open for [pull
-requests](https://github.com/ianmarquezlopez/IgScan/pulls) for fixing
-bugs or add new features.
+requests](https://github.com/nadeulab/IgScan/pulls) for fixing bugs or
+add new features.
 
 ## Please Cite
 
-scRepertoire 2 preprint is available at:
-<https://www.biorxiv.org/content/10.1101/2024.12.31.630854v1>
+If you use this package in published work, please cite the GitHub
+repository for now:
 
-*Yang, Q, Safina, K., Borcherding, N. (2024). scRepertoire 2: Enhanced
-and Efficient Toolkit for Single-Cell Immune Profiling
-<https://doi.org/10.1101/2024.12.31.630854>*
+<https://github.com/nadeulab/IgScan>
 
-If you are building your own tool based on scRepertoire, reach out, we
-are happy to help and make things compatible.
+A manuscript describing the method is currently in preparation and
+citation details will be updated once available.

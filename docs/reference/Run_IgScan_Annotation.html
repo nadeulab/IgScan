@@ -4,9 +4,11 @@ It groups sequences into clonotypic clusters based on a highly customizable hier
 clustering approach. The function processes clonotypes to provide key immunogenetic
 information, such as germline sequences, somatic hypermutation levels, CLL stereotype
 subsets, R110 mutation, Acquired N-Glycosylation sites (AGS) and more. Then, it organizes
-this information according to the input data type: for single-cell datasets, it groups heavy-light
+this information according to the input data type: for single-cell RNA-seq datasets, it groups heavy-light
 chains by cell barcodes, while for bulk-NGS datasets, it reports the cumulative number of reads and
-clonotype frequencies."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
+clonotype frequencies. In addition, the workflow is also compatible with single-cell V(D)J data
+generated using the Mission Bio platform, provided that the IgScan input has been produced
+using our dedicated raw-data preprocessing pipeline (see IgScan GitHub)."><!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
 <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
 <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
 <![endif]--></head><body data-spy="scroll" data-target="#toc">
@@ -102,9 +104,11 @@ It groups sequences into clonotypic clusters based on a highly customizable hier
 clustering approach. The function processes clonotypes to provide key immunogenetic
 information, such as germline sequences, somatic hypermutation levels, CLL stereotype
 subsets, R110 mutation, Acquired N-Glycosylation sites (AGS) and more. Then, it organizes
-this information according to the input data type: for single-cell datasets, it groups heavy-light
+this information according to the input data type: for single-cell RNA-seq datasets, it groups heavy-light
 chains by cell barcodes, while for bulk-NGS datasets, it reports the cumulative number of reads and
-clonotype frequencies.</p>
+clonotype frequencies. In addition, the workflow is also compatible with single-cell V(D)J data
+generated using the Mission Bio platform, provided that the IgScan input has been produced
+using our dedicated raw-data preprocessing pipeline (see IgScan GitHub).</p>
     </div>
 
     <div id="ref-usage">
@@ -126,6 +130,8 @@ clonotype frequencies.</p>
 <span>  annotate_CLL_immGen <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  annotate_satellite_subsets <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  annotate_ags <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  rescue_single_chain <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  relaxed_rescue <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  summary_file <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  threads <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div>
@@ -172,12 +178,13 @@ matrial_type='rna', unproductive sequences are not expected, and will be directl
 
 <dt id="arg-v-primer">v_primer<a class="anchor" aria-label="anchor" href="#arg-v-primer"></a></dt>
 <dd><p>The primer sequence used for the V-region amplification.
-Options: 'full_length', 'fr1', 'fr2' and 'fr3'. Note that sequences with unexpected length pattern based on
-the chosen primer will be directly excluded from the analysis. Default is 'full_length'.</p></dd>
+Options: 'full_length', 'fr1', 'fr2' and 'fr3'. Only required for <code>data_type='bulk'</code>. Default is
+'full_length'. Note that sequences with unexpected length pattern based on the chosen primer
+will be directly excluded from the analysis.</p></dd>
 
 
 <dt id="arg-data-type">data_type<a class="anchor" aria-label="anchor" href="#arg-data-type"></a></dt>
-<dd><p>The type of data. Options: 'single_cell' and 'bulk'. Default is 'single_cell'.</p></dd>
+<dd><p>The type of data. Options: 'single_cell', 'bulk' or 'missionbio'. Default is 'single_cell'.</p></dd>
 
 
 <dt id="arg-min-reads">min_reads<a class="anchor" aria-label="anchor" href="#arg-min-reads"></a></dt>
@@ -224,6 +231,19 @@ Only needed if <code>annotate_CLL_immGen</code> is set to TRUE. Default is TRUE.
 <dt id="arg-annotate-ags">annotate_ags<a class="anchor" aria-label="anchor" href="#arg-annotate-ags"></a></dt>
 <dd><p>Logical value indicating whether to annotate IGH Acquired N-Glycosylation Sites (AGS).
 Default is FALSE.</p></dd>
+
+
+<dt id="arg-rescue-single-chain">rescue_single_chain<a class="anchor" aria-label="anchor" href="#arg-rescue-single-chain"></a></dt>
+<dd><p>Logical value indicating whether to hard assign cells with one chain detected to the most
+plausible complete clonotype (see <code>rescue_single_chain_cells</code> function documentation for more details). Default is FALSE.</p></dd>
+
+
+<dt id="arg-relaxed-rescue">relaxed_rescue<a class="anchor" aria-label="anchor" href="#arg-relaxed-rescue"></a></dt>
+<dd><p>Logical value indicating whether to apply a relaxed clonotype rescue mode.
+Only needed if <code>rescue_single_chain</code> is set to <code>TRUE</code>.The default (recommended) is <code>FALSE</code>, requiring exact
+V(D)J nucleotide sequence matches to rescue single-chain cells. If set to <code>TRUE</code>, which we recommend only
+for the analysis of Mission Bio single-cell V(D)J data, rescue is performed at the clonotype level rather
+than by exact nucleotide sequence identity.</p></dd>
 
 
 <dt id="arg-threads">threads<a class="anchor" aria-label="anchor" href="#arg-threads"></a></dt>
@@ -296,7 +316,7 @@ saved in the output directory. These dataframes can be directly passed to furthe
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
       </footer></div>

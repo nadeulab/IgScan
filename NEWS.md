@@ -1,3 +1,3 @@
-# IgScan 1.0.0 (development version)
+# IgScan 0.1.0 (development version)
 
 -   Initial IgScan release.

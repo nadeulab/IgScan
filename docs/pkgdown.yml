@@ -1,5 +1,5 @@
 pandoc: 3.1.1
-pkgdown: 2.1.3
+pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
   articles/annotate_tumor_specific_traits: annotate_tumor_specific_traits.html
@@ -11,7 +11,7 @@ articles:
   articles/Installation: Installation.html
   articles/interpret_IgBlast_report: interpret_IgBlast_report.html
   articles/understand_IgScan_output: understand_IgScan_output.html
-last_built: 2025-08-23T10:36Z
+last_built: 2026-06-09T16:18Z
 urls:
   reference: https://github.com/ianmarquezlopez/IgScan/reference
   article: https://github.com/ianmarquezlopez/IgScan/articles

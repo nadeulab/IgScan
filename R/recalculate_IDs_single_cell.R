@@ -18,7 +18,6 @@
 #' @export
 #'
 #' @import dplyr
-#' @importFrom qs qread qsave
 #' @import Seurat
 #' @import SeuratObject
 #' @import SingleCellExperiment
@@ -208,7 +207,7 @@ recalculate_IDs_single_cell <- function(single_cell_object, group_col = "orig.id
       append_df$C_gene <- subset_df[barcode, paste0(chain, "_C_gene")]
       append_df$Functionality <- subset_df[barcode, paste0(chain, "_Functionality")]
       append_df$Junction_aa <- subset_df[barcode, paste0(chain, "_Junction_aa")]
-      append_df$Junction_lenght <- subset_df[barcode, paste0(chain, "_Junction_lenght")]
+      append_df$Junction_length <- subset_df[barcode, paste0(chain, "_Junction_length")]
       append_df$V_identity <- subset_df[barcode, paste0(chain, "_V_identity")]
       append_df$VDJ_positions <- subset_df[barcode, paste0(chain, "_VDJ_positions")]
       append_df$V_length <- subset_df[barcode, paste0(chain, "_V_length")]

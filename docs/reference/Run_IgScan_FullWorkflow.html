@@ -3,8 +3,11 @@
 sequencing data, perform IgBLAST reannotation, and run IgScan to generate
 advanced immunogenetic analyses. It combines the functionalities of
 Run_IgBlast_from_RawData and Run_IgScan_Annotation into a single step,
-allowing users to process raw single_cell/bulk NGS data, annotate immunoglobulin
-sequences, and analyze clonotypes in a unified workflow.
+allowing users to process raw scRNA-seq/bulk NGS data, annotate immunoglobulin
+sequences, and analyze clonotypes in a unified workflow. In addition, the workflow is
+also compatible with single-cell V(D)J data generated using the Mission Bio platform,
+provided that the IgScan input has been produced using our dedicated raw-data
+preprocessing pipeline (see IgScan GitHub).
 It supports data from multiple sequencing platforms and file types:
 10x BCR = "filtered_contig_annotations.csv / filtered_contig.fa"
 Parse BCR = "bcr_annotation_airr.tsv"
@@ -110,8 +113,11 @@ fasta
 sequencing data, perform IgBLAST reannotation, and run IgScan to generate
 advanced immunogenetic analyses. It combines the functionalities of
 <code>Run_IgBlast_from_RawData</code> and <code>Run_IgScan_Annotation</code> into a single step,
-allowing users to process raw single_cell/bulk NGS data, annotate immunoglobulin
-sequences, and analyze clonotypes in a unified workflow.</p>
+allowing users to process raw scRNA-seq/bulk NGS data, annotate immunoglobulin
+sequences, and analyze clonotypes in a unified workflow. In addition, the workflow is
+also compatible with single-cell V(D)J data generated using the Mission Bio platform,
+provided that the IgScan input has been produced using our dedicated raw-data
+preprocessing pipeline (see IgScan GitHub).</p>
 <p>It supports data from multiple sequencing platforms and file types:</p><ul><li><p>10x BCR = "filtered_contig_annotations.csv / filtered_contig.fa"</p></li>
 <li><p>Parse BCR = "bcr_annotation_airr.tsv"</p></li>
 <li><p>BD Rhapsody BCR = "Contigs_AIRR.tsv"</p></li>
@@ -145,7 +151,9 @@ sequences, and analyze clonotypes in a unified workflow.</p>
 <span>  cdr3_InDel_correction_mode <span class="op">=</span> <span class="st">"soft_filter"</span>,</span>
 <span>  annotate_CLL_immGen <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  annotate_satellite_subsets <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  annotate_ags <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  annotate_ags <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  rescue_single_chain <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  relaxed_rescue <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
 
@@ -209,12 +217,13 @@ matrial_type='rna', unproductive sequences are not expected, and will be directl
 
 <dt id="arg-v-primer">v_primer<a class="anchor" aria-label="anchor" href="#arg-v-primer"></a></dt>
 <dd><p>The primer sequence used for the V-region amplification.
-Options: 'full_length', 'fr1', 'fr2' and 'fr3'. Note that sequences with unexpected length pattern based on
-the chosen primer will be directly excluded from the analysis. Default is 'full_length'.</p></dd>
+Options: 'full_length', 'fr1', 'fr2' and 'fr3'. Only required for <code>data_type='bulk'</code>. Default is
+'full_length'. Note that sequences with unexpected length pattern based on the chosen primer
+will be directly excluded from the analysis.</p></dd>
 
 
 <dt id="arg-data-type">data_type<a class="anchor" aria-label="anchor" href="#arg-data-type"></a></dt>
-<dd><p>The type of data. Options: 'single_cell' and 'bulk'. Default is 'single_cell'.</p></dd>
+<dd><p>The type of data. Options: 'single_cell', 'bulk' or 'missionbio'. Default is 'single_cell'.</p></dd>
 
 
 <dt id="arg-min-reads">min_reads<a class="anchor" aria-label="anchor" href="#arg-min-reads"></a></dt>
@@ -266,6 +275,19 @@ Only needed if <code>annotate_CLL_immGen</code> is set to TRUE. Default is TRUE.
 <dt id="arg-annotate-ags">annotate_ags<a class="anchor" aria-label="anchor" href="#arg-annotate-ags"></a></dt>
 <dd><p>Logical value indicating whether to annotate IGH Acquired N-Glycosylation Sites (AGS).
 Default is FALSE.</p></dd>
+
+
+<dt id="arg-rescue-single-chain">rescue_single_chain<a class="anchor" aria-label="anchor" href="#arg-rescue-single-chain"></a></dt>
+<dd><p>Logical value indicating whether to hard assign cells with one chain detected to the most
+plausible complete clonotype (see <code>rescue_single_chain_cells</code> function documentation for more details). Default is FALSE.</p></dd>
+
+
+<dt id="arg-relaxed-rescue">relaxed_rescue<a class="anchor" aria-label="anchor" href="#arg-relaxed-rescue"></a></dt>
+<dd><p>Logical value indicating whether to apply a relaxed clonotype rescue mode.
+Only needed if <code>rescue_single_chain</code> is set to <code>TRUE</code>.The default (recommended) is <code>FALSE</code>, requiring exact
+V(D)J nucleotide sequence matches to rescue single-chain cells. If set to <code>TRUE</code>, which we recommend only
+for the analysis of Mission Bio single-cell V(D)J data, rescue is performed at the clonotype level rather
+than by exact nucleotide sequence identity.</p></dd>
 
 </dl></div>
     <div id="value">
@@ -324,7 +346,7 @@ formats the output based on the type of experiment (bulk or single cell).</p></l
 </div>
 
 <div class="pkgdown">
-  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.3.</p>
+  <p></p><p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
       </footer></div>

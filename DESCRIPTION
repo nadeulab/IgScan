@@ -1,14 +1,14 @@
 Type: Package
 Package: IgScan
 Title: A high-throughput analysis toolkit for dissecting immune repertoires in B-cell neoplasms and beyond
-Version: 1.0.0
-Date: 2025-01-08
+Version: 0.1.0
+Date: 2026-06-09
 Authors@R: c(
     person("Ian", "Márquez-López", , "iamarquez@recerca.clinic.cat", role = c("aut", "cre")),
     person("Ferran", "Nadeu", , "nadeu@recerca.clinic.cat", role = "aut")
   )
 Description: IgScan is an R package for processing and analyzing high-throughput sequencing data of B-cell immunoglobulin (Ig) repertoires, both at the bulk and single-cell levels. The single-cell workflow supports multiple data formats, including 10x Genomics, BD Rhapsody, and Parse Evercode. IgScan provides detailed immunogenetic annotation, clonotype grouping, and repertoire reconstruction, with open compatibility with AIRR standards and other widely used tools in the field.
-License: MIT + file LICENSE
+License: file LICENSE
 URL: https://github.com/ianmarquezlopez/IgScan
 BugReports: https://github.com/ianmarquezlopez/IgScan/issues
 Imports: 
@@ -20,7 +20,6 @@ Imports:
     parallel (>= 4.3.2),
     patchwork (>= 1.3.0),
     purrr (>= 1.0.2),
-    qs (>= 0.27.2),
     Seurat (>= 5.1.0),
     SeuratObject (>= 5.0.2),
     stringr (>= 1.5.1),

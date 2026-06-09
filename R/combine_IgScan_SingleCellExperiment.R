@@ -16,7 +16,6 @@
 #'
 #' @export
 #'
-#' @importFrom qs qread qsave
 #' @importFrom stringr str_count
 #' @import SingleCellExperiment
 #'
@@ -83,7 +82,7 @@ combine_IgScan_SingleCellExperiment <- function(igscan_out, sce, sce_sample_col,
       colData(tmp_sce)[[paste0(n, "_VDJ_genes")]] <- tmp_igscan$VDJ_genes[match(subclone, tmp_igscan$SubcloneID)]
       colData(tmp_sce)[[paste0(n, "_C_gene")]] <- tmp_igscan$C_gene[match(subclone, tmp_igscan$SubcloneID)]
       colData(tmp_sce)[[paste0(n, "_Junction_aa")]] <- tmp_igscan$Junction_aa[match(subclone, tmp_igscan$SubcloneID)]
-      colData(tmp_sce)[[paste0(n, "_Junction_lenght")]] <- tmp_igscan$Junction_lenght[match(subclone, tmp_igscan$SubcloneID)]
+      colData(tmp_sce)[[paste0(n, "_Junction_length")]] <- tmp_igscan$Junction_length[match(subclone, tmp_igscan$SubcloneID)]
       colData(tmp_sce)[[paste0(n, "_Functionality")]] <- tmp_igscan$Functionality[match(subclone, tmp_igscan$SubcloneID)]
       colData(tmp_sce)[[paste0(n, "_V_length")]] <- tmp_igscan$V_length[match(subclone, tmp_igscan$SubcloneID)]
       colData(tmp_sce)[[paste0(n, "_V_identity")]] <- tmp_igscan$V_identity[match(subclone, tmp_igscan$SubcloneID)]
