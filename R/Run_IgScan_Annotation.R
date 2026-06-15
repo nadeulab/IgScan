@@ -68,11 +68,11 @@
 #' @export
 #'
 #' @import dplyr
-#' @importFrom Biostrings pairwiseAlignment
+#' @importFrom pwalign pairwiseAlignment
 #' @importFrom purrr list_flatten
 #' @importFrom parallel mclapply
 #' @import stringr
-#' @import igraph
+#' @importFrom igraph graph_from_edgelist add_vertices components
 #' @importFrom data.table fread fwrite
 #' @importFrom Seurat CreateSeuratObject
 #'
