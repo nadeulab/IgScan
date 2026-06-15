@@ -74,4 +74,3 @@ reference:
 - title: Infer BCR phylogenetic trees from IgScan
   desc: Functions to adapt IgScan outputs for other tools for BCR phylogenetic inference.
 - contents: prepare_gctree_input
-
