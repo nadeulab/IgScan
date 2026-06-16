@@ -17,8 +17,7 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
 ```{r setup, warning=FALSE, message=FALSE}
-library(devtools)
-load_all("~/Desktop/IgScan/")
+library(IgScan)
 ```
 
 In high-throughput sequencing technologies, particularly in multiplexed experimental designs, low-level cross-sample contamination is a common and well-documented issue. Even with stringent library preparation and indexing protocols, reads/cells from highly abundant clonotypes in one sample can occasionally appear at very low frequencies in other samples due to barcode misassignment, index hopping, or ambient RNA contamination.
@@ -84,6 +83,6 @@ filter_cont_sc <- IgScan::filter_SampleTag_contam_BDRhapsody(single_cell_object 
 When `remove_contamination` is set to `FALSE`, the FLAGs of contamination in the data are stored in three different columns:
 
 |   | Contamination_FLAG | Contamination_Ratio | Contamination_Sample |
-|:-------------:|:-------------:|:-------------:|:-------------------------:|
+|:--------------:|:--------------:|:--------------:|:----------------------:|
 | **Description** | PASS / OUT / OUT_X | Ratio of contamination (A:B) | Sample from which the contamination is presumed to originate |
 | **Example** | OUT | 1:2500 | SampleB |

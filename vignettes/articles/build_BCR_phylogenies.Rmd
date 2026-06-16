@@ -33,8 +33,7 @@ The current version of IgScan supports the possibility to build phylogenetic tre
 For both alternatives, we will take as input the data of a single cell object with IgScan annotation in its metadata.
 
 ```{r read_seurat, message=FALSE, warning=FALSE, tidy=FALSE}
-library(devtools)
-load_all("~/Desktop/IgScan/")
+library(IgScan)
 library(dowser)
 
 s <- system.file("extdata/igscan_test_10xSeurat_IgScan_sample4.rds", 
