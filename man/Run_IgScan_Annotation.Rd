@@ -96,6 +96,9 @@ V(D)J nucleotide sequence matches to rescue single-chain cells. If set to \code{
 for the analysis of Mission Bio single-cell V(D)J data, rescue is performed at the clonotype level rather
 than by exact nucleotide sequence identity.}
 
+\item{summary_file}{Path to the file that will store the IgScan run summary.
+Default (and recommended) is \code{NULL}, which automatically generates the file name.}
+
 \item{threads}{An integer specifying the number of threads for processing samples.
 Default is 1.}
 }

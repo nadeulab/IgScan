@@ -61,6 +61,8 @@
 #'   except the annotation_results directory). Default is TRUE.
 #' @param threads An integer specifying the number of threads for processing samples.
 #'   Default is 1.
+#' @param  summary_file Path to the file that will store the IgScan run summary.
+#'   Default (and recommended) is `NULL`, which automatically generates the file name.
 #'
 #' @return A list containing an IgScan annotation dataframe for every sample analyzed, which are also
 #' saved in the output directory. These dataframes can be directly passed to further IgScan functions.
