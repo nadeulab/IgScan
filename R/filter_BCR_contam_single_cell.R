@@ -150,7 +150,7 @@ filter_BCR_contam_single_cell <- function(single_cell_list, sample_col = "orig.i
   for(i in 1:length(single_cell_list)){
     if(class(single_cell_list[[i]])[1] == "SingleCellExperiment"){
       tmp_meta_data <- colData(single_cell_list[[i]])
-      tmp_meta_data <- .flagCont_singlecell(tmp_meta_data, contam_df, sample_col, contamination_clone_cutoff, remove_contamination, recalc_column)
+      tmp_meta_data <- .flagCont_singlecell(tmp_meta_data, contam_df, sample_col, contamination_clone_cutoff)
       colData(single_cell_list[[i]]) <- DataFrame(tmp_meta_data)
       if(remove_contamination){
         single_cell_list[[i]] <- single_cell_list[[i]][,colData(single_cell_list[[i]])$Contamination_FLAG == "PASS"]
