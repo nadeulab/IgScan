@@ -41,13 +41,13 @@ Finally, IgScan provides a set of functions to help users cleaning their IG-NGS 
 
 IgScan supports several input data formats. Currently, the following formats are supported:
 
--   [MiXCR](https://mixcr.com/)
+- [MiXCR](https://mixcr.com/)
 
--   AIRR / IMGT AIRR
+- AIRR / IMGT AIRR
 
--   TRUST4 (which is exported in AIRR format)
+- TRUST4 (which is exported in AIRR format)
 
--   Raw fasta file
+- Raw fasta file
 
 # Running IgScan bulk NGS workflow
 
@@ -68,11 +68,11 @@ When using IgScan with raw bulk NGS data (paired-end FASTQ files), it is often b
 
 To facilitate this, we provide an auxiliary preprocessing workflow that:
 
--   Merges overlapping paired-end reads using the [*FLASH*](https://github.com/ebiggers/flash?tab=readme-ov-file) tool.
+- Merges overlapping paired-end reads using the [*FLASH*](https://github.com/ebiggers/flash?tab=readme-ov-file) tool.
 
--   Filters sequences by minimum length.
+- Filters sequences by minimum length.
 
--   Collapses identical sequences while preserving their abundance.
+- Collapses identical sequences while preserving their abundance.
 
 To run the preprocessing workflow, first copy or clone the [`BulkNGS_preprocessing/`](https://github.com/nadeulab/IgScan/tree/main/BulkNGS_preprocessing) directory located within the IgScan package to a directory on your system where you have permission to execute and write files.
 
@@ -107,9 +107,9 @@ IgScan::Run_IgBlast_from_RawData(
 
 Once this step is completed, the `outputDir` is created (if it did not exist before running the command) and contains the subdirectories `fasta_inputs` and `igblast_outs`. If the function has run correctly, the `igblast_outs` directory should contain three different files per sample:
 
--   **\*igblast_out.tsv file**: containing the re-annotation for each contig in the `fasta_inputs`.
+- **\*igblast_out.tsv file**: containing the re-annotation for each contig in the `fasta_inputs`.
 
--   **\*IgBlast_report.txt** / **\*IgBlast_report.pdf**: containing the summary report of the IgBlast outputs.
+- **\*IgBlast_report.txt** / **\*IgBlast_report.pdf**: containing the summary report of the IgBlast outputs.
 
 The IgBlast report file can give the user important information about the quality of the data (by looking at the IgBlast alignment scores) and the level of BCR clonality. To learn how to interpret the IgBlast report file see the [**Interpret IgBlast report file**](interpret_IgBlast_report.html) vingette.
 
@@ -178,9 +178,9 @@ airr_object <- export_AIRR_format(object = merge_igscan_out,
 
 The only parameter to consider—aside from input and output settings—is the `germline_aln` option. This parameter accepts two possible values:
 
--   **masked:** Uses the IgBlast germline alignment with masked (N) random nucleotides.
+- **masked:** Uses the IgBlast germline alignment with masked (N) random nucleotides.
 
--   **consensus**: Uses the clonotype consensus germline sequence as the germline alignment, which does not include masked nucleotides. **We recommend** **this option for downstream analyses**, as the germline sequence is built considering all somatic sequences within the clonotype, helping to reduce potential alignment errors. However, it is important to note that this sequence is an assumption inferred by IgScan based on the closest-to-germline somatic sequence, and may not always perfectly reflect the true germline configuration of the CDR3 region.
+- **consensus**: Uses the clonotype consensus germline sequence as the germline alignment, which does not include masked nucleotides. **We recommend** **this option for downstream analyses**, as the germline sequence is built considering all somatic sequences within the clonotype, helping to reduce potential alignment errors. However, it is important to note that this sequence is an assumption inferred by IgScan based on the closest-to-germline somatic sequence, and may not always perfectly reflect the true germline configuration of the CDR3 region.
 
 Now, we can use this AIRR file to run other tools, such as the [*Dowser*](https://dowser.readthedocs.io/en/latest/#dowser) package which is part of the Immcantation workflow and is widely use to build BCR phylogenetic trees.
 
