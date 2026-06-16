@@ -80,7 +80,7 @@ Run_IgBlast_from_RawData <- function(sample_paths, sample_labels, input_format, 
   if(length(sample_labels) > 0 & length(sample_paths) != length(sample_labels)){stop("'sample_paths' has different length than 'sample_labels'. Please, check both input vectors!")}
 
   ## Setting global variables such as outputDir, IgBlast directory, OS, etc.
-  IgBlastPath <- paste0(system.file("IgBlast", package = "IgScan", mustWork = T), "/")
+  IgBlastPath <- paste0(system.file("extdata/IgBlast", package = "IgScan", mustWork = T), "/")
   IgBlastRef <- paste0(IgBlastPath, "Reference/")
   if(tolower(Sys.info()["sysname"]) == "linux"){
     IgBlastDir <- paste0(IgBlastPath, "Linux/")
