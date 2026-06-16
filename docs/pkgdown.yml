@@ -11,7 +11,7 @@ articles:
   articles/Installation: Installation.html
   articles/interpret_IgBlast_report: interpret_IgBlast_report.html
   articles/understand_IgScan_output: understand_IgScan_output.html
-last_built: 2026-06-16T14:18Z
+last_built: 2026-06-16T16:35Z
 urls:
   reference: https://nadeulab.github.io/IgScan/reference
   article: https://nadeulab.github.io/IgScan/articles
