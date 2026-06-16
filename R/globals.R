@@ -1,43 +1,44 @@
-# Global variables used in IgScan
-# This file is used to satisfy R CMD check NOTES about "no visible binding"
+# Global variables to satisfy R CMD check NOTES (NSE / dplyr / data.table)
 
 utils::globalVariables(c(
-  
+
   # =========================
-  # Core clonotype / VDJ data
+  # Core clonotypes / immunology
   # =========================
   "clonotypeID",
   "Clonotype",
   "ClonotypeID",
+  "ClonalID",
   "ClonotypeVariantID",
-  "clonotypeVariantID_in_Cltp",
   "ClonotypeVariant_nReads",
   "clonotypeVariant_nreads",
   "Subclone_nReads",
   "Pre_Clonotype",
-  
+  "Unique_SequenceID",
+
   # =========================
-  # Sequence / immunology
+  # BCR / VDJ data
   # =========================
   "CDR3",
   "CDR3aa",
   "productive",
+  "completeBCR",
   "igVDJ_sequence",
   "igInDels",
   "igSubcloneID_all",
   "igSubcloneID_in_Clonotype_num",
-  
+
   # =========================
-  # Read / counts / metrics
+  # Counts / stats
   # =========================
   "n_reads",
   "total_reads_unique_seq",
   "Freq",
   "relFreq",
   "Score_Value",
-  
+
   # =========================
-  # Generic data.table / dplyr vars
+  # Column names used in data.frames
   # =========================
   "Var1",
   "Var2",
@@ -47,15 +48,18 @@ utils::globalVariables(c(
   "analysis_mode",
   "identity1",
   "outputDir",
-  
+  "Contamination_FLAG",
+
   # =========================
-  # Internal temporary variables
+  # Temporary / dplyr NSE symbols
   # =========================
+  "x",
+  ".",
   "tmp",
   "tmp_col",
-  
+
   # =========================
-  # AIRR conversion fields
+  # AIRR / annotation fields
   # =========================
   "sequence_alignment",
   "sequence_alignment_aa",
@@ -73,14 +77,33 @@ utils::globalVariables(c(
   "fwr3_end",
   "fwr4_start",
   "fwr4_end",
-  
+
   # =========================
-  # Dictionary / annotation objects
+  # Dictionary / metadata
   # =========================
   "colnames_dictionary",
-  
+
   # =========================
-  # Misc plotting / stats
+  # External / stats functions used non-namespace
   # =========================
-  "findpeaks"
+  "aggregate",
+  "reshape",
+  "ave",
+  "as",
+  "as.dist",
+  "cutree",
+  "hclust",
+  "setNames",
+  "combn",
+  "capture.output",
+  "write.table",
+  "pdf",
+  "dev.off",
+  "findpeaks",
+
+  # =========================
+  # Seurat / SCE slots
+  # =========================
+  "DataFrame",
+  "colData<-"
 ))
