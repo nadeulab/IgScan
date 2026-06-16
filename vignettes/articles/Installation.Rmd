@@ -33,7 +33,9 @@ BiocManager::install(
     "pwalign",
     "Biostrings",
     "IRanges",
-    "GenomicRanges"
+    "GenomicAlignments",
+    "treeio", 
+    "ggtree"
   ),
   ask = FALSE,
   update = FALSE
