@@ -1200,7 +1200,7 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
                         name = missing_nodes)
     }
 
-    comps <- components(g)
+    comps <- igraph::components(g)
     cluster_list <- split(names(comps$membership), comps$membership)
     cluster_strings <- lapply(cluster_list, function(x){paste(sort(unique(x)), collapse = ",")})
     cluster_strings <- setNames(rep(unlist(cluster_strings), lengths(cluster_list)), unlist(cluster_list))
