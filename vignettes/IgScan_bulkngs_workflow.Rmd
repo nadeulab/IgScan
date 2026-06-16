@@ -22,8 +22,7 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
 ```{r setup, warning=FALSE, message=FALSE}
-library(devtools)
-load_all("~/Desktop/IgScan/")
+library(IgScan)
 library(ggplot2)
 library(dplyr)
 library(dowser)

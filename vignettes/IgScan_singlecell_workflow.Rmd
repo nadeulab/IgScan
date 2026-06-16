@@ -22,8 +22,7 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 ```
 
 ```{r setup, warning=FALSE, message=FALSE}
-library(devtools)
-load_all("~/Desktop/IgScan/")
+library(IgScan)
 library(Seurat)
 library(ggplot2)
 library(dplyr)
@@ -43,17 +42,17 @@ Finally, IgScan provides a set of functions to help users fully leverage their s
 
 IgScan supports several input data formats from different single-cell technologies. Currently, the following formats are supported:
 
--   [10X Genomics CellRanger](https://www.10xgenomics.com/software): filtered contig outputs (both *.fasta* and *.csv* formats)
+- [10X Genomics CellRanger](https://www.10xgenomics.com/software): filtered contig outputs (both *.fasta* and *.csv* formats)
 
--   [BD Rhapsody](https://www.bd-rhapsody.com/) Multiomic Immune Profiling
+- [BD Rhapsody](https://www.bd-rhapsody.com/) Multiomic Immune Profiling
 
--   [Parse](https://www.parsebiosciences.com/) Evercode BCR
+- [Parse](https://www.parsebiosciences.com/) Evercode BCR
 
--   [MiXCR](https://mixcr.com/)
+- [MiXCR](https://mixcr.com/)
 
--   AIRR / IMGT AIRR
+- AIRR / IMGT AIRR
 
--   Raw fasta file
+- Raw fasta file
 
 # Running IgScan single cell workflow
 
@@ -90,9 +89,9 @@ IgScan::Run_IgBlast_from_RawData(
 
 Once this step is completed, the `outputDir` is created (if it did not exist before running the command) and contains the subdirectories `fasta_inputs` and `igblast_outs`. If the function has run correctly, the `igblast_outs` directory should contain three different files per sample:
 
--   **\*igblast_out.tsv file**: containing the re-annotation for each contig in the `fasta_inputs`.
+- **\*igblast_out.tsv file**: containing the re-annotation for each contig in the `fasta_inputs`.
 
--   **\*IgBlast_report.txt** / **\*IgBlast_report.pdf**: containing the summary report of the IgBlast outputs.
+- **\*IgBlast_report.txt** / **\*IgBlast_report.pdf**: containing the summary report of the IgBlast outputs.
 
 The IgBlast report file can give the user important information about the quality of the data (by looking at the IgBlast alignment scores) and the level of BCR clonality. To learn how to interpret the IgBlast report file see the vingette [**Interpret IgBlast report file**](interpret_IgBlast_report.html).
 
