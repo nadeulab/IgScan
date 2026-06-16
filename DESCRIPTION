@@ -18,17 +18,18 @@ Imports:
     dowser (>= 2.4.1),
     ggplot2 (>= 3.5.1),
     igraph (>= 2.1.4),
-    knitr,
     parallel (>= 4.3.2),
     patchwork (>= 1.3.0),
     purrr (>= 1.0.2),
     pwalign (>= 1.8.0),
-    rmarkdown,
     Seurat (>= 5.1.0),
     SeuratObject (>= 5.0.2),
     SingleCellExperiment (>= 1.24.0),
     stringr (>= 1.5.1),
     tidyr (>= 1.3.1)
+Suggests: 
+    knitr,
+    rmarkdown
 VignetteBuilder: 
     knitr
 Encoding: UTF-8
