@@ -79,7 +79,7 @@ using our dedicated raw-data preprocessing pipeline (see IgScan GitHub)."><!-- m
   <a href="../articles/FAQ.html">FAQ</a>
 </li>
       </ul><ul class="nav navbar-nav navbar-right"><li>
-  <a href="https://github.com/ianmarquezlopez/IgScan/" class="external-link">
+  <a href="https://github.com/nadeulab/IgScan/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
 
   </a>
@@ -94,7 +94,7 @@ using our dedicated raw-data preprocessing pipeline (see IgScan GitHub)."><!-- m
   <div class="col-md-9 contents">
     <div class="page-header">
     <h1>Run IgScan Annotation</h1>
-    <small class="dont-index">Source: <a href="https://github.com/ianmarquezlopez/IgScan/blob/HEAD/R/Run_IgScan_Annotation.R" class="external-link"><code>R/Run_IgScan_Annotation.R</code></a></small>
+    <small class="dont-index">Source: <a href="https://github.com/nadeulab/IgScan/blob/HEAD/R/Run_IgScan_Annotation.R" class="external-link"><code>R/Run_IgScan_Annotation.R</code></a></small>
     <div class="hidden name"><code>Run_IgScan_Annotation.Rd</code></div>
     </div>
 
@@ -244,6 +244,11 @@ Only needed if <code>rescue_single_chain</code> is set to <code>TRUE</code>.The 
 V(D)J nucleotide sequence matches to rescue single-chain cells. If set to <code>TRUE</code>, which we recommend only
 for the analysis of Mission Bio single-cell V(D)J data, rescue is performed at the clonotype level rather
 than by exact nucleotide sequence identity.</p></dd>
+
+
+<dt id="arg-summary-file">summary_file<a class="anchor" aria-label="anchor" href="#arg-summary-file"></a></dt>
+<dd><p>Path to the file that will store the IgScan run summary.
+Default (and recommended) is <code>NULL</code>, which automatically generates the file name.</p></dd>
 
 
 <dt id="arg-threads">threads<a class="anchor" aria-label="anchor" href="#arg-threads"></a></dt>

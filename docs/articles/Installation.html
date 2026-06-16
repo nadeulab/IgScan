@@ -94,7 +94,7 @@
       </ul>
 <ul class="nav navbar-nav navbar-right">
 <li>
-  <a href="https://github.com/ianmarquezlopez/IgScan/" class="external-link">
+  <a href="https://github.com/nadeulab/IgScan/" class="external-link">
     <span class="fab fa-github fa-lg"></span>
 
   </a>
@@ -120,9 +120,9 @@ Márquez-López</h4>
 (FRCB-IDIBAPS)<br><a class="author_email" href="mailto:#"></a><a href="mailto:iamarquez@recerca.clinic.cat" class="email">iamarquez@recerca.clinic.cat</a>
       </address>
                   
-            <h4 data-toc-skip class="date">Compiled: June 09, 2026</h4>
+            <h4 data-toc-skip class="date">Compiled: June 16, 2026</h4>
       
-      <small class="dont-index">Source: <a href="https://github.com/ianmarquezlopez/IgScan/blob/HEAD/vignettes/articles/Installation.Rmd" class="external-link"><code>vignettes/articles/Installation.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/nadeulab/IgScan/blob/HEAD/vignettes/articles/Installation.Rmd" class="external-link"><code>vignettes/articles/Installation.Rmd</code></a></small>
       <div class="hidden name"><code>Installation.Rmd</code></div>
 
     </div>
@@ -135,10 +135,26 @@ Márquez-López</h4>
 <p>To install the development version of <strong>IgScan</strong>
 (v.0.1.0) from GitHub:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"devtools"</span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://devtools.r-lib.org/" class="external-link">devtools</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="co">## First, install Bioconductor dependencies</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"BiocManager"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span><span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"BiocManager"</span><span class="op">)</span> </span>
+<span><span class="op">}</span></span>
 <span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"nadeulab/IgScan"</span>, build_vignettes <span class="op">=</span> <span class="cn">T</span>, dependencies <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">BiocManager</span><span class="fu">::</span><span class="fu"><a href="https://bioconductor.github.io/BiocManager/reference/install.html" class="external-link">install</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span></span>
+<span>    <span class="st">"SingleCellExperiment"</span>,</span>
+<span>    <span class="st">"pwalign"</span>,</span>
+<span>    <span class="st">"Biostrings"</span>,</span>
+<span>    <span class="st">"IRanges"</span>,</span>
+<span>    <span class="st">"GenomicRanges"</span></span>
+<span>  <span class="op">)</span>,</span>
+<span>  ask <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  update <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="co">## Install IgScan using the remotes package</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"remotes"</span><span class="op">)</span></span>
+<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu"><a href="https://remotes.r-lib.org/reference/install_github.html" class="external-link">install_github</a></span><span class="op">(</span><span class="st">"nadeulab/IgScan"</span>, build_vignettes <span class="op">=</span> <span class="cn">T</span>, dependencies <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="installing-from-local-source">Installing from Local Source<a class="anchor" aria-label="anchor" href="#installing-from-local-source"></a>
