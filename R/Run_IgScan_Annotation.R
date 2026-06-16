@@ -72,7 +72,7 @@
 #' @importFrom purrr list_flatten
 #' @importFrom parallel mclapply
 #' @import stringr
-#' @importFrom igraph graph_from_edgelist add_vertices components
+#' @importFrom igraph graph_from_edgelist add_vertices components V
 #' @importFrom data.table fread fwrite
 #' @importFrom Seurat CreateSeuratObject
 #'
