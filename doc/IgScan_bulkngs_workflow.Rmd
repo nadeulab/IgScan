@@ -1,0 +1,217 @@
+---
+title: "IgScan workflow for bulk NGS data"
+author: 
+  name: Ian Márquez-López
+  email: iamarquez@recerca.clinic.cat
+  affiliation: Institut d’Investigacions Biomèdiques August Pi i Sunyer (FRCB-IDIBAPS)
+date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
+output:
+  rmarkdown::html_vignette:
+    toc: yes
+    toc_depth: 3
+    number_sections: false
+package: IgScan
+vignette: >
+  %\VignetteIndexEntry{IgScan BulkNGS}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, echo=FALSE}
+options(rmarkdown.html_vignette.check_title = FALSE)
+```
+
+```{r setup, warning=FALSE, message=FALSE}
+library(devtools)
+load_all("~/Desktop/IgScan/")
+library(ggplot2)
+library(dplyr)
+library(dowser)
+```
+
+# Introduction
+
+The IgScan bulk NGS workflow takes joint (overlapped) immunoglobulin sequences from different common input data formats (see next section for details) and it is compatible with multiple assays and protocols for the amplification of the immunoglobulin genes at the bulk level.
+
+In this workflow, IG raw sequences are re-annotated with the [**IgBlast tool**](https://www.ncbi.nlm.nih.gov/igblast/index.cgi) [Ye et al., *Nucleic Acids Res*, 2013] using the [**IMGT database**](https://www.imgt.org/), and are immunogenetically characterized with our custom algortihm.
+
+Finally, IgScan provides a set of functions to help users cleaning their IG-NGS datasets of crossed contamination and enables exporting the results in the consensus AIRR format for the interaction with other packages such as [*Dowser*](https://dowser.readthedocs.io/en/latest/) or [*scRepertoire*](https://www.borch.dev/uploads/screpertoire/) among others.
+
+## Supported input data formats
+
+IgScan supports several input data formats. Currently, the following formats are supported:
+
+- [MiXCR](https://mixcr.com/)
+
+- AIRR / IMGT AIRR
+
+- TRUST4 (which is exported in AIRR format)
+
+- Raw fasta file
+
+# Running IgScan bulk NGS workflow
+
+The IgScan annotation workflow is divided in three different steps:
+
+1.  **IgBlast re-annotation**
+2.  **IgScan immunogenetic characterization**
+3.  **Removing crossed contamination in IG NGS data**
+4.  **Export results in AIRR format + Interaction with other packages**
+
+In order to show the different functionalities of IgScan, here we will run these two steps in a step-wise manner, although the complete workflow is wrapped in the `IgScan::Run_IgScan_FullWorkflow()` function, which takes the same arguments.
+
+Here we show an example of how IgScan works in two IGH-NGS samples from different individuals:
+
+## Step 0. Collapsing identical sequences while preserving abundance
+
+When using IgScan with raw bulk NGS data (paired-end FASTQ files), it is often beneficial to collapse identical reads—summing their total counts—to reduce redundancy and the overall number of input sequences.
+
+To facilitate this, we provide an auxiliary preprocessing workflow that:
+
+- Merges overlapping paired-end reads using the [*FLASH*](https://github.com/ebiggers/flash?tab=readme-ov-file) tool.
+
+- Filters sequences by minimum length.
+
+- Collapses identical sequences while preserving their abundance.
+
+To run the preprocessing workflow, first copy or clone the [`BulkNGS_preprocessing/`](https://github.com/nadeulab/IgScan/tree/main/BulkNGS_preprocessing) directory located within the IgScan package to a directory on your system where you have permission to execute and write files.
+
+You can then run the script using the following command:
+
+`bash ./BulkNGS_preprocessing/igscan_preprocess_bulkngs.sh sample_R1.fastq sample_R2.fastq output.fasta 300`
+
+This command will generate a collapsed FASTA file (`output.fasta`) and print several FLASH statistics to the standard output, including metrics related to the efficiency of read-pair merging.
+
+**Important:** the preprocessing step is not included within the IgScan R functions. This is something that is supposed to be run by the user prior to initiating the IgScan bulk NGS workflow.
+
+## Step 1. IgBlast sequence re-annotation
+
+This first part of the workflow can be executed by the `IgScan::Run_IgBlast_from_RawData()` function. This function checks and loads the input sequences and writes a fasta file that will be passed as input to the IgBlast tool (when the input is a fasta file, it will just use it as it is).
+
+After that, if `run_IgBlast_report = TRUE`, an exploratory data analysis of IgBlast outputs is performed and a report in PDF format is generated in the `outputDir`, which can be of interest when the level of clonality of the samples is unknown. The information obtained from the report can be used by the user to adjust some parameters in the following step (i.e. `hc_similarity_cutoff` based on the distribution of CDR3 length or `cdr3_InDel_correction_mode` if the samples are highly polyclonal).
+
+```{r igblast_reannot, message=FALSE, warning=FALSE, tidy=FALSE}
+
+s1 <- system.file("extdata/igscan_test_bulkNGS_sample1.fasta", package = "IgScan", mustWork = T)
+s2 <- system.file("extdata/igscan_test_bulkNGS_sample2.fasta", package = "IgScan", mustWork = T)
+
+IgScan::Run_IgBlast_from_RawData(
+  sample_paths = c(s1, s2), 
+  sample_labels = c("Sample1", "Sample2"), 
+  input_format = "fasta", 
+  data_type = "bulk", 
+  annotate_C = TRUE, 
+  outputDir = "~/Desktop/TEST_IGSCAN_VINGETTE_NGS/", ## Change by your own outputDir
+  run_IgBlast_report = TRUE)
+```
+
+Once this step is completed, the `outputDir` is created (if it did not exist before running the command) and contains the subdirectories `fasta_inputs` and `igblast_outs`. If the function has run correctly, the `igblast_outs` directory should contain three different files per sample:
+
+- **\*igblast_out.tsv file**: containing the re-annotation for each contig in the `fasta_inputs`.
+
+- **\*IgBlast_report.txt** / **\*IgBlast_report.pdf**: containing the summary report of the IgBlast outputs.
+
+The IgBlast report file can give the user important information about the quality of the data (by looking at the IgBlast alignment scores) and the level of BCR clonality. To learn how to interpret the IgBlast report file see the [**Interpret IgBlast report file**](interpret_IgBlast_report.html) vingette.
+
+## Step 2. IgScan immunogenetic characterization
+
+Now that IgBlast outputs have been generated, they will be used as input for the next step of the IgScan workflow, which can be executed by the `IgScan::Run_IgScan_Annotation()` function. This function will take the sequence re-annotation and return a list of IgScan dataframes with the immunogenetic characterization of each sample.
+
+For this part of the workflow, it is important to choose if the analysis is performed in 'single' or 'joint' `analysis_mode`. When analyzing related samples, such samples from the same individual, in which it is plausible that the same clonotype is identified in both samples, the 'joint' mode performs a consensus annotation across samples in order to longitudinally track clonotypes.
+
+In this example, since the samples come from different individuals, we will proceed with the `single` analysis mode:
+
+```{r igscan_workflow, tidy = FALSE, message=FALSE, warning=FALSE}
+igscan_out <- IgScan::Run_IgScan_Annotation(
+  sample_labels = c("Sample1", "Sample2"),
+  outputDir = "~/Desktop/TEST_IGSCAN_VINGETTE_NGS/", 
+  input_format = "fasta", 
+  analysis_mode = "single",
+  data_type = "bulk", 
+  min_reads = 2,
+  material_type = "dna",
+  v_primer = "full_length", 
+  remove_tmp = FALSE, 
+  hc_similarity_cutoff = 0.2, 
+  hc_mode = "average", 
+  cdr3_mode = "nt", 
+  cdr3_InDel_correction_mode = "soft_filter")
+```
+
+## Step 3. Removing crossed contamination from the data
+
+In IG-NGS protocols, it is common to have crossed contamination between samples processed in the same batch or even sequenced in the same run. To deal with this issue, IgScan incorporates a function that flags contamination between samples coming from the same user-defined batch.
+
+The principle of this function is to find sequences (or even whole clonotypes) that are X times (default is 10 times) more frequent in a sample in the batch than in others. Then, the user can decide if removing these contaminated sequences or only flagging them. If `remove_contamination` is set to `TRUE`, clonal frequencies and clone identifiers are recalculated with the remaining sequences.
+
+```{r remove_cont, tidy = FALSE, message=FALSE, warning=FALSE}
+merge_igscan_out <- do.call(rbind, igscan_out)
+
+merge_igscan_out <- IgScan::filter_BCR_contam_bulk(igscan_data_frame = merge_igscan_out,
+                                                   remove_contamination = FALSE)
+
+merge_igscan_out[, c("SampleID", "VDJ_genes", "Junction_aa", 
+                     "Contamination_FLAG", "Contamination_Freq", "Contamination_Sample")]
+```
+
+As can be appreciated, after running this function, there is a whole clonotype (C2 in Sample1) that has been flagged as contamination from Sample2. In fact, it is found in a relative frequency of 0.25% in Sample1, while it accounts for the 100% of the sequences in Sample2. When we look at the VDJ genes and amino acid junction sequences, we will see that indeed they are exactly the same clone, and that the contamination has been correctly flagged. Thus, we can proceed to remove contaminated sequences and recalculate the clonal frequencies and IDs.
+
+```{r recalc_cont, tidy = FALSE, message=FALSE, warning=FALSE}
+merge_igscan_out <- merge_igscan_out[merge_igscan_out$Contamination_FLAG == "PASS",]    
+merge_igscan_out <- recalculate_IDs_bulk(merge_igscan_out, group_col = "SampleID")
+```
+
+If you open the `merge_igscan_out` data frame, you will see that now the contaminated sequence is not there anymore, and that each sample has only one clonotype that accounts for the 100% of the reads respectively.
+
+## Step 4. Exporting IgScan results in AIRR format
+
+To facilitate interoperability with other immunogenetic tools and databases, IgScan allows users to export results in the standardized AIRR (Adaptive Immune Receptor Repertoire) format. This format ensures consistency, transparency, and compatibility across different analysis pipelines.
+
+To export AIRR files, the user can run the function `IgScan::export_AIRR_format()`, which converts all the sequence annotation into AIRR format and also includes the possibility to add pre-existing metadata by using the `metadata` argument. Importantly, this function also supports single cell objects with IgScan annotation metadata as input.
+
+```{r export_airr, tidy = FALSE, message=FALSE, warning=FALSE}
+airr_object <- export_AIRR_format(object = merge_igscan_out, 
+                                  dir = "~/Desktop/TEST_IGSCAN_VINGETTE_NGS/", 
+                                  fileName = "exportAIRR_testNGS.tsv", 
+                                  germline_aln = "masked")
+```
+
+The only parameter to consider—aside from input and output settings—is the `germline_aln` option. This parameter accepts two possible values:
+
+- **masked:** Uses the IgBlast germline alignment with masked (N) random nucleotides.
+
+- **consensus**: Uses the clonotype consensus germline sequence as the germline alignment, which does not include masked nucleotides. **We recommend** **this option for downstream analyses**, as the germline sequence is built considering all somatic sequences within the clonotype, helping to reduce potential alignment errors. However, it is important to note that this sequence is an assumption inferred by IgScan based on the closest-to-germline somatic sequence, and may not always perfectly reflect the true germline configuration of the CDR3 region.
+
+Now, we can use this AIRR file to run other tools, such as the [*Dowser*](https://dowser.readthedocs.io/en/latest/#dowser) package which is part of the Immcantation workflow and is widely use to build BCR phylogenetic trees.
+
+In order to show a more illustrative example, lets load an AIRR file coming from the IgScan annotation of a more complex bulk NGS dataset. The command used to generate the AIRR file was the following:
+
+```{r airr_gen, tidy = FALSE, eval=FALSE}
+airr_object <- export_AIRR_format(object = IgScan_Df, 
+                                  dir = OutputDir, 
+                                  fileName = FileName, 
+                                  germline_aln = "consensus", 
+                                  metadata = "SubcloneID_in_Clonotype") ## Added metadata
+```
+
+First, we need to format the AIRR file following the *Dowser* manual:
+
+```{r dowser_interact, tidy = FALSE, message=FALSE, warning=FALSE}
+## Load example AIRR file
+airr_path <- system.file("extdata/igscan_test_AIRR_file_sample3.rds", package = "IgScan", mustWork = T)
+example_airr <- readRDS(airr_path)
+
+## Format clones for phylogenetic inference
+clones <- formatClones(example_airr, germ = "germline_alignment", 
+                       traits = "SubcloneID_in_Clonotype")
+
+# Build maxmimum parsimony trees
+trees <- getTrees(clones)
+plots <- plotTrees(trees, tipsize=2, tips = "SubcloneID_in_Clonotype")
+```
+
+Now, we can visualize, for instance, the phylogenetic tree of the dominant clonotype in the sample colored by subclone (VDJ nucleotide variants).
+
+```{r plot_tree, tidy = FALSE, message=FALSE, warning=FALSE, fig.height=4, fig.width=7}
+plots[[1]]
+```

@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+
+
+<title>IgScan workflow for bulk NGS data</title>
+
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
+
+<style type="text/css">
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+span.underline{text-decoration: underline;}
+div.column{display: inline-block; vertical-align: top; width: 50%;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+</style>
+
+
+
+<style type="text/css">
+code {
+white-space: pre;
+}
+.sourceCode {
+overflow: visible;
+}
+</style>
+<style type="text/css" data-origin="pandoc">
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+{ counter-reset: source-line 0; }
+pre.numberSource code > span
+{ position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+{ content: counter(source-line);
+position: relative; left: -1em; text-align: right; vertical-align: baseline;
+border: none; display: inline-block;
+-webkit-touch-callout: none; -webkit-user-select: none;
+-khtml-user-select: none; -moz-user-select: none;
+-ms-user-select: none; user-select: none;
+padding: 0 4px; width: 4em;
+color: #aaaaaa;
+}
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa; padding-left: 4px; }
+div.sourceCode
+{ }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } 
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.at { color: #7d9029; } 
+code span.bn { color: #40a070; } 
+code span.bu { color: #008000; } 
+code span.cf { color: #007020; font-weight: bold; } 
+code span.ch { color: #4070a0; } 
+code span.cn { color: #880000; } 
+code span.co { color: #60a0b0; font-style: italic; } 
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.do { color: #ba2121; font-style: italic; } 
+code span.dt { color: #902000; } 
+code span.dv { color: #40a070; } 
+code span.er { color: #ff0000; font-weight: bold; } 
+code span.ex { } 
+code span.fl { color: #40a070; } 
+code span.fu { color: #06287e; } 
+code span.im { color: #008000; font-weight: bold; } 
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } 
+code span.kw { color: #007020; font-weight: bold; } 
+code span.op { color: #666666; } 
+code span.ot { color: #007020; } 
+code span.pp { color: #bc7a00; } 
+code span.sc { color: #4070a0; } 
+code span.ss { color: #bb6688; } 
+code span.st { color: #4070a0; } 
+code span.va { color: #19177c; } 
+code span.vs { color: #4070a0; } 
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } 
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    var j = 0;
+    while (j < rules.length) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") {
+        j++;
+        continue;
+      }
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' && rule.style.backgroundColor === '') {
+        j++;
+        continue;
+      }
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+
+<style type="text/css">body {
+background-color: #fff;
+margin: 1em auto;
+max-width: 700px;
+overflow: visible;
+padding-left: 2em;
+padding-right: 2em;
+font-family: "Open Sans", "Helvetica Neue", Helvetica, Arial, sans-serif;
+font-size: 14px;
+line-height: 1.35;
+}
+#TOC {
+clear: both;
+margin: 0 0 10px 10px;
+padding: 4px;
+width: 400px;
+border: 1px solid #CCCCCC;
+border-radius: 5px;
+background-color: #f6f6f6;
+font-size: 13px;
+line-height: 1.3;
+}
+#TOC .toctitle {
+font-weight: bold;
+font-size: 15px;
+margin-left: 5px;
+}
+#TOC ul {
+padding-left: 40px;
+margin-left: -1.5em;
+margin-top: 5px;
+margin-bottom: 5px;
+}
+#TOC ul ul {
+margin-left: -2em;
+}
+#TOC li {
+line-height: 16px;
+}
+table {
+margin: 1em auto;
+border-width: 1px;
+border-color: #DDDDDD;
+border-style: outset;
+border-collapse: collapse;
+}
+table th {
+border-width: 2px;
+padding: 5px;
+border-style: inset;
+}
+table td {
+border-width: 1px;
+border-style: inset;
+line-height: 18px;
+padding: 5px 5px;
+}
+table, table th, table td {
+border-left-style: none;
+border-right-style: none;
+}
+table thead, table tr.even {
+background-color: #f7f7f7;
+}
+p {
+margin: 0.5em 0;
+}
+blockquote {
+background-color: #f6f6f6;
+padding: 0.25em 0.75em;
+}
+hr {
+border-style: solid;
+border: none;
+border-top: 1px solid #777;
+margin: 28px 0;
+}
+dl {
+margin-left: 0;
+}
+dl dd {
+margin-bottom: 13px;
+margin-left: 13px;
+}
+dl dt {
+font-weight: bold;
+}
+ul {
+margin-top: 0;
+}
+ul li {
+list-style: circle outside;
+}
+ul ul {
+margin-bottom: 0;
+}
+pre, code {
+background-color: #f7f7f7;
+border-radius: 3px;
+color: #333;
+white-space: pre-wrap; 
+}
+pre {
+border-radius: 3px;
+margin: 5px 0px 10px 0px;
+padding: 10px;
+}
+pre:not([class]) {
+background-color: #f7f7f7;
+}
+code {
+font-family: Consolas, Monaco, 'Courier New', monospace;
+font-size: 85%;
+}
+p > code, li > code {
+padding: 2px 0px;
+}
+div.figure {
+text-align: center;
+}
+img {
+background-color: #FFFFFF;
+padding: 2px;
+border: 1px solid #DDDDDD;
+border-radius: 3px;
+border: 1px solid #CCCCCC;
+margin: 0 5px;
+}
+h1 {
+margin-top: 0;
+font-size: 35px;
+line-height: 40px;
+}
+h2 {
+border-bottom: 4px solid #f7f7f7;
+padding-top: 10px;
+padding-bottom: 2px;
+font-size: 145%;
+}
+h3 {
+border-bottom: 2px solid #f7f7f7;
+padding-top: 10px;
+font-size: 120%;
+}
+h4 {
+border-bottom: 1px solid #f7f7f7;
+margin-left: 8px;
+font-size: 105%;
+}
+h5, h6 {
+border-bottom: 1px solid #ccc;
+font-size: 105%;
+}
+a {
+color: #0033dd;
+text-decoration: none;
+}
+a:hover {
+color: #6666ff; }
+a:visited {
+color: #800080; }
+a:visited:hover {
+color: #BB00BB; }
+a[href^="http:"] {
+text-decoration: underline; }
+a[href^="https:"] {
+text-decoration: underline; }
+
+code > span.kw { color: #555; font-weight: bold; } 
+code > span.dt { color: #902000; } 
+code > span.dv { color: #40a070; } 
+code > span.bn { color: #d14; } 
+code > span.fl { color: #d14; } 
+code > span.ch { color: #d14; } 
+code > span.st { color: #d14; } 
+code > span.co { color: #888888; font-style: italic; } 
+code > span.ot { color: #007020; } 
+code > span.al { color: #ff0000; font-weight: bold; } 
+code > span.fu { color: #900; font-weight: bold; } 
+code > span.er { color: #a61717; background-color: #e3d2d2; } 
+</style>
+
+
+
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">IgScan workflow for bulk NGS data</h1>
+<h4 class="author">Ian Márquez-López</h4>
+<address class="author_afil">
+Institut d’Investigacions Biomèdiques August Pi i Sunyer
+(FRCB-IDIBAPS)<br><a class="author_email" href="mailto:#"><a href="mailto:iamarquez@recerca.clinic.cat" class="email">iamarquez@recerca.clinic.cat</a></a>
+</address>
+<h4 class="date">Compiled: June 16, 2026</h4>
+
+
+<div id="TOC">
+<ul>
+<li><a href="#introduction" id="toc-introduction">Introduction</a>
+<ul>
+<li><a href="#supported-input-data-formats" id="toc-supported-input-data-formats">Supported input data
+formats</a></li>
+</ul></li>
+<li><a href="#running-igscan-bulk-ngs-workflow" id="toc-running-igscan-bulk-ngs-workflow">Running IgScan bulk NGS
+workflow</a>
+<ul>
+<li><a href="#step-0.-collapsing-identical-sequences-while-preserving-abundance" id="toc-step-0.-collapsing-identical-sequences-while-preserving-abundance">Step
+0. Collapsing identical sequences while preserving abundance</a></li>
+<li><a href="#step-1.-igblast-sequence-re-annotation" id="toc-step-1.-igblast-sequence-re-annotation">Step 1. IgBlast sequence
+re-annotation</a></li>
+<li><a href="#step-2.-igscan-immunogenetic-characterization" id="toc-step-2.-igscan-immunogenetic-characterization">Step 2. IgScan
+immunogenetic characterization</a></li>
+<li><a href="#step-3.-removing-crossed-contamination-from-the-data" id="toc-step-3.-removing-crossed-contamination-from-the-data">Step 3.
+Removing crossed contamination from the data</a></li>
+<li><a href="#step-4.-exporting-igscan-results-in-airr-format" id="toc-step-4.-exporting-igscan-results-in-airr-format">Step 4.
+Exporting IgScan results in AIRR format</a></li>
+</ul></li>
+</ul>
+</div>
+
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(devtools)</span>
+<span id="cb1-2"><a href="#cb1-2" tabindex="-1"></a><span class="fu">load_all</span>(<span class="st">&quot;~/Desktop/IgScan/&quot;</span>)</span>
+<span id="cb1-3"><a href="#cb1-3" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span>
+<span id="cb1-4"><a href="#cb1-4" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
+<span id="cb1-5"><a href="#cb1-5" tabindex="-1"></a><span class="fu">library</span>(dowser)</span></code></pre></div>
+<div id="introduction" class="section level1">
+<h1>Introduction</h1>
+<p>The IgScan bulk NGS workflow takes joint (overlapped) immunoglobulin
+sequences from different common input data formats (see next section for
+details) and it is compatible with multiple assays and protocols for the
+amplification of the immunoglobulin genes at the bulk level.</p>
+<p>In this workflow, IG raw sequences are re-annotated with the <a href="https://www.ncbi.nlm.nih.gov/igblast/index.cgi"><strong>IgBlast
+tool</strong></a> [Ye et al., <em>Nucleic Acids Res</em>, 2013] using
+the <a href="https://www.imgt.org/"><strong>IMGT database</strong></a>,
+and are immunogenetically characterized with our custom algortihm.</p>
+<p>Finally, IgScan provides a set of functions to help users cleaning
+their IG-NGS datasets of crossed contamination and enables exporting the
+results in the consensus AIRR format for the interaction with other
+packages such as <a href="https://dowser.readthedocs.io/en/latest/"><em>Dowser</em></a> or
+<a href="https://www.borch.dev/uploads/screpertoire/"><em>scRepertoire</em></a>
+among others.</p>
+<div id="supported-input-data-formats" class="section level2">
+<h2>Supported input data formats</h2>
+<p>IgScan supports several input data formats. Currently, the following
+formats are supported:</p>
+<ul>
+<li><p><a href="https://mixcr.com/">MiXCR</a></p></li>
+<li><p>AIRR / IMGT AIRR</p></li>
+<li><p>TRUST4 (which is exported in AIRR format)</p></li>
+<li><p>Raw fasta file</p></li>
+</ul>
+</div>
+</div>
+<div id="running-igscan-bulk-ngs-workflow" class="section level1">
+<h1>Running IgScan bulk NGS workflow</h1>
+<p>The IgScan annotation workflow is divided in three different
+steps:</p>
+<ol style="list-style-type: decimal">
+<li><strong>IgBlast re-annotation</strong></li>
+<li><strong>IgScan immunogenetic characterization</strong></li>
+<li><strong>Removing crossed contamination in IG NGS data</strong></li>
+<li><strong>Export results in AIRR format + Interaction with other
+packages</strong></li>
+</ol>
+<p>In order to show the different functionalities of IgScan, here we
+will run these two steps in a step-wise manner, although the complete
+workflow is wrapped in the
+<code>IgScan::Run_IgScan_FullWorkflow()</code> function, which takes the
+same arguments.</p>
+<p>Here we show an example of how IgScan works in two IGH-NGS samples
+from different individuals:</p>
+<div id="step-0.-collapsing-identical-sequences-while-preserving-abundance" class="section level2">
+<h2>Step 0. Collapsing identical sequences while preserving
+abundance</h2>
+<p>When using IgScan with raw bulk NGS data (paired-end FASTQ files), it
+is often beneficial to collapse identical reads—summing their total
+counts—to reduce redundancy and the overall number of input
+sequences.</p>
+<p>To facilitate this, we provide an auxiliary preprocessing workflow
+that:</p>
+<ul>
+<li><p>Merges overlapping paired-end reads using the <a href="https://github.com/ebiggers/flash?tab=readme-ov-file"><em>FLASH</em></a>
+tool.</p></li>
+<li><p>Filters sequences by minimum length.</p></li>
+<li><p>Collapses identical sequences while preserving their
+abundance.</p></li>
+</ul>
+<p>To run the preprocessing workflow, first copy or clone the <a href="https://github.com/nadeulab/IgScan/tree/main/BulkNGS_preprocessing"><code>BulkNGS_preprocessing/</code></a>
+directory located within the IgScan package to a directory on your
+system where you have permission to execute and write files.</p>
+<p>You can then run the script using the following command:</p>
+<p><code>bash ./BulkNGS_preprocessing/igscan_preprocess_bulkngs.sh sample_R1.fastq sample_R2.fastq output.fasta 300</code></p>
+<p>This command will generate a collapsed FASTA file
+(<code>output.fasta</code>) and print several FLASH statistics to the
+standard output, including metrics related to the efficiency of
+read-pair merging.</p>
+<p><strong>Important:</strong> the preprocessing step is not included
+within the IgScan R functions. This is something that is supposed to be
+run by the user prior to initiating the IgScan bulk NGS workflow.</p>
+</div>
+<div id="step-1.-igblast-sequence-re-annotation" class="section level2">
+<h2>Step 1. IgBlast sequence re-annotation</h2>
+<p>This first part of the workflow can be executed by the
+<code>IgScan::Run_IgBlast_from_RawData()</code> function. This function
+checks and loads the input sequences and writes a fasta file that will
+be passed as input to the IgBlast tool (when the input is a fasta file,
+it will just use it as it is).</p>
+<p>After that, if <code>run_IgBlast_report = TRUE</code>, an exploratory
+data analysis of IgBlast outputs is performed and a report in PDF format
+is generated in the <code>outputDir</code>, which can be of interest
+when the level of clonality of the samples is unknown. The information
+obtained from the report can be used by the user to adjust some
+parameters in the following step (i.e. <code>hc_similarity_cutoff</code>
+based on the distribution of CDR3 length or
+<code>cdr3_InDel_correction_mode</code> if the samples are highly
+polyclonal).</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" tabindex="-1"></a>s1 <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;extdata/igscan_test_bulkNGS_sample1.fasta&quot;</span>, <span class="at">package =</span> <span class="st">&quot;IgScan&quot;</span>, <span class="at">mustWork =</span> T)</span>
+<span id="cb2-2"><a href="#cb2-2" tabindex="-1"></a>s2 <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;extdata/igscan_test_bulkNGS_sample2.fasta&quot;</span>, <span class="at">package =</span> <span class="st">&quot;IgScan&quot;</span>, <span class="at">mustWork =</span> T)</span>
+<span id="cb2-3"><a href="#cb2-3" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" tabindex="-1"></a>IgScan<span class="sc">::</span><span class="fu">Run_IgBlast_from_RawData</span>(</span>
+<span id="cb2-5"><a href="#cb2-5" tabindex="-1"></a>  <span class="at">sample_paths =</span> <span class="fu">c</span>(s1, s2), </span>
+<span id="cb2-6"><a href="#cb2-6" tabindex="-1"></a>  <span class="at">sample_labels =</span> <span class="fu">c</span>(<span class="st">&quot;Sample1&quot;</span>, <span class="st">&quot;Sample2&quot;</span>), </span>
+<span id="cb2-7"><a href="#cb2-7" tabindex="-1"></a>  <span class="at">input_format =</span> <span class="st">&quot;fasta&quot;</span>, </span>
+<span id="cb2-8"><a href="#cb2-8" tabindex="-1"></a>  <span class="at">data_type =</span> <span class="st">&quot;bulk&quot;</span>, </span>
+<span id="cb2-9"><a href="#cb2-9" tabindex="-1"></a>  <span class="at">annotate_C =</span> <span class="cn">TRUE</span>, </span>
+<span id="cb2-10"><a href="#cb2-10" tabindex="-1"></a>  <span class="at">outputDir =</span> <span class="st">&quot;~/Desktop/TEST_IGSCAN_VINGETTE_NGS/&quot;</span>, <span class="do">## Change by your own outputDir</span></span>
+<span id="cb2-11"><a href="#cb2-11" tabindex="-1"></a>  <span class="at">run_IgBlast_report =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>Once this step is completed, the <code>outputDir</code> is created
+(if it did not exist before running the command) and contains the
+subdirectories <code>fasta_inputs</code> and <code>igblast_outs</code>.
+If the function has run correctly, the <code>igblast_outs</code>
+directory should contain three different files per sample:</p>
+<ul>
+<li><p><strong>*igblast_out.tsv file</strong>: containing the
+re-annotation for each contig in the <code>fasta_inputs</code>.</p></li>
+<li><p><strong>*IgBlast_report.txt</strong> /
+<strong>*IgBlast_report.pdf</strong>: containing the summary report of
+the IgBlast outputs.</p></li>
+</ul>
+<p>The IgBlast report file can give the user important information about
+the quality of the data (by looking at the IgBlast alignment scores) and
+the level of BCR clonality. To learn how to interpret the IgBlast report
+file see the <a href="interpret_IgBlast_report.html"><strong>Interpret
+IgBlast report file</strong></a> vingette.</p>
+</div>
+<div id="step-2.-igscan-immunogenetic-characterization" class="section level2">
+<h2>Step 2. IgScan immunogenetic characterization</h2>
+<p>Now that IgBlast outputs have been generated, they will be used as
+input for the next step of the IgScan workflow, which can be executed by
+the <code>IgScan::Run_IgScan_Annotation()</code> function. This function
+will take the sequence re-annotation and return a list of IgScan
+dataframes with the immunogenetic characterization of each sample.</p>
+<p>For this part of the workflow, it is important to choose if the
+analysis is performed in ‘single’ or ‘joint’ <code>analysis_mode</code>.
+When analyzing related samples, such samples from the same individual,
+in which it is plausible that the same clonotype is identified in both
+samples, the ‘joint’ mode performs a consensus annotation across samples
+in order to longitudinally track clonotypes.</p>
+<p>In this example, since the samples come from different individuals,
+we will proceed with the <code>single</code> analysis mode:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" tabindex="-1"></a>igscan_out <span class="ot">&lt;-</span> IgScan<span class="sc">::</span><span class="fu">Run_IgScan_Annotation</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" tabindex="-1"></a>  <span class="at">sample_labels =</span> <span class="fu">c</span>(<span class="st">&quot;Sample1&quot;</span>, <span class="st">&quot;Sample2&quot;</span>),</span>
+<span id="cb3-3"><a href="#cb3-3" tabindex="-1"></a>  <span class="at">outputDir =</span> <span class="st">&quot;~/Desktop/TEST_IGSCAN_VINGETTE_NGS/&quot;</span>, </span>
+<span id="cb3-4"><a href="#cb3-4" tabindex="-1"></a>  <span class="at">input_format =</span> <span class="st">&quot;fasta&quot;</span>, </span>
+<span id="cb3-5"><a href="#cb3-5" tabindex="-1"></a>  <span class="at">analysis_mode =</span> <span class="st">&quot;single&quot;</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" tabindex="-1"></a>  <span class="at">data_type =</span> <span class="st">&quot;bulk&quot;</span>, </span>
+<span id="cb3-7"><a href="#cb3-7" tabindex="-1"></a>  <span class="at">min_reads =</span> <span class="dv">2</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" tabindex="-1"></a>  <span class="at">material_type =</span> <span class="st">&quot;dna&quot;</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" tabindex="-1"></a>  <span class="at">v_primer =</span> <span class="st">&quot;full_length&quot;</span>, </span>
+<span id="cb3-10"><a href="#cb3-10" tabindex="-1"></a>  <span class="at">remove_tmp =</span> <span class="cn">FALSE</span>, </span>
+<span id="cb3-11"><a href="#cb3-11" tabindex="-1"></a>  <span class="at">hc_similarity_cutoff =</span> <span class="fl">0.2</span>, </span>
+<span id="cb3-12"><a href="#cb3-12" tabindex="-1"></a>  <span class="at">hc_mode =</span> <span class="st">&quot;average&quot;</span>, </span>
+<span id="cb3-13"><a href="#cb3-13" tabindex="-1"></a>  <span class="at">cdr3_mode =</span> <span class="st">&quot;nt&quot;</span>, </span>
+<span id="cb3-14"><a href="#cb3-14" tabindex="-1"></a>  <span class="at">cdr3_InDel_correction_mode =</span> <span class="st">&quot;soft_filter&quot;</span>)</span></code></pre></div>
+</div>
+<div id="step-3.-removing-crossed-contamination-from-the-data" class="section level2">
+<h2>Step 3. Removing crossed contamination from the data</h2>
+<p>In IG-NGS protocols, it is common to have crossed contamination
+between samples processed in the same batch or even sequenced in the
+same run. To deal with this issue, IgScan incorporates a function that
+flags contamination between samples coming from the same user-defined
+batch.</p>
+<p>The principle of this function is to find sequences (or even whole
+clonotypes) that are X times (default is 10 times) more frequent in a
+sample in the batch than in others. Then, the user can decide if
+removing these contaminated sequences or only flagging them. If
+<code>remove_contamination</code> is set to <code>TRUE</code>, clonal
+frequencies and clone identifiers are recalculated with the remaining
+sequences.</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a>merge_igscan_out <span class="ot">&lt;-</span> <span class="fu">do.call</span>(rbind, igscan_out)</span>
+<span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>merge_igscan_out <span class="ot">&lt;-</span> IgScan<span class="sc">::</span><span class="fu">filter_BCR_contam_bulk</span>(<span class="at">igscan_data_frame =</span> merge_igscan_out,</span>
+<span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>                                                   <span class="at">remove_contamination =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>merge_igscan_out[, <span class="fu">c</span>(<span class="st">&quot;SampleID&quot;</span>, <span class="st">&quot;VDJ_genes&quot;</span>, <span class="st">&quot;Junction_aa&quot;</span>, </span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>                     <span class="st">&quot;Contamination_FLAG&quot;</span>, <span class="st">&quot;Contamination_Freq&quot;</span>, <span class="st">&quot;Contamination_Sample&quot;</span>)]</span></code></pre></div>
+<pre><code>##   SampleID                        VDJ_genes       Junction_aa
+## 1  Sample1  IGHV1-3*01/IGHD6-19*01/IGHJ4*02   CAREQWLVQDYFDYW
+## 2  Sample1  IGHV1-3*01/IGHD6-19*01/IGHJ4*02   CAREQWLVQDYFDYW
+## 3  Sample1 IGHV2-70*01/IGHD3-10*01/IGHJ4*02 CARTLYYYGSGSTFDYW
+## 4  Sample2 IGHV2-70*01/IGHD3-10*01/IGHJ4*02 CARTLYYYGSGSTFDYW
+## 5  Sample2 IGHV2-70*01/IGHD3-10*01/IGHJ4*02 CARTLYYYGSGSTFDYW
+##   Contamination_FLAG Contamination_Freq Contamination_Sample
+## 1               PASS                 NA                 &lt;NA&gt;
+## 2               PASS                 NA                 &lt;NA&gt;
+## 3      OUT_CLONOTYPE                100              Sample2
+## 4               PASS                 NA                 &lt;NA&gt;
+## 5               PASS                 NA                 &lt;NA&gt;</code></pre>
+<p>As can be appreciated, after running this function, there is a whole
+clonotype (C2 in Sample1) that has been flagged as contamination from
+Sample2. In fact, it is found in a relative frequency of 0.25% in
+Sample1, while it accounts for the 100% of the sequences in Sample2.
+When we look at the VDJ genes and amino acid junction sequences, we will
+see that indeed they are exactly the same clone, and that the
+contamination has been correctly flagged. Thus, we can proceed to remove
+contaminated sequences and recalculate the clonal frequencies and
+IDs.</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a>merge_igscan_out <span class="ot">&lt;-</span> merge_igscan_out[merge_igscan_out<span class="sc">$</span>Contamination_FLAG <span class="sc">==</span> <span class="st">&quot;PASS&quot;</span>,]    </span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a>merge_igscan_out <span class="ot">&lt;-</span> <span class="fu">recalculate_IDs_bulk</span>(merge_igscan_out, <span class="at">group_col =</span> <span class="st">&quot;SampleID&quot;</span>)</span></code></pre></div>
+<p>If you open the <code>merge_igscan_out</code> data frame, you will
+see that now the contaminated sequence is not there anymore, and that
+each sample has only one clonotype that accounts for the 100% of the
+reads respectively.</p>
+</div>
+<div id="step-4.-exporting-igscan-results-in-airr-format" class="section level2">
+<h2>Step 4. Exporting IgScan results in AIRR format</h2>
+<p>To facilitate interoperability with other immunogenetic tools and
+databases, IgScan allows users to export results in the standardized
+AIRR (Adaptive Immune Receptor Repertoire) format. This format ensures
+consistency, transparency, and compatibility across different analysis
+pipelines.</p>
+<p>To export AIRR files, the user can run the function
+<code>IgScan::export_AIRR_format()</code>, which converts all the
+sequence annotation into AIRR format and also includes the possibility
+to add pre-existing metadata by using the <code>metadata</code>
+argument. Importantly, this function also supports single cell objects
+with IgScan annotation metadata as input.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" tabindex="-1"></a>airr_object <span class="ot">&lt;-</span> <span class="fu">export_AIRR_format</span>(<span class="at">object =</span> merge_igscan_out, </span>
+<span id="cb7-2"><a href="#cb7-2" tabindex="-1"></a>                                  <span class="at">dir =</span> <span class="st">&quot;~/Desktop/TEST_IGSCAN_VINGETTE_NGS/&quot;</span>, </span>
+<span id="cb7-3"><a href="#cb7-3" tabindex="-1"></a>                                  <span class="at">fileName =</span> <span class="st">&quot;exportAIRR_testNGS.tsv&quot;</span>, </span>
+<span id="cb7-4"><a href="#cb7-4" tabindex="-1"></a>                                  <span class="at">germline_aln =</span> <span class="st">&quot;masked&quot;</span>)</span></code></pre></div>
+<p>The only parameter to consider—aside from input and output
+settings—is the <code>germline_aln</code> option. This parameter accepts
+two possible values:</p>
+<ul>
+<li><p><strong>masked:</strong> Uses the IgBlast germline alignment with
+masked (N) random nucleotides.</p></li>
+<li><p><strong>consensus</strong>: Uses the clonotype consensus germline
+sequence as the germline alignment, which does not include masked
+nucleotides. <strong>We recommend</strong> <strong>this option for
+downstream analyses</strong>, as the germline sequence is built
+considering all somatic sequences within the clonotype, helping to
+reduce potential alignment errors. However, it is important to note that
+this sequence is an assumption inferred by IgScan based on the
+closest-to-germline somatic sequence, and may not always perfectly
+reflect the true germline configuration of the CDR3 region.</p></li>
+</ul>
+<p>Now, we can use this AIRR file to run other tools, such as the <a href="https://dowser.readthedocs.io/en/latest/#dowser"><em>Dowser</em></a>
+package which is part of the Immcantation workflow and is widely use to
+build BCR phylogenetic trees.</p>
+<p>In order to show a more illustrative example, lets load an AIRR file
+coming from the IgScan annotation of a more complex bulk NGS dataset.
+The command used to generate the AIRR file was the following:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" tabindex="-1"></a>airr_object <span class="ot">&lt;-</span> <span class="fu">export_AIRR_format</span>(<span class="at">object =</span> IgScan_Df, </span>
+<span id="cb8-2"><a href="#cb8-2" tabindex="-1"></a>                                  <span class="at">dir =</span> OutputDir, </span>
+<span id="cb8-3"><a href="#cb8-3" tabindex="-1"></a>                                  <span class="at">fileName =</span> FileName, </span>
+<span id="cb8-4"><a href="#cb8-4" tabindex="-1"></a>                                  <span class="at">germline_aln =</span> <span class="st">&quot;consensus&quot;</span>, </span>
+<span id="cb8-5"><a href="#cb8-5" tabindex="-1"></a>                                  <span class="at">metadata =</span> <span class="st">&quot;SubcloneID_in_Clonotype&quot;</span>) <span class="do">## Added metadata</span></span></code></pre></div>
+<p>First, we need to format the AIRR file following the <em>Dowser</em>
+manual:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a><span class="do">## Load example AIRR file</span></span>
+<span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>airr_path <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;extdata/igscan_test_AIRR_file_sample3.rds&quot;</span>, <span class="at">package =</span> <span class="st">&quot;IgScan&quot;</span>, <span class="at">mustWork =</span> T)</span>
+<span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>example_airr <span class="ot">&lt;-</span> <span class="fu">readRDS</span>(airr_path)</span>
+<span id="cb9-4"><a href="#cb9-4" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" tabindex="-1"></a><span class="do">## Format clones for phylogenetic inference</span></span>
+<span id="cb9-6"><a href="#cb9-6" tabindex="-1"></a>clones <span class="ot">&lt;-</span> <span class="fu">formatClones</span>(example_airr, <span class="at">germ =</span> <span class="st">&quot;germline_alignment&quot;</span>, </span>
+<span id="cb9-7"><a href="#cb9-7" tabindex="-1"></a>                       <span class="at">traits =</span> <span class="st">&quot;SubcloneID_in_Clonotype&quot;</span>)</span>
+<span id="cb9-8"><a href="#cb9-8" tabindex="-1"></a></span>
+<span id="cb9-9"><a href="#cb9-9" tabindex="-1"></a><span class="co"># Build maxmimum parsimony trees</span></span>
+<span id="cb9-10"><a href="#cb9-10" tabindex="-1"></a>trees <span class="ot">&lt;-</span> <span class="fu">getTrees</span>(clones)</span>
+<span id="cb9-11"><a href="#cb9-11" tabindex="-1"></a>plots <span class="ot">&lt;-</span> <span class="fu">plotTrees</span>(trees, <span class="at">tipsize=</span><span class="dv">2</span>, <span class="at">tips =</span> <span class="st">&quot;SubcloneID_in_Clonotype&quot;</span>)</span></code></pre></div>
+<p>Now, we can visualize, for instance, the phylogenetic tree of the
+dominant clonotype in the sample colored by subclone (VDJ nucleotide
+variants).</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" tabindex="-1"></a>plots[[<span class="dv">1</span>]]</span></code></pre></div>
+<p><img role="img" src="data:image/png;base64,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" /><!-- --></p>
+</div>
+</div>
+
+
+
+<!-- code folding -->
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
