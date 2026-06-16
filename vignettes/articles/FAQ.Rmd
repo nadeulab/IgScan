@@ -24,11 +24,11 @@ We will update this section as users begin to interact with the package and shar
 
 In the meantime, feel free to:
 
--   Check out the [Getting Started](../index.html) guide.
+- Check out the [Getting Started](../index.html) guide.
 
--   Explore the [Reference](../reference/index.html) section.
+- Explore the [Reference](../reference/index.html) section.
 
--   Open an [issue on GitHub](https://github.com/nadeulab/IgScan/issues) if you have any questions.
+- Open an [issue on GitHub](https://github.com/nadeulab/IgScan/issues) if you have any questions.
 
 ------------------------------------------------------------------------
 

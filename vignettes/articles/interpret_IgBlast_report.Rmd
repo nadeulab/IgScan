@@ -54,9 +54,9 @@ In this example, the *Distribution of Clonal Rearrangements* plot is shown for a
 
 These contrasting clonality profiles warrant different settings for the `cdr3_InDel_correction_mode` parameter in the next IgScan function:
 
--   **Tumor sample:** `cdr3_InDel_correction_mode="hard_filter"` in single cell data and `cdr3_InDel_correction_mode="soft_filter"` in bulk NGS data.
+- **Tumor sample:** `cdr3_InDel_correction_mode="hard_filter"` in single cell data and `cdr3_InDel_correction_mode="soft_filter"` in bulk NGS data.
 
--   **Healthy donor sample:** `cdr3_InDel_correction_mode="no"` .
+- **Healthy donor sample:** `cdr3_InDel_correction_mode="no"` .
 
 **Note:** Along with the IgBlast report PDF file, a report TXT file is also generated. This file contains the correspondence between each "clonal group ID" displayed in the barplot and its associated `Vgene_CDR3aa` sequence. The content of this file typically looks like the following:
 
