@@ -32,13 +32,19 @@ The current version of IgScan supports the possibility to build phylogenetic tre
 
 For both alternatives, we will take as input the data of a single cell object with IgScan annotation in its metadata.
 
+```{r, include=FALSE}
+if (!nzchar(system.file(package = "IgScan"))) {
+  pkg_path <- function(...) file.path("../../inst", ...)
+} else {
+  pkg_path <- function(...) system.file(..., package = "IgScan")
+}
+```
+
 ```{r read_seurat, message=FALSE, warning=FALSE, tidy=FALSE}
 library(IgScan)
 library(dowser)
 
-s <- system.file("extdata/igscan_test_10xSeurat_IgScan_sample4.rds", 
-                 package = "IgScan", mustWork = T)
-
+s <- pkg_path("extdata/igscan_test_10xSeurat_IgScan_sample4.rds")
 so <- readRDS(s)
 ```
 

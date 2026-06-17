@@ -4,7 +4,7 @@ author:
   name: Ian Márquez-López
   email: iamarquez@recerca.clinic.cat
   affiliation: Institut d’Investigacions Biomèdiques August Pi i Sunyer (FRCB-IDIBAPS)
-date: 'Compiled: June 17, 2026'
+date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
 output:
   rmarkdown::html_vignette:
     toc: yes
@@ -17,10 +17,11 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r, echo=FALSE}
+options(rmarkdown.html_vignette.check_title = FALSE)
+```
 
-
-
-``` r
+```{r setup, warning=FALSE, message=FALSE}
 library(IgScan)
 library(Seurat)
 library(ggplot2)
@@ -30,7 +31,13 @@ outputDir <- tempfile("igscan_vignette_")
 dir.create(outputDir)
 ```
 
-
+```{r, include=FALSE}
+if (!nzchar(system.file(package = "IgScan"))) {
+  pkg_path <- function(...) file.path("../../inst", ...)
+} else {
+  pkg_path <- function(...) system.file(..., package = "IgScan")
+}
+```
 
 # Introduction
 
@@ -76,8 +83,8 @@ This first part of the workflow can be executed by the `IgScan::Run_IgBlast_from
 
 After that, if `run_IgBlast_report = TRUE`, an exploratory data analysis of IgBlast outputs is performed and a report in PDF format is generated in the `outputDir`, which can be of interest when the level of clonality of the samples is unknown. The information obtained from the report can be used by the user to adjust some parameters in the following step (i.e. `hc_similarity_cutoff` based on the distribution of CDR3 length or `cdr3_InDel_correction_mode` if the samples are highly polyclonal).
 
+```{r igblast_reannot, message=FALSE, warning=FALSE, tidy=FALSE}
 
-``` r
 s1 <- pkg_path("extdata/igscan_test_10xBCR_sample1.fasta")
 s2 <- pkg_path("extdata/igscan_test_10xBCR_sample2.fasta")
 
@@ -105,8 +112,7 @@ Now that IgBlast outputs have been generated, they will be used as input for the
 
 For this part of the workflow, it is important to choose if the analysis is performed in 'single' or 'joint' `analysis_mode`. When analyzing related samples, such samples from the same individual, in which it is plausible that the same clonotype is identified in both samples, the 'joint' mode performs a consensus annotation across samples in order to longitudinally track clonotypes.
 
-
-``` r
+```{r igscan_workflow, tidy = FALSE, message=FALSE, warning=FALSE}
 igscan_out <- IgScan::Run_IgScan_Annotation(
   sample_labels = c("Sample1", "Sample2"),
   case_labels = c("CaseA", "CaseA"),
@@ -133,8 +139,7 @@ The IgScan annotation data is appended to the meta.data/colData of the single ce
 
 In this vingette, we will load two Seurat objects belonging to samples `Sample1` and `Sample2` and we will combine them with their corresponding IgScan output.
 
-
-``` r
+```{r igscan_combine_sc, tidy = FALSE, message=FALSE, warning=FALSE}
 o1 <- pkg_path("extdata/igscan_test_10xSeurat_sample1.rds")
 o2 <- pkg_path("extdata/igscan_test_10xSeurat_sample2.rds")
 
@@ -158,15 +163,13 @@ You can now visualize the meta.data of the two Seurat objects and see how the Ig
 
 ## Exploratory data analyses
 
-
-``` r
+```{r color_pallete, tidy = FALSE, message=FALSE, warning=FALSE}
 color <- c("C1" = "#1B9E77", "C2" = "#D95F09", "C3" = "#7570B9", "C4" = "#E6AB02")
 ```
 
 Now that we have the Seurat objects with IgScan annotation, we can now evaluate the BCR repertoire in the samples analyzed. First of all, we can rapidly visualize the distribution of clonotypes in a barplot.
 
-
-``` r
+```{r igscan_anal_1, tidy = FALSE, message=FALSE, fig.height=5, fig.width=6, fig.align='center'}
 seurat_merge <- merge(seurat_1, seurat_2)
 
 clonotype_df <- seurat_merge@meta.data %>%
@@ -183,15 +186,9 @@ freq_plt <- ggplot(clonotype_df, aes(x = orig.ident, y = freq_rel, fill = igClon
 freq_plt
 ```
 
-<div class="figure" style="text-align: center">
-<img src="figure/igscan_anal_1-1.png" alt="plot of chunk igscan_anal_1"  />
-<p class="caption">plot of chunk igscan_anal_1</p>
-</div>
-
 The barplot reveals clonal dynamics between the two samples, with a remarkable increase of clonotype 2 (C2) in Sample2 compared to Sample1. Now, these cells can be visualized in a UMAP representation colored by BCR clonotype.
 
-
-``` r
+```{r igscan_anal_2, message=FALSE, warning=FALSE}
 seurat_merge <- JoinLayers(seurat_merge)
 seurat_merge <- NormalizeData(object = seurat_merge, verbose = F)
 seurat_merge <- FindVariableFeatures(object = seurat_merge, verbose = F)
@@ -212,15 +209,9 @@ clone_dim <- DimPlot(seurat_merge, group.by = "igClonotypeID_num",
   labs(x = "UMAP1", y = "UMAP2") + ggtitle("ClonotypeID")
 ```
 
-
-``` r
+```{r igscan_anal_3, fig.height=3, fig.width=7, fig.align='center'}
 print(sam_dim + clone_dim)
 ```
-
-<div class="figure" style="text-align: center">
-<img src="figure/igscan_anal_3-1.png" alt="plot of chunk igscan_anal_3"  />
-<p class="caption">plot of chunk igscan_anal_3</p>
-</div>
 
 ## Auxiliar IgScan functions
 
@@ -228,25 +219,13 @@ print(sam_dim + clone_dim)
 
 As it can be observed in the barplot and the UMAPs, there are some cells in this merged object that lack information in the `igClonotypeID_num` field. The explanation for this is found in the `completeBCR` field (see the [Uderstand IgScan output format](understand_IgScan_output.html) vingette for more information).
 
-
-``` r
+```{r igscan_anal_4, message=FALSE, warning=FALSE}
 table(seurat_merge$igClonotypeID_num, seurat_merge$completeBCR, useNA = "ifany")
-```
-
-```
-##       
-##        Alternative_clonotype Clonotype_doublet Single_chain_1 Yes
-##   C1                      11                 0              0  24
-##   C2                       0                 0              0  46
-##   C3                       0                 0              0  34
-##   C4                       0                 0              0   8
-##   <NA>                     0                 1              8   0
 ```
 
 Here it can bee appreciated that the NAs are caused by `Clonotype_doublet`, `Repeated_chain` and `Single_chain_1` cells. From the IgScan development team, we recommend removing the first two categories from the single cell objects, since they are suggestive of remaining doublets in the data.
 
-
-``` r
+```{r igscan_anal_5, message=FALSE, warning=FALSE}
 seurat_merge <- subset(seurat_merge, 
                        subset = !completeBCR %in% c("Clonotype_doublet", "Repeated_chain"))
 ```
@@ -259,8 +238,7 @@ This function requires a grouping variable that indicates which samples can be u
 
 In this example, samples come from the same individual, so it is recommended to run the `rescue_single_chain_cells` function **by case** (so that the joint annotation is not undone).
 
-
-``` r
+```{r igscan_anal_6, message=FALSE, warning=FALSE}
 seurat_merge$case <- "Case1"
 seurat_merge <- IgScan::rescue_single_chain_cells(single_cell_object = seurat_merge, 
                                                   group_col = "case")
@@ -268,18 +246,8 @@ seurat_merge <- IgScan::rescue_single_chain_cells(single_cell_object = seurat_me
 
 Now, we can run the same `table()` command that we run before to check how these fields have changed.
 
-
-``` r
+```{r igscan_anal_7, message=FALSE, warning=FALSE}
 table(seurat_merge$igClonotypeID_num, seurat_merge$completeBCR, useNA = "ifany")
-```
-
-```
-##     
-##      Alternative_clonotype Yes Yes_rescue
-##   C1                     0  46          4
-##   C2                    11  24          4
-##   C3                     0  34          0
-##   C4                     0   8          0
 ```
 
 This output shows that the 8 `Single_chain_1` cells have been "rescued" and re-assigned to previously detected clonotypes. Note that the `completeBCR` field in these cells has been labeled as `Yes_rescue`. In order to explain what has happened, let's look at cell ACAGCTACAGCCTGTG-1.
@@ -290,43 +258,24 @@ The rearrangement found in this cell was IGKV1D-12_CQQANSFPPTF, which matches pe
 
 Imagine that we have been told that clonotype 1 (C1) in our data comes from the crossed contamination of these samples with another sample from a different individual. In this scenario, it would be reasonable to remove C1 from the single cell object.
 
-
-``` r
+```{r igscan_anal_8, message=FALSE, warning=FALSE}
 seurat_merge_filter <- subset(seurat_merge, subset = igClonotypeID_num != "C1")
 table(seurat_merge_filter$igClonotypeID_num, seurat_merge_filter$orig.ident)
-```
-
-```
-##     
-##      Sample1 Sample2
-##   C2      30       9
-##   C3      29       5
-##   C4       6       2
 ```
 
 After removing C1, these clonotype identifiers do not make sense anymore, they need to be recalculated. In order to do so, IgScan enables clonotype ID recalculation in single cell objects by the function `IgScan::recalculate_IDs_single_cell`, which can be useful when some cells are filtered from the dataset.
 
 This function requires a grouping variable that indicates how IDs need to be recalculated. Since the annotation of these samples has been performed by case (and remember that clones are differently distributed across samples), clonotype IDs should not be recalculated by sample, otherwise the joint annotation is not undone, but by case.
 
-
-``` r
+```{r igscan_anal_9, message=FALSE, warning=FALSE}
 seurat_merge_filter <- recalculate_IDs_single_cell(single_cell_object = seurat_merge_filter,
                                                    group_col = "case")
 table(seurat_merge_filter$igClonotypeID_num, seurat_merge_filter$orig.ident)
 ```
 
-```
-##     
-##      Sample1 Sample2
-##   C1      30       9
-##   C2      29       5
-##   C3       6       2
-```
-
 You can now appreciate that clonotype IDs follow a comprehensive order and the clonotype distribution is shown in the following barplot.
 
-
-``` r
+```{r igscan_anal_10, tidy = FALSE, message=FALSE, fig.height=5, fig.width=6, fig.align='center'}
 clonotype_df2 <- seurat_merge_filter@meta.data %>%
   group_by(orig.ident, igClonotypeID_num) %>% 
   summarise(count = n(), .groups = "drop") %>% 
@@ -341,8 +290,3 @@ freq_plt2 <- ggplot(clonotype_df2,
 
 freq_plt2
 ```
-
-<div class="figure" style="text-align: center">
-<img src="figure/igscan_anal_10-1.png" alt="plot of chunk igscan_anal_10"  />
-<p class="caption">plot of chunk igscan_anal_10</p>
-</div>

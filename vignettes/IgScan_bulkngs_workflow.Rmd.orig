@@ -4,7 +4,7 @@ author:
   name: Ian Márquez-López
   email: iamarquez@recerca.clinic.cat
   affiliation: Institut d’Investigacions Biomèdiques August Pi i Sunyer (FRCB-IDIBAPS)
-date: 'Compiled: June 17, 2026'
+date: 'Compiled: `r format(Sys.Date(), "%B %d, %Y")`'
 output:
   rmarkdown::html_vignette:
     toc: yes
@@ -17,10 +17,11 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+```{r, echo=FALSE}
+options(rmarkdown.html_vignette.check_title = FALSE)
+```
 
-
-
-``` r
+```{r setup, warning=FALSE, message=FALSE}
 library(IgScan)
 library(ggplot2)
 library(dplyr)
@@ -30,7 +31,13 @@ outputDir <- tempfile("igscan_vignette_")
 dir.create(outputDir)
 ```
 
-
+```{r, include=FALSE}
+if (!nzchar(system.file(package = "IgScan"))) {
+  pkg_path <- function(...) file.path("../../inst", ...)
+} else {
+  pkg_path <- function(...) system.file(..., package = "IgScan")
+}
+```
 
 # Introduction
 
@@ -93,8 +100,8 @@ This first part of the workflow can be executed by the `IgScan::Run_IgBlast_from
 
 After that, if `run_IgBlast_report = TRUE`, an exploratory data analysis of IgBlast outputs is performed and a report in PDF format is generated in the `outputDir`, which can be of interest when the level of clonality of the samples is unknown. The information obtained from the report can be used by the user to adjust some parameters in the following step (i.e. `hc_similarity_cutoff` based on the distribution of CDR3 length or `cdr3_InDel_correction_mode` if the samples are highly polyclonal).
 
+```{r igblast_reannot, message=FALSE, warning=FALSE, tidy=FALSE}
 
-``` r
 s1 <- pkg_path("extdata/igscan_test_bulkNGS_sample1.fasta")
 s2 <- pkg_path("extdata/igscan_test_bulkNGS_sample2.fasta")
 
@@ -124,8 +131,7 @@ For this part of the workflow, it is important to choose if the analysis is perf
 
 In this example, since the samples come from different individuals, we will proceed with the `single` analysis mode:
 
-
-``` r
+```{r igscan_workflow, tidy = FALSE, message=FALSE, warning=FALSE}
 igscan_out <- IgScan::Run_IgScan_Annotation(
   sample_labels = c("Sample1", "Sample2"),
   outputDir = paste0(outputDir, "/IGSCAN_VIGNETTE_BULK/"), 
@@ -148,8 +154,7 @@ In IG-NGS protocols, it is common to have crossed contamination between samples 
 
 The principle of this function is to find sequences (or even whole clonotypes) that are X times (default is 10 times) more frequent in a sample in the batch than in others. Then, the user can decide if removing these contaminated sequences or only flagging them. If `remove_contamination` is set to `TRUE`, clonal frequencies and clone identifiers are recalculated with the remaining sequences.
 
-
-``` r
+```{r remove_cont, tidy = FALSE, message=FALSE, warning=FALSE}
 merge_igscan_out <- do.call(rbind, igscan_out)
 
 merge_igscan_out <- IgScan::filter_BCR_contam_bulk(igscan_data_frame = merge_igscan_out,
@@ -159,19 +164,9 @@ merge_igscan_out[, c("SampleID", "VDJ_genes", "Junction_aa",
                      "Contamination_FLAG", "Contamination_Freq", "Contamination_Sample")]
 ```
 
-```
-##   SampleID                        VDJ_genes       Junction_aa Contamination_FLAG Contamination_Freq Contamination_Sample
-## 1  Sample1  IGHV1-3*01/IGHD6-19*01/IGHJ4*02   CAREQWLVQDYFDYW               PASS                 NA                 <NA>
-## 2  Sample1  IGHV1-3*01/IGHD6-19*01/IGHJ4*02   CAREQWLVQDYFDYW               PASS                 NA                 <NA>
-## 3  Sample1 IGHV2-70*01/IGHD3-10*01/IGHJ4*02 CARTLYYYGSGSTFDYW      OUT_CLONOTYPE                100              Sample2
-## 4  Sample2 IGHV2-70*01/IGHD3-10*01/IGHJ4*02 CARTLYYYGSGSTFDYW               PASS                 NA                 <NA>
-## 5  Sample2 IGHV2-70*01/IGHD3-10*01/IGHJ4*02 CARTLYYYGSGSTFDYW               PASS                 NA                 <NA>
-```
-
 As can be appreciated, after running this function, there is a whole clonotype (C2 in Sample1) that has been flagged as contamination from Sample2. In fact, it is found in a relative frequency of 0.25% in Sample1, while it accounts for the 100% of the sequences in Sample2. When we look at the VDJ genes and amino acid junction sequences, we will see that indeed they are exactly the same clone, and that the contamination has been correctly flagged. Thus, we can proceed to remove contaminated sequences and recalculate the clonal frequencies and IDs.
 
-
-``` r
+```{r recalc_cont, tidy = FALSE, message=FALSE, warning=FALSE}
 merge_igscan_out <- merge_igscan_out[merge_igscan_out$Contamination_FLAG == "PASS",]    
 merge_igscan_out <- recalculate_IDs_bulk(merge_igscan_out, group_col = "SampleID")
 ```
@@ -184,8 +179,7 @@ To facilitate interoperability with other immunogenetic tools and databases, IgS
 
 To export AIRR files, the user can run the function `IgScan::export_AIRR_format()`, which converts all the sequence annotation into AIRR format and also includes the possibility to add pre-existing metadata by using the `metadata` argument. Importantly, this function also supports single cell objects with IgScan annotation metadata as input.
 
-
-``` r
+```{r export_airr, tidy = FALSE, message=FALSE, warning=FALSE}
 airr_object <- export_AIRR_format(object = merge_igscan_out, 
                                   dir = paste0(outputDir, "/IGSCAN_VIGNETTE_BULK/"), 
                                   fileName = "exportAIRR_testNGS.tsv", 
@@ -202,8 +196,7 @@ Now, we can use this AIRR file to run other tools, such as the [*Dowser*](https:
 
 In order to show a more illustrative example, lets load an AIRR file coming from the IgScan annotation of a more complex bulk NGS dataset. The command used to generate the AIRR file was the following:
 
-
-``` r
+```{r airr_gen, tidy = FALSE, eval=FALSE}
 airr_object <- export_AIRR_format(object = IgScan_Df, 
                                   dir = paste0(outputDir, "/IGSCAN_VIGNETTE_BULK_AIRR/"), 
                                   fileName = FileName, 
@@ -213,8 +206,7 @@ airr_object <- export_AIRR_format(object = IgScan_Df,
 
 First, we need to format the AIRR file following the *Dowser* manual:
 
-
-``` r
+```{r dowser_interact, tidy = FALSE, message=FALSE, warning=FALSE}
 ## Load example AIRR file
 airr_path <- pkg_path("extdata/igscan_test_AIRR_file_sample3.rds")
 example_airr <- readRDS(airr_path)
@@ -230,9 +222,6 @@ plots <- plotTrees(trees, tipsize=2, tips = "SubcloneID_in_Clonotype")
 
 Now, we can visualize, for instance, the phylogenetic tree of the dominant clonotype in the sample colored by subclone (VDJ nucleotide variants).
 
-
-``` r
+```{r plot_tree, tidy = FALSE, message=FALSE, warning=FALSE, fig.height=4, fig.width=7}
 plots[[1]]
 ```
-
-![plot of chunk plot_tree](figure/plot_tree-1.png)

@@ -20,6 +20,14 @@ options(rmarkdown.html_vignette.check_title = FALSE)
 library(IgScan)
 ```
 
+```{r, include=FALSE}
+if (!nzchar(system.file(package = "IgScan"))) {
+  pkg_path <- function(...) file.path("../../inst", ...)
+} else {
+  pkg_path <- function(...) system.file(..., package = "IgScan")
+}
+```
+
 In high-throughput sequencing technologies, particularly in multiplexed experimental designs, low-level cross-sample contamination is a common and well-documented issue. Even with stringent library preparation and indexing protocols, reads/cells from highly abundant clonotypes in one sample can occasionally appear at very low frequencies in other samples due to barcode misassignment, index hopping, or ambient RNA contamination.
 
 This is especially relevant in the analysis of B-cell receptor (BCR) repertoires, where highly expanded clonotypes from one individual or condition may "leak" into unrelated samples. If not identified and filtered, these contaminating sequences can distort the interpretation of clonal diversity, expansion, or convergence.
@@ -83,6 +91,7 @@ filter_cont_sc <- IgScan::filter_SampleTag_contam_BDRhapsody(single_cell_object 
 When `remove_contamination` is set to `FALSE`, the FLAGs of contamination in the data are stored in three different columns:
 
 |   | Contamination_FLAG | Contamination_Ratio | Contamination_Sample |
-|:--:|:--:|:--:|:--:|
+|:----------------:|:----------------:|:----------------:|:----------------:|
 | **Description** | PASS / OUT / OUT_X | Ratio of contamination (A:B) | Sample from which the contamination is presumed to originate |
 | **Example** | OUT | 1:2500 | SampleB |
+
