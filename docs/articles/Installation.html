@@ -177,11 +177,46 @@ Windows, Xcode on macOS, or build tools on Linux).</p>
 </div>
 </div>
 <div class="section level2">
+<h2 id="system-requirements-igblast-on-apple-silicon-m1m2m3m4m5">System requirements: IgBlast on Apple Silicon (M1/M2/M3/M4/M5)<a class="anchor" aria-label="anchor" href="#system-requirements-igblast-on-apple-silicon-m1m2m3m4m5"></a>
+</h2>
+<p>IgScan relies on the external <code>igblastn</code> executable from
+NCBI IgBLAST. If you are running macOS on an Apple Silicon Mac (M1, M2,
+M3, M4 or M5), be aware that the standard IgBlast binaries distributed
+by NCBI are compiled for Intel processors (<code>x86_64</code>), not for
+Apple’s native <code>arm64</code> architecture.</p>
+<p>If <code>igblastn</code> is not natively compatible with your CPU,
+you will see an error such as:</p>
+<pre><code>zsh: bad CPU type in executable</code></pre>
+<div class="section level3">
+<h3 id="how-to-check-if-this-affects-you">How to check if this affects you<a class="anchor" aria-label="anchor" href="#how-to-check-if-this-affects-you"></a>
+</h3>
+<p>Run the following commands in your terminal:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a><span class="co"># Check your Mac's architecture</span></span>
+<span id="cb5-2"><a href="#cb5-2" tabindex="-1"></a><span class="fu">uname</span> <span class="at">-m</span></span>
+<span id="cb5-3"><a href="#cb5-3" tabindex="-1"></a></span>
+<span id="cb5-4"><a href="#cb5-4" tabindex="-1"></a><span class="co"># Check the architecture the igblastn binary was built for</span></span>
+<span id="cb5-5"><a href="#cb5-5" tabindex="-1"></a><span class="fu">file</span> <span class="va">$(</span><span class="fu">which</span> igblastn<span class="va">)</span></span></code></pre></div>
+<p>If <code>uname -m</code> returns <code>arm64</code> but
+<code>file</code> reports <code>x86_64</code>, your system needs Rosetta
+2 to run IgBlast.</p>
+</div>
+<div class="section level3">
+<h3 id="solution-install-rosetta-2">Solution: install Rosetta 2<a class="anchor" aria-label="anchor" href="#solution-install-rosetta-2"></a>
+</h3>
+<p>Rosetta 2 is Apple’s translation layer that allows Intel-built
+executables to run on Apple Silicon Macs. Install it by running:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bash"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="ex">softwareupdate</span> <span class="at">--install-rosetta</span> <span class="at">--agree-to-license</span></span></code></pre></div>
+<p>Once installed, <code>igblastn</code> (and any other Intel-only
+dependency required by IgScan) will run normally, without any further
+configuration.</p>
+</div>
+</div>
+<div class="section level2">
 <h2 id="accessing-vignettes">Accessing Vignettes<a class="anchor" aria-label="anchor" href="#accessing-vignettes"></a>
 </h2>
 <p>After installation, you can explore the package vignettes (detailed
 tutorials) by running…</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/browseVignettes.html" class="external-link">browseVignettes</a></span><span class="op">(</span><span class="st">"IgScan"</span><span class="op">)</span></span></code></pre></div>
 <p>… or access them through the IgScan website.</p>
 </div>

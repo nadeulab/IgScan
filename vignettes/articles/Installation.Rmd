@@ -64,6 +64,45 @@ R CMD INSTALL path/to/IgScan/
 
 Make sure you have a working R development environment (Rtools on Windows, Xcode on macOS, or build tools on Linux).
 
+## System requirements: IgBlast on Apple Silicon (M1/M2/M3/M4/M5)
+
+IgScan relies on the external `igblastn` executable from NCBI IgBLAST. If you are running macOS on an Apple Silicon Mac (M1, M2, M3, M4 or M5), be aware that the standard IgBlast binaries distributed by NCBI are compiled for Intel processors (`x86_64`), not for Apple's native `arm64` architecture.
+
+If `igblastn` is not natively compatible with your CPU, you will see an error such as:
+
+```
+zsh: bad CPU type in executable
+```
+
+### How to check if this affects you
+
+Run the following commands in your terminal:
+
+```bash
+# Check your Mac's architecture
+uname -m
+
+# Check the architecture the igblastn binary was built for
+file $(which igblastn)
+```
+
+If `uname -m` returns `arm64` but `file` reports `x86_64`, your system needs Rosetta 2 to run IgBlast.
+
+### Solution: install Rosetta 2
+
+Rosetta 2 is Apple's translation layer that allows Intel-built executables to run on Apple Silicon Macs. Install it by running:
+
+```bash
+softwareupdate --install-rosetta --agree-to-license
+```
+
+Once installed, `igblastn` (and any other Intel-only dependency required by IgScan) will run normally, without any further configuration.
+
+```{r, echo=FALSE, eval=FALSE}
+# Note for developers: this chunk is not evaluated.
+# Rosetta 2 only needs to be installed once per machine.
+```
+
 ## Accessing Vignettes
 
 After installation, you can explore the package vignettes (detailed tutorials) by running...

@@ -242,4 +242,4 @@ Now, we can visualize, for instance, the phylogenetic tree of the dominant clono
 plots[[1]]
 ```
 
-![plot of chunk plot_tree](figure/plot_tree-1.png)
+![plot of chunk plot_tree](images/plot_tree-1.png)

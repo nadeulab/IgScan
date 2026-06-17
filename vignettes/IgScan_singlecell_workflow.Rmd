@@ -191,7 +191,7 @@ freq_plt
 ```
 
 <div class="figure" style="text-align: center">
-<img src="figure/igscan_anal_1-1.png" alt="plot of chunk igscan_anal_1"  />
+<img src="images/igscan_anal_1-1.png" alt="plot of chunk igscan_anal_1"  />
 <p class="caption">plot of chunk igscan_anal_1</p>
 </div>
 
@@ -225,7 +225,7 @@ print(sam_dim + clone_dim)
 ```
 
 <div class="figure" style="text-align: center">
-<img src="figure/igscan_anal_3-1.png" alt="plot of chunk igscan_anal_3"  />
+<img src="images/igscan_anal_3-1.png" alt="plot of chunk igscan_anal_3"  />
 <p class="caption">plot of chunk igscan_anal_3</p>
 </div>
 
@@ -350,6 +350,6 @@ freq_plt2
 ```
 
 <div class="figure" style="text-align: center">
-<img src="figure/igscan_anal_10-1.png" alt="plot of chunk igscan_anal_10"  />
+<img src="images/igscan_anal_10-1.png" alt="plot of chunk igscan_anal_10"  />
 <p class="caption">plot of chunk igscan_anal_10</p>
 </div>
