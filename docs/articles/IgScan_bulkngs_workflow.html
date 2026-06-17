@@ -120,7 +120,7 @@ Márquez-López</h4>
 (FRCB-IDIBAPS)<br><a class="author_email" href="mailto:#"></a><a href="mailto:iamarquez@recerca.clinic.cat" class="email">iamarquez@recerca.clinic.cat</a>
       </address>
                   
-            <h4 data-toc-skip class="date">Compiled: June 16, 2026</h4>
+            <h4 data-toc-skip class="date">Compiled: June 17, 2026</h4>
       
       <small class="dont-index">Source: <a href="https://github.com/nadeulab/IgScan/blob/HEAD/vignettes/IgScan_bulkngs_workflow.Rmd" class="external-link"><code>vignettes/IgScan_bulkngs_workflow.Rmd</code></a></small>
       <div class="hidden name"><code>IgScan_bulkngs_workflow.Rmd</code></div>
@@ -133,7 +133,10 @@ Márquez-López</h4>
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://nadeulab.github.io/IgScan/">IgScan</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
 <span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dowser.readthedocs.io" class="external-link">dowser</a></span><span class="op">)</span></span></code></pre></div>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dowser.readthedocs.io" class="external-link">dowser</a></span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">outputDir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="st">"igscan_vignette_"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">outputDir</span><span class="op">)</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -231,8 +234,8 @@ based on the distribution of CDR3 length or
 <code>cdr3_InDel_correction_mode</code> if the samples are highly
 polyclonal).</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">s1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/igscan_test_bulkNGS_sample1.fasta"</span>, package <span class="op">=</span> <span class="st">"IgScan"</span>, mustWork <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
-<span><span class="va">s2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/igscan_test_bulkNGS_sample2.fasta"</span>, package <span class="op">=</span> <span class="st">"IgScan"</span>, mustWork <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">s1</span> <span class="op">&lt;-</span> <span class="fu">pkg_path</span><span class="op">(</span><span class="st">"extdata/igscan_test_bulkNGS_sample1.fasta"</span><span class="op">)</span></span>
+<span><span class="va">s2</span> <span class="op">&lt;-</span> <span class="fu">pkg_path</span><span class="op">(</span><span class="st">"extdata/igscan_test_bulkNGS_sample2.fasta"</span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu">IgScan</span><span class="fu">::</span><span class="fu"><a href="../reference/Run_IgBlast_from_RawData.html">Run_IgBlast_from_RawData</a></span><span class="op">(</span></span>
 <span>  sample_paths <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">s1</span>, <span class="va">s2</span><span class="op">)</span>, </span>
@@ -240,7 +243,7 @@ polyclonal).</p>
 <span>  input_format <span class="op">=</span> <span class="st">"fasta"</span>, </span>
 <span>  data_type <span class="op">=</span> <span class="st">"bulk"</span>, </span>
 <span>  annotate_C <span class="op">=</span> <span class="cn">TRUE</span>, </span>
-<span>  outputDir <span class="op">=</span> <span class="st">"~/Desktop/TEST_IGSCAN_VINGETTE_NGS/"</span>, <span class="co">## Change by your own outputDir</span></span>
+<span>  outputDir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">outputDir</span>, <span class="st">"/IGSCAN_VIGNETTE_BULK/"</span><span class="op">)</span>, <span class="co">## Change by your own outputDir</span></span>
 <span>  run_IgBlast_report <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></code></pre></div>
 <p>Once this step is completed, the <code>outputDir</code> is created
 (if it did not exist before running the command) and contains the
@@ -279,7 +282,7 @@ we will proceed with the <code>single</code> analysis mode:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">igscan_out</span> <span class="op">&lt;-</span> <span class="fu">IgScan</span><span class="fu">::</span><span class="fu"><a href="../reference/Run_IgScan_Annotation.html">Run_IgScan_Annotation</a></span><span class="op">(</span></span>
 <span>  sample_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sample1"</span>, <span class="st">"Sample2"</span><span class="op">)</span>,</span>
-<span>  outputDir <span class="op">=</span> <span class="st">"~/Desktop/TEST_IGSCAN_VINGETTE_NGS/"</span>, </span>
+<span>  outputDir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">outputDir</span>, <span class="st">"/IGSCAN_VIGNETTE_BULK/"</span><span class="op">)</span>, </span>
 <span>  input_format <span class="op">=</span> <span class="st">"fasta"</span>, </span>
 <span>  analysis_mode <span class="op">=</span> <span class="st">"single"</span>,</span>
 <span>  data_type <span class="op">=</span> <span class="st">"bulk"</span>, </span>
@@ -315,18 +318,12 @@ sequences.</p>
 <span></span>
 <span><span class="va">merge_igscan_out</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"SampleID"</span>, <span class="st">"VDJ_genes"</span>, <span class="st">"Junction_aa"</span>, </span>
 <span>                     <span class="st">"Contamination_FLAG"</span>, <span class="st">"Contamination_Freq"</span>, <span class="st">"Contamination_Sample"</span><span class="op">)</span><span class="op">]</span></span></code></pre></div>
-<pre><code><span><span class="co">##   SampleID                        VDJ_genes       Junction_aa</span></span>
-<span><span class="co">## 1  Sample1  IGHV1-3*01/IGHD6-19*01/IGHJ4*02   CAREQWLVQDYFDYW</span></span>
-<span><span class="co">## 2  Sample1  IGHV1-3*01/IGHD6-19*01/IGHJ4*02   CAREQWLVQDYFDYW</span></span>
-<span><span class="co">## 3  Sample1 IGHV2-70*01/IGHD3-10*01/IGHJ4*02 CARTLYYYGSGSTFDYW</span></span>
-<span><span class="co">## 4  Sample2 IGHV2-70*01/IGHD3-10*01/IGHJ4*02 CARTLYYYGSGSTFDYW</span></span>
-<span><span class="co">## 5  Sample2 IGHV2-70*01/IGHD3-10*01/IGHJ4*02 CARTLYYYGSGSTFDYW</span></span>
-<span><span class="co">##   Contamination_FLAG Contamination_Freq Contamination_Sample</span></span>
-<span><span class="co">## 1               PASS                 NA                 &lt;NA&gt;</span></span>
-<span><span class="co">## 2               PASS                 NA                 &lt;NA&gt;</span></span>
-<span><span class="co">## 3      OUT_CLONOTYPE                100              Sample2</span></span>
-<span><span class="co">## 4               PASS                 NA                 &lt;NA&gt;</span></span>
-<span><span class="co">## 5               PASS                 NA                 &lt;NA&gt;</span></span></code></pre>
+<pre><code><span><span class="co">##   SampleID                        VDJ_genes       Junction_aa Contamination_FLAG Contamination_Freq Contamination_Sample</span></span>
+<span><span class="co">## 1  Sample1  IGHV1-3*01/IGHD6-19*01/IGHJ4*02   CAREQWLVQDYFDYW               PASS                 NA                 &lt;NA&gt;</span></span>
+<span><span class="co">## 2  Sample1  IGHV1-3*01/IGHD6-19*01/IGHJ4*02   CAREQWLVQDYFDYW               PASS                 NA                 &lt;NA&gt;</span></span>
+<span><span class="co">## 3  Sample1 IGHV2-70*01/IGHD3-10*01/IGHJ4*02 CARTLYYYGSGSTFDYW      OUT_CLONOTYPE                100              Sample2</span></span>
+<span><span class="co">## 4  Sample2 IGHV2-70*01/IGHD3-10*01/IGHJ4*02 CARTLYYYGSGSTFDYW               PASS                 NA                 &lt;NA&gt;</span></span>
+<span><span class="co">## 5  Sample2 IGHV2-70*01/IGHD3-10*01/IGHJ4*02 CARTLYYYGSGSTFDYW               PASS                 NA                 &lt;NA&gt;</span></span></code></pre>
 <p>As can be appreciated, after running this function, there is a whole
 clonotype (C2 in Sample1) that has been flagged as contamination from
 Sample2. In fact, it is found in a relative frequency of 0.25% in
@@ -360,7 +357,7 @@ argument. Importantly, this function also supports single cell objects
 with IgScan annotation metadata as input.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">airr_object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/export_AIRR_format.html">export_AIRR_format</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">merge_igscan_out</span>, </span>
-<span>                                  dir <span class="op">=</span> <span class="st">"~/Desktop/TEST_IGSCAN_VINGETTE_NGS/"</span>, </span>
+<span>                                  dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">outputDir</span>, <span class="st">"/IGSCAN_VIGNETTE_BULK/"</span><span class="op">)</span>, </span>
 <span>                                  fileName <span class="op">=</span> <span class="st">"exportAIRR_testNGS.tsv"</span>, </span>
 <span>                                  germline_aln <span class="op">=</span> <span class="st">"masked"</span><span class="op">)</span></span></code></pre></div>
 <p>The only parameter to consider—aside from input and output
@@ -387,7 +384,7 @@ coming from the IgScan annotation of a more complex bulk NGS dataset.
 The command used to generate the AIRR file was the following:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">airr_object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/export_AIRR_format.html">export_AIRR_format</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">IgScan_Df</span>, </span>
-<span>                                  dir <span class="op">=</span> <span class="va">OutputDir</span>, </span>
+<span>                                  dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">outputDir</span>, <span class="st">"/IGSCAN_VIGNETTE_BULK_AIRR/"</span><span class="op">)</span>, </span>
 <span>                                  fileName <span class="op">=</span> <span class="va">FileName</span>, </span>
 <span>                                  germline_aln <span class="op">=</span> <span class="st">"consensus"</span>, </span>
 <span>                                  metadata <span class="op">=</span> <span class="st">"SubcloneID_in_Clonotype"</span><span class="op">)</span> <span class="co">## Added metadata</span></span></code></pre></div>
@@ -395,7 +392,7 @@ The command used to generate the AIRR file was the following:</p>
 manual:</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Load example AIRR file</span></span>
-<span><span class="va">airr_path</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="st">"extdata/igscan_test_AIRR_file_sample3.rds"</span>, package <span class="op">=</span> <span class="st">"IgScan"</span>, mustWork <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></span>
+<span><span class="va">airr_path</span> <span class="op">&lt;-</span> <span class="fu">pkg_path</span><span class="op">(</span><span class="st">"extdata/igscan_test_AIRR_file_sample3.rds"</span><span class="op">)</span></span>
 <span><span class="va">example_airr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="va">airr_path</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co">## Format clones for phylogenetic inference</span></span>
@@ -410,7 +407,9 @@ dominant clonotype in the sample colored by subclone (VDJ nucleotide
 variants).</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plots</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></code></pre></div>
-<p><img src="IgScan_bulkngs_workflow_files/figure-html/plot_tree-1.png" class="r-plt" alt="" width="672"></p>
+<div class="float">
+<img src="figure/plot_tree-1.png" alt="plot of chunk plot_tree"><div class="figcaption">plot of chunk plot_tree</div>
+</div>
 </div>
 </div>
   </div>
