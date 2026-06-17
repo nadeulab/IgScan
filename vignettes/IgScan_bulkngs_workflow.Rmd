@@ -31,6 +31,13 @@ dir.create(outputDir)
 ```
 
 
+``` r
+if (!nzchar(system.file(package = "IgScan"))) {
+  pkg_path <- function(...) file.path("../../inst", ...)
+} else {
+  pkg_path <- function(...) system.file(..., package = "IgScan")
+}
+```
 
 # Introduction
 

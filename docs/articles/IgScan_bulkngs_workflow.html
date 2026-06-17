@@ -137,6 +137,12 @@ Márquez-López</h4>
 <span></span>
 <span><span class="va">outputDir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="st">"igscan_vignette_"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">outputDir</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nzchar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span>package <span class="op">=</span> <span class="st">"IgScan"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">pkg_path</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">...</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"../../inst"</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>  <span class="va">pkg_path</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">...</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="va">...</span>, package <span class="op">=</span> <span class="st">"IgScan"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -233,7 +239,7 @@ parameters in the following step (i.e. <code>hc_similarity_cutoff</code>
 based on the distribution of CDR3 length or
 <code>cdr3_InDel_correction_mode</code> if the samples are highly
 polyclonal).</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">s1</span> <span class="op">&lt;-</span> <span class="fu">pkg_path</span><span class="op">(</span><span class="st">"extdata/igscan_test_bulkNGS_sample1.fasta"</span><span class="op">)</span></span>
 <span><span class="va">s2</span> <span class="op">&lt;-</span> <span class="fu">pkg_path</span><span class="op">(</span><span class="st">"extdata/igscan_test_bulkNGS_sample2.fasta"</span><span class="op">)</span></span>
 <span></span>
@@ -279,7 +285,7 @@ samples, the ‘joint’ mode performs a consensus annotation across samples
 in order to longitudinally track clonotypes.</p>
 <p>In this example, since the samples come from different individuals,
 we will proceed with the <code>single</code> analysis mode:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">igscan_out</span> <span class="op">&lt;-</span> <span class="fu">IgScan</span><span class="fu">::</span><span class="fu"><a href="../reference/Run_IgScan_Annotation.html">Run_IgScan_Annotation</a></span><span class="op">(</span></span>
 <span>  sample_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sample1"</span>, <span class="st">"Sample2"</span><span class="op">)</span>,</span>
 <span>  outputDir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">outputDir</span>, <span class="st">"/IGSCAN_VIGNETTE_BULK/"</span><span class="op">)</span>, </span>
@@ -310,7 +316,7 @@ removing these contaminated sequences or only flagging them. If
 <code>remove_contamination</code> is set to <code>TRUE</code>, clonal
 frequencies and clone identifiers are recalculated with the remaining
 sequences.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">merge_igscan_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">igscan_out</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">merge_igscan_out</span> <span class="op">&lt;-</span> <span class="fu">IgScan</span><span class="fu">::</span><span class="fu"><a href="../reference/filter_BCR_contam_bulk.html">filter_BCR_contam_bulk</a></span><span class="op">(</span>igscan_data_frame <span class="op">=</span> <span class="va">merge_igscan_out</span>,</span>
@@ -333,7 +339,7 @@ see that indeed they are exactly the same clone, and that the
 contamination has been correctly flagged. Thus, we can proceed to remove
 contaminated sequences and recalculate the clonal frequencies and
 IDs.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">merge_igscan_out</span> <span class="op">&lt;-</span> <span class="va">merge_igscan_out</span><span class="op">[</span><span class="va">merge_igscan_out</span><span class="op">$</span><span class="va">Contamination_FLAG</span> <span class="op">==</span> <span class="st">"PASS"</span>,<span class="op">]</span>    </span>
 <span><span class="va">merge_igscan_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/recalculate_IDs_bulk.html">recalculate_IDs_bulk</a></span><span class="op">(</span><span class="va">merge_igscan_out</span>, group_col <span class="op">=</span> <span class="st">"SampleID"</span><span class="op">)</span></span></code></pre></div>
 <p>If you open the <code>merge_igscan_out</code> data frame, you will
@@ -355,7 +361,7 @@ sequence annotation into AIRR format and also includes the possibility
 to add pre-existing metadata by using the <code>metadata</code>
 argument. Importantly, this function also supports single cell objects
 with IgScan annotation metadata as input.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">airr_object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/export_AIRR_format.html">export_AIRR_format</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">merge_igscan_out</span>, </span>
 <span>                                  dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">outputDir</span>, <span class="st">"/IGSCAN_VIGNETTE_BULK/"</span><span class="op">)</span>, </span>
 <span>                                  fileName <span class="op">=</span> <span class="st">"exportAIRR_testNGS.tsv"</span>, </span>
@@ -382,7 +388,7 @@ build BCR phylogenetic trees.</p>
 <p>In order to show a more illustrative example, lets load an AIRR file
 coming from the IgScan annotation of a more complex bulk NGS dataset.
 The command used to generate the AIRR file was the following:</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">airr_object</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/export_AIRR_format.html">export_AIRR_format</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">IgScan_Df</span>, </span>
 <span>                                  dir <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/paste.html" class="external-link">paste0</a></span><span class="op">(</span><span class="va">outputDir</span>, <span class="st">"/IGSCAN_VIGNETTE_BULK_AIRR/"</span><span class="op">)</span>, </span>
 <span>                                  fileName <span class="op">=</span> <span class="va">FileName</span>, </span>
@@ -390,7 +396,7 @@ The command used to generate the AIRR file was the following:</p>
 <span>                                  metadata <span class="op">=</span> <span class="st">"SubcloneID_in_Clonotype"</span><span class="op">)</span> <span class="co">## Added metadata</span></span></code></pre></div>
 <p>First, we need to format the AIRR file following the <em>Dowser</em>
 manual:</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co">## Load example AIRR file</span></span>
 <span><span class="va">airr_path</span> <span class="op">&lt;-</span> <span class="fu">pkg_path</span><span class="op">(</span><span class="st">"extdata/igscan_test_AIRR_file_sample3.rds"</span><span class="op">)</span></span>
 <span><span class="va">example_airr</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/readRDS.html" class="external-link">readRDS</a></span><span class="op">(</span><span class="va">airr_path</span><span class="op">)</span></span>
@@ -405,7 +411,7 @@ manual:</p>
 <p>Now, we can visualize, for instance, the phylogenetic tree of the
 dominant clonotype in the sample colored by subclone (VDJ nucleotide
 variants).</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">plots</span><span class="op">[[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span></code></pre></div>
 <div class="float">
 <img src="figure/plot_tree-1.png" alt="plot of chunk plot_tree"><div class="figcaption">plot of chunk plot_tree</div>

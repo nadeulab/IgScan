@@ -9,5 +9,3 @@
 ^vignettes/articles$
 ^\.github$
 ^vignettes/.*\.orig$
-^doc$
-^Meta$

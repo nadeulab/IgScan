@@ -31,7 +31,7 @@ outputDir <- tempfile("igscan_vignette_")
 dir.create(outputDir)
 ```
 
-```{r, include=FALSE}
+```{r, warning=FALSE, message=FALSE}
 if (!nzchar(system.file(package = "IgScan"))) {
   pkg_path <- function(...) file.path("../../inst", ...)
 } else {

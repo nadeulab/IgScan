@@ -63,6 +63,14 @@ library(devtools)
 
 devtools::install_github("https://github.com/nadeulab/IgScan/tree/main",
                          build_vignettes = T, dependencies = T)
+
+library(IgScan)
+
+if (!nzchar(system.file(package = "IgScan"))) {
+  pkg_path <- function(...) file.path("../../inst", ...)
+} else {
+  pkg_path <- function(...) system.file(..., package = "IgScan")
+}
 ```
 
 ## IgScan example datasets
@@ -73,19 +81,19 @@ the package has been built/installed. Our example datasets consists of:
 ### Preprocessed fasta files for bulk NGS
 
 ``` r
-fasta_ngs_1 <- system.file("extdata/igscan_test_bulkNGS_sample1.fasta", package = "IgScan", mustWork = T)
+fasta_ngs_1 <- pkg_path("extdata/igscan_test_bulkNGS_sample1.fasta")
 
-fasta_ngs_2 <- system.file("extdata/igscan_test_bulkNGS_sample2.fasta", package = "IgScan", mustWork = T)
+fasta_ngs_2 <- pkg_path("extdata/igscan_test_bulkNGS_sample2.fasta")
 ```
 
 ### Seurat objects and filtered_contig fasta files for single cell (10x)
 
 ``` r
-fasta_sc_1 <- system.file("extdata/igscan_test_10xBCR_sample1.fasta", package = "IgScan", mustWork = T)
-seurat_1 <- system.file("extdata/igscan_test_10xSeurat_sample1.rds", package = "IgScan", mustWork = T)
+fasta_sc_1 <- pkg_path("extdata/igscan_test_10xBCR_sample1.fasta")
+seurat_1 <- pkg_path("extdata/igscan_test_10xSeurat_sample1.rds")
 
-fasta_sc_2 <- system.file("extdata/igscan_test_10xBCR_sample2.fasta", package = "IgScan", mustWork = T)
-seurat_2 <- system.file("extdata/igscan_test_10xSeurat_sample2.rds", package = "IgScan", mustWork = T)
+fasta_sc_2 <- pkg_path("extdata/igscan_test_10xBCR_sample2.fasta")
+seurat_2 <- pkg_path("extdata/igscan_test_10xSeurat_sample2.rds")
 ```
 
 ## Suggest updates / Report Bugs

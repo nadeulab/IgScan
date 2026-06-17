@@ -137,6 +137,12 @@ Márquez-López</h4>
 <span></span>
 <span><span class="va">outputDir</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/tempfile.html" class="external-link">tempfile</a></span><span class="op">(</span><span class="st">"igscan_vignette_"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/files2.html" class="external-link">dir.create</a></span><span class="op">(</span><span class="va">outputDir</span><span class="op">)</span></span></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="op">!</span><span class="fu"><a href="https://rdrr.io/r/base/nchar.html" class="external-link">nzchar</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span>package <span class="op">=</span> <span class="st">"IgScan"</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">pkg_path</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">...</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/file.path.html" class="external-link">file.path</a></span><span class="op">(</span><span class="st">"../../inst"</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>  <span class="va">pkg_path</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">...</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/system.file.html" class="external-link">system.file</a></span><span class="op">(</span><span class="va">...</span>, package <span class="op">=</span> <span class="st">"IgScan"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
 <div class="section level2">
 <h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
 </h2>
@@ -212,7 +218,7 @@ parameters in the following step (i.e. <code>hc_similarity_cutoff</code>
 based on the distribution of CDR3 length or
 <code>cdr3_InDel_correction_mode</code> if the samples are highly
 polyclonal).</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">s1</span> <span class="op">&lt;-</span> <span class="fu">pkg_path</span><span class="op">(</span><span class="st">"extdata/igscan_test_10xBCR_sample1.fasta"</span><span class="op">)</span></span>
 <span><span class="va">s2</span> <span class="op">&lt;-</span> <span class="fu">pkg_path</span><span class="op">(</span><span class="st">"extdata/igscan_test_10xBCR_sample2.fasta"</span><span class="op">)</span></span>
 <span></span>
@@ -256,7 +262,7 @@ When analyzing related samples, such samples from the same individual,
 in which it is plausible that the same clonotype is identified in both
 samples, the ‘joint’ mode performs a consensus annotation across samples
 in order to longitudinally track clonotypes.</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">igscan_out</span> <span class="op">&lt;-</span> <span class="fu">IgScan</span><span class="fu">::</span><span class="fu"><a href="../reference/Run_IgScan_Annotation.html">Run_IgScan_Annotation</a></span><span class="op">(</span></span>
 <span>  sample_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Sample1"</span>, <span class="st">"Sample2"</span><span class="op">)</span>,</span>
 <span>  case_labels <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"CaseA"</span>, <span class="st">"CaseA"</span><span class="op">)</span>,</span>
@@ -297,7 +303,7 @@ single cell objects.</p>
 <p>In this vingette, we will load two Seurat objects belonging to
 samples <code>Sample1</code> and <code>Sample2</code> and we will
 combine them with their corresponding IgScan output.</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">o1</span> <span class="op">&lt;-</span> <span class="fu">pkg_path</span><span class="op">(</span><span class="st">"extdata/igscan_test_10xSeurat_sample1.rds"</span><span class="op">)</span></span>
 <span><span class="va">o2</span> <span class="op">&lt;-</span> <span class="fu">pkg_path</span><span class="op">(</span><span class="st">"extdata/igscan_test_10xSeurat_sample2.rds"</span><span class="op">)</span></span>
 <span></span>
@@ -327,13 +333,13 @@ run:</p>
 <div class="section level3">
 <h3 id="exploratory-data-analyses">Exploratory data analyses<a class="anchor" aria-label="anchor" href="#exploratory-data-analyses"></a>
 </h3>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">color</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"C1"</span> <span class="op">=</span> <span class="st">"#1B9E77"</span>, <span class="st">"C2"</span> <span class="op">=</span> <span class="st">"#D95F09"</span>, <span class="st">"C3"</span> <span class="op">=</span> <span class="st">"#7570B9"</span>, <span class="st">"C4"</span> <span class="op">=</span> <span class="st">"#E6AB02"</span><span class="op">)</span></span></code></pre></div>
 <p>Now that we have the Seurat objects with IgScan annotation, we can
 now evaluate the BCR repertoire in the samples analyzed. First of all,
 we can rapidly visualize the distribution of clonotypes in a
 barplot.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_merge</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/merge.html" class="external-link">merge</a></span><span class="op">(</span><span class="va">seurat_1</span>, <span class="va">seurat_2</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">clonotype_df</span> <span class="op">&lt;-</span> <span class="va">seurat_merge</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
@@ -357,7 +363,7 @@ plot of chunk igscan_anal_1
 remarkable increase of clonotype 2 (C2) in Sample2 compared to Sample1.
 Now, these cells can be visualized in a UMAP representation colored by
 BCR clonotype.</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_merge</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.github.io/seurat-object/reference/SplitLayers.html" class="external-link">JoinLayers</a></span><span class="op">(</span><span class="va">seurat_merge</span><span class="op">)</span></span>
 <span><span class="va">seurat_merge</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/NormalizeData.html" class="external-link">NormalizeData</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">seurat_merge</span>, verbose <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span>
 <span><span class="va">seurat_merge</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://satijalab.org/seurat/reference/FindVariableFeatures.html" class="external-link">FindVariableFeatures</a></span><span class="op">(</span>object <span class="op">=</span> <span class="va">seurat_merge</span>, verbose <span class="op">=</span> <span class="cn">F</span><span class="op">)</span></span>
@@ -376,7 +382,7 @@ BCR clonotype.</p>
 <span>                     cols <span class="op">=</span> <span class="va">color</span>, pt.size <span class="op">=</span> <span class="fl">2</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/theme.html" class="external-link">theme</a></span><span class="op">(</span>axis.text <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span>, axis.ticks <span class="op">=</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/element.html" class="external-link">element_blank</a></span><span class="op">(</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"UMAP1"</span>, y <span class="op">=</span> <span class="st">"UMAP2"</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">ggtitle</a></span><span class="op">(</span><span class="st">"ClonotypeID"</span><span class="op">)</span></span></code></pre></div>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">sam_dim</span> <span class="op">+</span> <span class="va">clone_dim</span><span class="op">)</span></span></code></pre></div>
 <div class="figure" style="text-align: center">
 <img src="figure/igscan_anal_3-1.png" alt="plot of chunk igscan_anal_3"><p class="caption">
@@ -395,7 +401,7 @@ cells in this merged object that lack information in the
 <code>igClonotypeID_num</code> field. The explanation for this is found
 in the <code>completeBCR</code> field (see the <a href="understand_IgScan_output.html">Uderstand IgScan output format</a>
 vingette for more information).</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">seurat_merge</span><span class="op">$</span><span class="va">igClonotypeID_num</span>, <span class="va">seurat_merge</span><span class="op">$</span><span class="va">completeBCR</span>, useNA <span class="op">=</span> <span class="st">"ifany"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##       </span></span>
 <span><span class="co">##        Alternative_clonotype Clonotype_doublet Single_chain_1 Yes</span></span>
@@ -410,7 +416,7 @@ vingette for more information).</p>
 recommend removing the first two categories from the single cell
 objects, since they are suggestive of remaining doublets in the
 data.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_merge</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">seurat_merge</span>, </span>
 <span>                       subset <span class="op">=</span> <span class="op">!</span><span class="va">completeBCR</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"Clonotype_doublet"</span>, <span class="st">"Repeated_chain"</span><span class="op">)</span><span class="op">)</span></span></code></pre></div>
 </div>
@@ -433,13 +439,13 @@ C2.</p>
 recommended to run the <code>rescue_single_chain_cells</code> function
 <strong>by case</strong> (so that the joint annotation is not
 undone).</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_merge</span><span class="op">$</span><span class="va">case</span> <span class="op">&lt;-</span> <span class="st">"Case1"</span></span>
 <span><span class="va">seurat_merge</span> <span class="op">&lt;-</span> <span class="fu">IgScan</span><span class="fu">::</span><span class="fu"><a href="../reference/rescue_single_chain_cells.html">rescue_single_chain_cells</a></span><span class="op">(</span>single_cell_object <span class="op">=</span> <span class="va">seurat_merge</span>, </span>
 <span>                                                  group_col <span class="op">=</span> <span class="st">"case"</span><span class="op">)</span></span></code></pre></div>
 <p>Now, we can run the same <code><a href="https://rdrr.io/r/base/table.html" class="external-link">table()</a></code> command that we run
 before to check how these fields have changed.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">seurat_merge</span><span class="op">$</span><span class="va">igClonotypeID_num</span>, <span class="va">seurat_merge</span><span class="op">$</span><span class="va">completeBCR</span>, useNA <span class="op">=</span> <span class="st">"ifany"</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##     </span></span>
 <span><span class="co">##      Alternative_clonotype Yes Yes_rescue</span></span>
@@ -466,7 +472,7 @@ object<a class="anchor" aria-label="anchor" href="#recalculation-of-clonotype-id
 comes from the crossed contamination of these samples with another
 sample from a different individual. In this scenario, it would be
 reasonable to remove C1 from the single cell object.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_merge_filter</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/subset.html" class="external-link">subset</a></span><span class="op">(</span><span class="va">seurat_merge</span>, subset <span class="op">=</span> <span class="va">igClonotypeID_num</span> <span class="op">!=</span> <span class="st">"C1"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">seurat_merge_filter</span><span class="op">$</span><span class="va">igClonotypeID_num</span>, <span class="va">seurat_merge_filter</span><span class="op">$</span><span class="va">orig.ident</span><span class="op">)</span></span></code></pre></div>
 <pre><code><span><span class="co">##     </span></span>
@@ -484,7 +490,7 @@ need to be recalculated. Since the annotation of these samples has been
 performed by case (and remember that clones are differently distributed
 across samples), clonotype IDs should not be recalculated by sample,
 otherwise the joint annotation is not undone, but by case.</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">seurat_merge_filter</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/recalculate_IDs_single_cell.html">recalculate_IDs_single_cell</a></span><span class="op">(</span>single_cell_object <span class="op">=</span> <span class="va">seurat_merge_filter</span>,</span>
 <span>                                                   group_col <span class="op">=</span> <span class="st">"case"</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/table.html" class="external-link">table</a></span><span class="op">(</span><span class="va">seurat_merge_filter</span><span class="op">$</span><span class="va">igClonotypeID_num</span>, <span class="va">seurat_merge_filter</span><span class="op">$</span><span class="va">orig.ident</span><span class="op">)</span></span></code></pre></div>
@@ -496,7 +502,7 @@ otherwise the joint annotation is not undone, but by case.</p>
 <p>You can now appreciate that clonotype IDs follow a comprehensive
 order and the clonotype distribution is shown in the following
 barplot.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">clonotype_df2</span> <span class="op">&lt;-</span> <span class="va">seurat_merge_filter</span><span class="op">@</span><span class="va">meta.data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">orig.ident</span>, <span class="va">igClonotypeID_num</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html" class="external-link">summarise</a></span><span class="op">(</span>count <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/context.html" class="external-link">n</a></span><span class="op">(</span><span class="op">)</span>, .groups <span class="op">=</span> <span class="st">"drop"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
