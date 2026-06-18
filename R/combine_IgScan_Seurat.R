@@ -45,7 +45,11 @@ combine_IgScan_Seurat <- function(igscan_out, seurat_object, seurat_sample_col =
     tmp_seurat <- subset(seurat_object, subset = tmp_col == sample_id)
     tmp_igscan <- igscan_out[igscan_out$tmp_col == sample_id, ]
 
-    if(nrow(tmp_igscan) == 0 | ncol(tmp_seurat) == 0){return(NULL)}
+    if(ncol(tmp_seurat) == 0){
+      return(NULL)
+    } else if(nrow(tmp_igscan) == 0){
+      return(tmp_seurat@meta.data)
+    }
 
     tmp_seurat@meta.data$completeBCR <- tmp_igscan$completeBCR[match(rownames(tmp_seurat@meta.data), tmp_igscan$barcode)]
     tmp_seurat@meta.data$igClonotypeID <- tmp_igscan$igClonotypeID[match(rownames(tmp_seurat@meta.data), tmp_igscan$barcode)]

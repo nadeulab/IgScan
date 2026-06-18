@@ -39,7 +39,11 @@ combine_IgScan_SingleCellExperiment <- function(igscan_out, sce, sce_sample_col,
     tmp_sce <- sce[, sce$tmp_col == sample_id]
     tmp_igscan <- igscan_out[igscan_out$tmp_col == sample_id, ]
 
-    if(nrow(tmp_igscan) == 0 | ncol(tmp_sce) == 0){return(NULL)}
+    if(ncol(tmp_sce) == 0){
+      return(NULL)
+    } else if(nrow(tmp_igscan) == 0){
+      return(colData(tmp_sce))
+    }
 
     colData(tmp_sce)$completeBCR <- tmp_igscan$completeBCR[match(rownames(colData(tmp_sce)), tmp_igscan$barcode)]
     colData(tmp_sce)$igClonotypeID <- tmp_igscan$igClonotypeID[match(rownames(colData(tmp_sce)), tmp_igscan$barcode)]
