@@ -70,7 +70,7 @@
 #' @export
 #'
 #' @import dplyr
-#' @importFrom pwalign pairwiseAlignment
+#' @importFrom pwalign pairwiseAlignment score alignedPattern alignedSubject
 #' @importFrom purrr list_flatten
 #' @importFrom parallel mclapply
 #' @import stringr
@@ -955,70 +955,52 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
 
 ## Functions to correct CDR3 artifacts/InDels
 .compute_clonotype_similarity <- function(distance_matrix, x, y, cdr3_mode, substitution_matrix){
-
   seq1 <- rownames(distance_matrix)[x]
   seq2 <- colnames(distance_matrix)[y]
 
-  if(cdr3_mode == "nt"){
-    aln <- pairwiseAlignment(pattern = c(seq1,seq2)[which.max(nchar(c(seq1,seq2)))],
-                             subject = c(seq1,seq2)[which.min(nchar(c(seq1,seq2)))],
-                             type = "global")
+  seqs <- c(seq1, seq2)
+  pat <- seqs[which.max(nchar(seqs))]
+  sub <- seqs[which.min(nchar(seqs))]
 
-  } else if(cdr3_mode == "aa"){ ## Added substitution matrix for aa alignment to avoid penalty for physico-chemical property mismatch
-    aln <- pairwiseAlignment(pattern = c(seq1,seq2)[which.max(nchar(c(seq1,seq2)))],
-                             subject = c(seq1,seq2)[which.min(nchar(c(seq1,seq2)))],
-                             type = "global", substitutionMatrix = substitution_matrix)
+  if(cdr3_mode == "nt"){
+    aln <- pairwiseAlignment(pattern = pat, subject = sub, type = "global")
+  } else if(cdr3_mode == "aa"){
+    aln <- pairwiseAlignment(pattern = pat, subject = sub, type = "global", substitutionMatrix = substitution_matrix)
   }
 
-  pattern <- strsplit(gsub("pattern: ", "", capture.output(aln)[2]), "")[[1]]
-  subject = correct_subject = strsplit(gsub("subject: ", "", capture.output(aln)[3]), "")[[1]]
+  pattern <- strsplit(as.character(alignedPattern(aln)), "")[[1]]
+  subject <- strsplit(as.character(alignedSubject(aln)), "")[[1]]
 
-  if(any(grepl("-", pattern)) | aln@score <= 0){
+  if(any(pattern == "-") | score(aln) <= 0){
     return(1)
   } else{
+    correct_subject <- subject
     correct_subject[which(correct_subject == "-")] <- pattern[which(correct_subject == "-")]
     similarity <- 1-((sum(pattern == correct_subject) - (sum(!diff(which(subject == "-")) == 1)+1)) / nchar(paste(pattern, collapse = "")))
     return(similarity)
   }
 }
 .compare_similar_clonotypes <- function(data_frame_by_sample, c1, c2, cdr3_mode, cdr3_InDel_correction_mode, hc_similarity_cutoff, substitution_matrix){
-  if(cdr3_InDel_correction_mode == "hard_filter"){
-    if(cdr3_mode == "nt"){
-      distance_matrix <- matrix(0, nrow = length(unique(data_frame_by_sample$CDR3nt[data_frame_by_sample$Clonotype == c1])),
-                                ncol = length(unique(data_frame_by_sample$CDR3nt[data_frame_by_sample$Clonotype == c2])),
-                                dimnames = list(unique(data_frame_by_sample$CDR3nt[data_frame_by_sample$Clonotype == c1]),
-                                                unique(data_frame_by_sample$CDR3nt[data_frame_by_sample$Clonotype == c2])))
+  col_cdr3 <- if(cdr3_mode == "nt") "CDR3nt" else "CDR3aa"
+  seqs1 <- unique(data_frame_by_sample[[col_cdr3]][data_frame_by_sample$Clonotype == c1])
+  seqs2 <- unique(data_frame_by_sample[[col_cdr3]][data_frame_by_sample$Clonotype == c2])
 
-    }else{
-      distance_matrix <- matrix(0, nrow = length(unique(data_frame_by_sample$CDR3aa[data_frame_by_sample$Clonotype == c1])),
-                                ncol = length(unique(data_frame_by_sample$CDR3aa[data_frame_by_sample$Clonotype == c2])),
-                                dimnames = list(unique(data_frame_by_sample$CDR3aa[data_frame_by_sample$Clonotype == c1]),
-                                                unique(data_frame_by_sample$CDR3aa[data_frame_by_sample$Clonotype == c2])))
-    }
-  } else if(cdr3_InDel_correction_mode == "soft_filter"){
-    if(cdr3_mode == "nt"){
-      distance_matrix <- matrix(0, nrow = length(.possibleCDR3(.consensus_CDR3(unique(data_frame_by_sample$CDR3nt[data_frame_by_sample$Clonotype == c1])))),
-                                ncol = length(.possibleCDR3(.consensus_CDR3(unique(data_frame_by_sample$CDR3nt[data_frame_by_sample$Clonotype == c2])))),
-                                dimnames = list(.possibleCDR3(.consensus_CDR3(unique(data_frame_by_sample$CDR3nt[data_frame_by_sample$Clonotype == c1]))),
-                                                .possibleCDR3(.consensus_CDR3(unique(data_frame_by_sample$CDR3nt[data_frame_by_sample$Clonotype == c2])))))
-
-    }else{
-      distance_matrix <- matrix(0, nrow = length(.possibleCDR3(.consensus_CDR3(unique(data_frame_by_sample$CDR3aa[data_frame_by_sample$Clonotype == c1])))),
-                                ncol = length(.possibleCDR3(.consensus_CDR3(unique(data_frame_by_sample$CDR3aa[data_frame_by_sample$Clonotype == c2])))),
-                                dimnames = list(.possibleCDR3(.consensus_CDR3(unique(data_frame_by_sample$CDR3aa[data_frame_by_sample$Clonotype == c1]))),
-                                                .possibleCDR3(.consensus_CDR3(unique(data_frame_by_sample$CDR3aa[data_frame_by_sample$Clonotype == c2])))))
-    }
+  if(cdr3_InDel_correction_mode == "soft_filter"){
+    seqs1 <- .possibleCDR3(.consensus_CDR3(seqs1))
+    seqs2 <- .possibleCDR3(.consensus_CDR3(seqs2))
   }
 
-  for(x in 1:nrow(distance_matrix)){
-    for(y in 1:ncol(distance_matrix)){
+  distance_matrix <- matrix(0, nrow = length(seqs1), ncol = length(seqs2),
+                            dimnames = list(seqs1, seqs2))
+
+  for(x in seq_len(nrow(distance_matrix))){
+    for(y in seq_len(ncol(distance_matrix))){
       fill_value <- .compute_clonotype_similarity(distance_matrix, x, y, cdr3_mode, substitution_matrix)
-      distance_matrix[x,y] <- fill_value
+      distance_matrix[x, y] <- fill_value
       if(fill_value > hc_similarity_cutoff){break}
     }
     if(fill_value > hc_similarity_cutoff){break}
   }
-
   return(max(distance_matrix))
 }
 .correct_Clonotype_InDels <- function(data_frame_by_sample, cdr3_mode, hc_similarity_cutoff, cdr3_InDel_correction_mode, data_type){
@@ -1032,20 +1014,30 @@ Run_IgScan_Annotation <- function(sample_labels = "all_samples", case_labels = N
   }
   diag(substitution_matrix) <- 1
 
-  for(clone in unique(data_frame_by_sample$Clonotype)){
-    list_Clt <- c(clone)
-    if(all(is.na(data_frame_by_sample$CorrectClt[data_frame_by_sample$Clonotype == clone]))){
-      vgene <- unique(data_frame_by_sample$Vgene[data_frame_by_sample$Clonotype == clone])
-      len_cdr3 <- unique(data_frame_by_sample$CDR3len[data_frame_by_sample$Clonotype == clone])
+  clt_idx <- split(seq_len(nrow(data_frame_by_sample)), data_frame_by_sample$Clonotype)
+  vgene_by_clt   <- vapply(clt_idx, function(i) data_frame_by_sample$Vgene[i][1], character(1))
+  cdr3len_by_clt <- vapply(clt_idx, function(i) data_frame_by_sample$CDR3len[i][1], numeric(1))
+  if(data_type != "missionbio"){
+    nolen_by_clt <- vapply(clt_idx, function(i) data_frame_by_sample$len_no_CDR3[i][1], numeric(1))
+  }
+
+  for(clone in names(clt_idx)){
+    if(all(is.na(data_frame_by_sample$CorrectClt[clt_idx[[clone]]]))){
+      vgene <- vgene_by_clt[[clone]]
+      len_cdr3 <- cdr3len_by_clt[[clone]]
+      list_Clt <- c(clone)
       if(data_type == "missionbio"){
-        for(candidate_indel in unique(data_frame_by_sample$Clonotype[data_frame_by_sample$Vgene == vgene & data_frame_by_sample$CDR3len != len_cdr3])){
+        candidates <- names(vgene_by_clt)[vgene_by_clt == vgene & cdr3len_by_clt != len_cdr3]
+        for(candidate_indel in candidates){
           if(.compare_similar_clonotypes(data_frame_by_sample, clone, candidate_indel, cdr3_mode, cdr3_InDel_correction_mode, hc_similarity_cutoff, substitution_matrix) <= hc_similarity_cutoff){
             list_Clt <- c(list_Clt, candidate_indel)
           }
         }
+
       } else{
-        len_no_cdr3 <- unique(data_frame_by_sample$len_no_CDR3[data_frame_by_sample$Clonotype == clone])
-        for(candidate_indel in unique(data_frame_by_sample$Clonotype[data_frame_by_sample$Vgene == vgene & data_frame_by_sample$CDR3len != len_cdr3 & data_frame_by_sample$len_no_CDR3 == len_no_cdr3])){
+        len_no_cdr3 <- nolen_by_clt[[clone]]
+        candidates <- names(vgene_by_clt)[vgene_by_clt == vgene & cdr3len_by_clt != len_cdr3 & nolen_by_clt == len_no_cdr3]
+        for(candidate_indel in candidates){
           if(.compare_similar_clonotypes(data_frame_by_sample, clone, candidate_indel, cdr3_mode, cdr3_InDel_correction_mode, hc_similarity_cutoff, substitution_matrix) <= hc_similarity_cutoff){
             list_Clt <- c(list_Clt, candidate_indel)
           }
